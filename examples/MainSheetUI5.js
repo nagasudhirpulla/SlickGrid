@@ -5,6 +5,7 @@ var constituentNames = ['MSEB', 'GUVNL', 'MPSEB', 'CSEB', 'DD', 'DNH'];
 var consReqPercentages = [0.2, 0.3, 0.2, 0.1, 0.1, 0.1];
 var genRamp = 30;
 var genOnBar = 100;
+var markRev = []; 
 
 //LOCAL Instance Data
 var sectionsArray = [];
@@ -137,6 +138,8 @@ $(function() {
     //Setting the data values of the grid here...
     //i is iterator for the row i ...
     var d = (data[i] = {});
+    //Accommodating markRev
+    var m = (markRev[i] = {});
     d["SNo"] = i + 1;
     d["rampNum"] = genRamp;
     var sumgen = 0;
@@ -146,6 +149,8 @@ $(function() {
       //d[j] = genOnBar*consReqPercentages[j];
       d[j] = 'FULL';
       sumgen += ConvertCellValToNum(d[j], j, i);
+      //Accommodating markRev
+      m[j] = 0;
     }
     d["onBar"] = genOnBar;
     d["avail"] = genOnBar - sumgen;
@@ -573,4 +578,60 @@ function calulateFormulaColumns() {
   }
   grid.invalidateAllRows();
   grid.render();
+}
+
+//Marking each cell with the latest affecting rev number till current revision
+//Iterate through each revision from 1st till current revision and find the smallest block or row number affected 
+//by the revision and mark the next remaining blocks of the column as the same rev number.
+//Continue this till current revision.
+function markCellsWithRevs()
+{
+ //First mark all cells with 0 rev.
+ for(var i=0;i<96;i++)
+ {
+   var m = (markRev[i]);
+   for(var j=0;j<constituentNames.length;j++)
+   {
+     m[j]=0;
+   }
+ }
+ //Iterate from 1st to current revision //works only for saved revisions now, if rev not saved or a new revision, then doesnot work
+ var sectionsArray = revDataArray[0];
+ for(var rev = 1;rev<=curRev;rev++)
+ {
+   //Get the revision data of the present ad prev revisons
+   var sectionsArrayPrev = sectionsArray;
+   sectionsArray = revDataArray[rev];
+   //iterate through each column of this revision to find the min blk num affected by this rev in this column
+   for(var constcol=0;constcol<constituentNames.length;constcol++)
+   {
+     //Column data of prev and present revisions
+     var sectionsprev = sectionsArrayPrev[constcol];
+     var sections = sectionsArray[constcol];
+     var column = new Array(96);
+     //var columnprev = new Array(96);
+     //Build the columns of prev and present revisions of this constituent
+     for (var i = 0; i < sections.length; i++) {
+      for (var blkNum = Number(sections[i]["secStart"]); blkNum <= Number(sections[i]["secEnd"]); blkNum++) {
+        column[blkNum] = sections[i]["val"];
+      }
+     }
+     var changeRow = 96;
+     for (var i = 0; i < sectionsprev.length; i++) {
+      for (var blkNum = Number(sectionsprev[i]["secStart"]); blkNum <= Number(sectionsprev[i]["secEnd"]); blkNum++) {
+        //columnprev[blkNum] = sectionsprev[i]["val"];
+        //Check if prev mismatch with present and declare the min blk number or row
+        if(sectionsprev[i]["val"]!=column[blkNum])//change row found
+        {
+          changeRow = blkNum;
+          break;
+        }
+      }
+     }
+     //marking the row rev on the basis of changeRow variable
+     for (var i = changeRow; i < 96; i++) {
+       (markRev[i])[constcol] = rev;
+     }
+   }
+ }
 }
