@@ -1,62 +1,122 @@
-﻿<!DOCTYPE HTML>
+<!DOCTYPE HTML>
+<meta charset="UTF-8">
+<!...Adding rev summary table and accessing the main desired revision data array...>
 <html>
 <head>
-  <title>SlickGrid Examples</title>
-  <style>
-    body {
-      font-family: Helvetica, arial, freesans, clean, sans-serif;
-      font-size: 15px;
-    }
-
-    a {
-      color: #4183c4;
-      text-decoration: none;
-    }
-
-    a:hover {
-      text-decoration: underline;
-    }
-
-    li {
-      margin-bottom: 15px;
-    }
-  </style>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>SlickGrid example 3: Editing</title>
+	<link rel="stylesheet" href="../slick.grid.css" type="text/css"/>
+	<link rel="stylesheet" href="../css/smoothness/jquery-ui-1.8.16.custom.css" type="text/css"/>
+	<link rel="stylesheet" href="examples.css" type="text/css"/>
+	<link rel="stylesheet" href="MainSheetUI.css" type="text/css"/>
 </head>
+
 <body>
-  <h1>Examples</h1>
-  <div>
-    <ul>
-      <li><a href="example1-simple.html">Basic use with minimal configuration</a></li>
-      <li><a href="example2-formatters.html">Adding some formatting</a></li>
-      <li><a href="example7-events.html">Handling events</a></li>
-      <li><a href="example14-highlighting.html">Highlighting and flashing cells</a></li>
-      <li><a href="example3-editing.html">Making it editable</a></li>
-      <li><a href="example3a-compound-editors.html">Writing compound editors</a></li>
-      <li><a href="example3b-editing-with-undo.html">Implementing Undo</a></li>
-      <li><a href="example-composite-editor-item-details.html">Using a CompositeEditor to implement detached item edit form</a></li>
-      <li>(most comprehensive) <a href="example4-model.html">Using a filtered data view to drive the grid</a></li>
-      <li><a href="example5-collapsing.html">Adding tree functionality (expand/collapse) to the grid</a></li>
-      <li><a href="example6-ajax-loading.html"><span class="caps">AJAX</span>-loading data with search</a></li>
-      <li><a href="example8-alternative-display.html">Using pre-compiled micro-templates to render cells</a></li>
-      <li><a href="example9-row-reordering.html">Row selection &amp; reordering</a></li>
-      <li><a href="example10-async-post-render.html">Using background post-rendering to add graphs</a></li>
-      <li><a href="example11-autoheight.html" title="autoHeight">No vertical scrolling</a></li>
-      <li><a href="example12-fillbrowser.html">Filling the whole window</a></li>
-      <li><a href="example13-getItem-sorting.html">Sorting by an index, getItem method</a></li>
-      <li><a href="example-header-row.html">Using fixed header row for quick filters</a></li>
-      <li><a href="example-checkbox-row-select.html">Plugin:  Checkbox row selectors with CheckboxSelectColumn plugin</a></li>
-      <li><a href="example-spreadsheet.html">Spreadsheet: cell range selection, copy’n’paste and Excel-style formula editor</a></li>
-      <li><a href="example-grouping.html">Interactive grouping and aggregates</a>.</li>
-      <li><a href="example-colspan.html">Colspan</a></li>
-      <li><a href="example-optimizing-dataview.html">Optimizing DataView for 500’000 rows</a></li>
-      <li><a href="example-explicit-initialization.html">Explicit initialization</a></li>
-      <li><a href="example-excel-compatible-spreadsheet.html">Excel compatible copy/paste</a></li>
-      <li><a href="example-multi-column-sort.html">Multi-column sorting</a></li>
-      <li><a href="example-custom-column-value-extractor.html">Using dataItemColumnValueExtractor option to specify a custom column value extractor</a></li>
-      <li><a href="example-plugin-headerbuttons.html">Plugin: Column header buttons</a></li>
-      <li><a href="example-plugin-headermenu.html">Plugin: Column header menu</a></li>
-      <li><a href="example-autotooltips.html">Plugin: Auto tooltips</a></li>
-    </ul>
-  </div>
-</body>
+	<div style="position:relative">
+		<div id="revInputDiv" style="margin-right:15px;float:left">
+			<span>Revision Number</span>
+			<input type="number" min="0" max="500" value="0" id="revInput"><br>
+			<button id="loadRevButton" onclick ="loadRevision()">LoadRevision</button>
+			<button id="deleteRevButton">DeleteRevision</button>
+			<button id="createRevButton" onclick="createNewRev()">CreateNewRevision</button>
+		</div>
+		<div id="revDisplayDiv">
+			<p>current revision</p>
+			<span id="revDisplay">0</span>
+		</div>
+		<br>
+		<div style="margin-right:0px;width:100%;">
+			<div id="tableInputDiv" style="margin-right:0px;width:1000px;float:left">
+				<div id="myGrid" style="width:100%;height:400px;"></div>
+			</div>
+			<div id="rSDInputDiv" style="">
+				<span>RSD Columns</span><br>
+				<table id="RSDInputTable" border="1">
+					<tr><td>Constituent Name</td>
+						<td><span>Delete?</span></td>            
+					</tr>
+				</table>
+				<br>
+				<select id="selectRSDConst"><option>Const1</option><option>Const2</option><option>Const3</option></select>
+				<button id="RSDValidateButton">ValidateRSDInputs</button>
+				<button id="RSDAddRowButton" onclick="addRow('RSDInputTable')">AddRow</button>
+				<button id="RSDDeleteRowButton" onclick="deleteRow('RSDInputTable')">DeleteRows</button>
+				<p id="RSDConsole"></p>
+			</div>
+			<br>
+			<div id="uRSInputDiv" style="">
+				<span>URS Columns</span><br>
+				<table id="URSInputTable" border="1">
+					<tr><td><span>Constituent Name</span></td>
+						<td><input type="checkbox" name="chk"/></td>            
+					</tr>
+				</table><br>
+				<select id="selectURSConst"><option>MSEB</option><option>Const2</option><option>Const3</option></select>
+				<button id="URSValidateButton">ValidateURSInputs</button>
+				<button id="URSAddRowButton" onclick="addRow('URSInputTable')">AddRow</button>
+				<button id="URSDeleteRowButton" onclick="deleteRow('URSInputTable')">DeleteRow</button>
+				<p id="URSConsole"></p>
+				<button id="reqFeedByTableButton" onclick="updateFromGrid()">Modify Revision</button>
+			</div>
+		</div>
+		<div id="summTabDiv" style="width=100%">
+			<h2 id='tiedInfo'>Requisition Summary Table, tied to grid</h2>
+			<table id="summTab"></table>
+			<button id="buttonUpdateRevSummTab" onclick="saveToDatabase()">Save Rev According to this Table</button>
+		</div>
+		<div id="reqInputDiv" style="width=100%">
+			<h3>Enter the desired requisition values</h3>
+			<h3>Note: The order matters!</h3>
+			<table id="reqInputTable" border="1" style="width:500px">
+				<tr>
+					<td style="width:100px">
+						Constituent Name
+					</td>            
+					<td>
+						From Block
+					</td>
+					<td>
+						To Block
+					</td>
+					<td>
+						Value
+					</td>
+					<td><input type="checkbox" name="chk"/></td>
+				</tr>
+			</table>
+			<br>
+			<select id="selectReqConst"><option>MSEB</option><option>Const2</option><option>Const3</option></select>
+			<button id="reqAddRowButton" onclick="addRow('reqInputTable')">AddRow</button>
+			<button id="reqDeleteRowButton" onclick="deleteRow('reqInputTable')">DeleteRow</button>
+			<button id="reqGetFromSummButton" onclick="getSummToManual()">Get from revision Summary</button>
+			<p id="addRowConsole"></p>
+			<button id="reqFeedByTableButton" onclick="createSumm(1)">Modify revision</button>
+		</div>
+		<!...Do validation such that from<to field and both fields between [0,96]>
+		<!...Add validation for Add and delete rows>
+
+		<div>
+			<h2>Undo/redo support :</h2>
+			<ul>
+				<li>Use buttons to undo/redo copy/paste</li>
+			</ul>
+			<button onclick="undoRedoBuffer.undo()"><img src="../images/arrow_undo.png" align="absmiddle"> Undo</button>
+			<button onclick="undoRedoBuffer.redo()"><img src="../images/arrow_redo.png" align="absmiddle"> Redo</button>
+		</div>
+
+		<script src="../lib/firebugx.js"></script>
+		<script src="../lib/jquery-1.7.min.js"></script>
+		<script src="../lib/jquery-ui-1.8.16.custom.min.js"></script>
+		<script src="../lib/jquery.event.drag-2.2.js"></script>
+		<script src="../slick.core.js"></script>
+		<script src="../plugins/slick.autotooltips.js"></script>
+		<script src="../plugins/slick.cellrangedecorator.js"></script>
+		<script src="../plugins/slick.cellrangeselector.js"></script>
+		<script src="../plugins/slick.cellexternalcopymanager.js"></script>
+		<script src="../plugins/slick.cellselectionmodel.js"></script>
+		<script src="../slick.editors.js"></script>
+		<script src="../slick.formatters.js"></script>
+		<script src="../slick.grid.js"></script>
+		<script src="MainSheetUI5.js"></script>
+	</body>
 </html>
