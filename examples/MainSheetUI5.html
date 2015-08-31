@@ -1,0 +1,127 @@
+<!DOCTYPE HTML>
+<meta charset="UTF-8">
+<!...Adding rev summary table and accessing the main desired revision data array...>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>SlickGrid example 3: Editing</title>
+	<link rel="stylesheet" href="../slick.grid.css" type="text/css"/>
+	<link rel="stylesheet" href="../css/smoothness/jquery-ui-1.8.16.custom.css" type="text/css"/>
+	<link rel="stylesheet" href="examples.css" type="text/css"/>
+	<link rel="stylesheet" href="MainSheetUI.css" type="text/css"/>
+</head>
+
+<body>
+	<div style="position:relative">
+		<div id="revInputDiv" style="margin-right:15px;float:left">
+			<span>Revision Number</span>
+			<input type="number" min="0" max="500" value="0" id="revInput"><br>
+			<button id="loadRevButton" onclick ="loadRevision()">LoadRevision</button>
+			<button id="deleteRevButton">DeleteRevision</button>
+			<button id="createRevButton" onclick="createNewRev()">CreateNewRevision</button>
+		</div>
+		<div id="revDisplayDiv">
+			<p>current revision</p>
+			<span id="revDisplay">0</span>
+		</div>
+		<br>
+		<div style="margin-right:0px;width:100%;">
+			<div id="tableInputDiv" style="margin-right:0px;width:1000px;float:left">
+				<div id="myGrid" style="width:100%;height:400px;"></div>
+			</div>
+			<div id="rSDInputDiv" style="">
+				<span>RSD Columns</span><br>
+				<table id="RSDInputTable" border="1">
+					<tr><td>Constituent Name</td>
+						<td><span>Delete?</span></td>            
+					</tr>
+				</table>
+				<br>
+				<select id="selectRSDConst"><option>Const1</option><option>Const2</option><option>Const3</option></select>
+				<button id="RSDValidateButton">ValidateRSDInputs</button>
+				<button id="RSDAddRowButton" onclick="addRow('RSDInputTable')">AddRow</button>
+				<button id="RSDDeleteRowButton" onclick="deleteRow('RSDInputTable')">DeleteRows</button>
+				<p id="RSDConsole"></p>
+			</div>
+			<br>
+			<div id="uRSInputDiv" style="">
+				<span>URS Columns</span><br>
+				<table id="URSInputTable" border="1">
+					<tr><td><span>Constituent Name</span></td>
+						<td><input type="checkbox" name="chk"/></td>            
+					</tr>
+				</table><br>
+				<select id="selectURSConst"><option>MSEB</option><option>Const2</option><option>Const3</option></select>
+				<button id="URSValidateButton">ValidateURSInputs</button>
+				<button id="URSAddRowButton" onclick="addRow('URSInputTable')">AddRow</button>
+				<button id="URSDeleteRowButton" onclick="deleteRow('URSInputTable')">DeleteRow</button>
+				<p id="URSConsole"></p>
+				<button id="reqFeedByTableButton" onclick="updateFromGrid()">Modify Revision</button>
+			</div>
+		</div>
+		<div id="summTabDiv" style="width=100%">
+			<h2 id='tiedInfo'>Requisition Summary Table, tied to grid</h2>
+			<table id="summTab"></table>
+			<button id="buttonUpdateRevSummTab" onclick="saveToDatabase()">Save Rev According to this Table</button>
+		</div>
+		<div id="reqInputDiv" style="width=100%">
+			<h3>Enter the desired requisition values</h3>
+			<h3>Note: The order matters!</h3>
+			<table id="reqInputTable" border="1" style="width:500px">
+				<tr>
+					<td style="width:100px">
+						Constituent Name
+					</td>            
+					<td>
+						From Block
+					</td>
+					<td>
+						To Block
+					</td>
+					<td>
+						Value
+					</td>
+					<td><input type="checkbox" name="chk"/></td>
+				</tr>
+			</table>
+			<br>
+			<select id="selectReqConst"><option>MSEB</option><option>Const2</option><option>Const3</option></select>
+			<button id="reqAddRowButton" onclick="addRow('reqInputTable')">AddRow</button>
+			<button id="reqDeleteRowButton" onclick="deleteRow('reqInputTable')">DeleteRow</button>
+			<button id="reqGetFromSummButton" onclick="getSummToManual()">Get from revision Summary</button>
+			<p id="addRowConsole"></p>
+			<button id="reqFeedByTableButton" onclick="createSumm(1)">Modify revision</button>
+		</div>
+		<!...Do validation such that from<to field and both fields between [0,96]>
+		<!...Add validation for Add and delete rows>
+
+		<div>
+			<h2>Undo/redo support :</h2>
+			<ul>
+				<li>Use buttons to undo/redo copy/paste</li>
+			</ul>
+			<button onclick="undoRedoBuffer.undo()"><img src="../images/arrow_undo.png" align="absmiddle"> Undo</button>
+			<button onclick="undoRedoBuffer.redo()"><img src="../images/arrow_redo.png" align="absmiddle"> Redo</button>
+		</div>
+
+		<script src="../lib/firebugx.js"></script>
+		<script src="../lib/jquery-1.7.min.js"></script>
+		<script src="../lib/jquery-ui-1.8.16.custom.min.js"></script>
+		<script src="../lib/jquery.event.drag-2.2.js"></script>
+		<script src="../slick.core.js"></script>
+		<script src="../plugins/slick.autotooltips.js"></script>
+		<script src="../plugins/slick.cellrangedecorator.js"></script>
+		<script src="../plugins/slick.cellrangeselector.js"></script>
+		<script src="../plugins/slick.cellexternalcopymanager.js"></script>
+		<script src="../plugins/slick.cellselectionmodel.js"></script>
+		<script src="../slick.editors.js"></script>
+		<script src="../slick.formatters.js"></script>
+		<script src="../slick.grid.js"></script>
+		<script src="MainSheetUI5.js"></script>
+	</body>
+</html>
+
+Data entry according to revisions
+Convert the column 'fields' of the data table from j to constituentNames[j]
+Define the values null, full, nochange, percentage loads.
+Formulas implementation
