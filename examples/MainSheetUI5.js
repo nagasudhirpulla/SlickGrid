@@ -573,3 +573,4 @@ function calulateFormulaColumns() {
   }
   grid.invalidateAllRows();
   grid.render();
+}
