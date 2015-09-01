@@ -637,6 +637,17 @@ function markCellsWithRevs()
    }
  }
  //Now cells are marked with the latest rev change tags.
- //Lets output them
- alert(markRev.toString());
+ //Lets output them to the revMarkTable
+ var tab = document.getElementById("revMarkTable");
+ for(var i=0;i<96;i++)
+ {
+   //Add a row
+   var tr = document.createElement('tr');
+   for(var constcol = 0;constcol<constituentNames.length;constcol++)
+   {
+     //Add cells to the table
+     var td0 = document.createElement('td');
+   }
+ }
+ 
 }
