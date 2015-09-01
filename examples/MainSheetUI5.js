@@ -649,7 +649,7 @@ function markCellsWithRevs()
    {
      //Add cells to the table
      var td0 = document.createElement('td');
-     td0.appendChild(document.createTextNode((markRev[i])[constcol]);
+     td0.appendChild(document.createTextNode((markRev[i])[constcol]));
      tr.appendChild(td0);
    }
    tab.appendChild(tr);
