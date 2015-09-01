@@ -645,6 +645,9 @@ function markCellsWithRevs()
  {
    //Add a row
    var tr = document.createElement('tr');
+   var td0 = document.createElement('td');
+   td0.appendChild(document.createTextNode(i+1);
+   tr.appendChild(td0);
    for(var constcol = 0;constcol<constituentNames.length;constcol++)
    {
      //Add cells to the table
