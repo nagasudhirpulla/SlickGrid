@@ -54,9 +54,28 @@
 				<select id="selectURSConst"><option>MSEB</option><option>Const2</option><option>Const3</option></select>
 				<button id="URSValidateButton">ValidateURSInputs</button>
 				<button id="URSAddRowButton" onclick="addRow('URSInputTable')">AddRow</button>
-				<button id="URSDeleteRowButton" onclick="deleteRow('URSInputTable')">DeleteRow</button>
+				<button id="URSDeleteRowButton" onclick="deleteRow('URSInputTable')">DeleteRows</button>
 				<p id="URSConsole"></p>
 				<button id="reqFeedByTableButton" onclick="updateFromGrid()">Modify Revision</button>
+			</div>
+			<div id="genDCInputTable">
+				<span>OnBarDC Input</span><br>
+				<h3>Note: The order matters!</h3>
+				<table id="OnBarDCInputTable" border="1" style="width:500px">
+					<tr>
+						<td style="width:100px">
+							Generator Name
+						</td>            
+						<td>
+							OnBarDCValue
+						</td>
+						<td><input type="checkbox" name="chk"/></td>
+					</tr>
+				</table>
+				<br>
+				<button id="dCAddRowButton" onclick="addRow('genDCInputTable')">AddRow</button>
+				<button id="dCDeleteRowButton" onclick="deleteRow('genDCInputTable')">DeleteRows</button>
+				<button id="DCFeedByTableButton" onclick="modifyDC(1)">Modify OnBarDC</button>
 			</div>
 		</div>
 		<div id="summTabDiv" style="width=100%">
@@ -88,7 +107,7 @@
 			<br>
 			<select id="selectReqConst"><option>MSEB</option><option>Const2</option><option>Const3</option></select>
 			<button id="reqAddRowButton" onclick="addRow('reqInputTable')">AddRow</button>
-			<button id="reqDeleteRowButton" onclick="deleteRow('reqInputTable')">DeleteRow</button>
+			<button id="reqDeleteRowButton" onclick="deleteRow('reqInputTable')">DeleteRows</button>
 			<button id="reqGetFromSummButton" onclick="getSummToManual()">Get from revision Summary</button>
 			<p id="addRowConsole"></p>
 			<button id="reqFeedByTableButton" onclick="createSumm(1)">Modify revision</button>
