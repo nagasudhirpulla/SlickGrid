@@ -270,12 +270,10 @@ function isNumberKey(evt) {
 }
 
 function createSumm(overridePermissionRequired) { //by pressing validate inputs button
-
   var table = document.getElementById("reqInputTable");
   var rowCount = table.rows.length;
   if (rowCount < 2)
     return false;
-
   //Fisrt validate the input semantics.Allowable values are 1 to 96 in case of block numbers and possitive integers along with null, full, nochange, percentage loads.
   for (var i = 1; i < rowCount; i++) {
     var cellval = table.rows[i].cells[3].childNodes[0].value;
@@ -306,6 +304,8 @@ function createSumm(overridePermissionRequired) { //by pressing validate inputs 
     if (!confirm("Override the grid Data...?"))
       return false;
   }
+  //Resetting the table  to a value called  'FULL'
+  resetGrid('FULL');
   //changing the table data depending on the requisition input table
   //formulas not implemented 
   for (var i = 1; i < rowCount; i++) { //iterator leaving the the table header
@@ -322,15 +322,8 @@ function createSumm(overridePermissionRequired) { //by pressing validate inputs 
       (data[blkNum])[constcol] = cellvalue;
     }
   }
-  //Now values of the table are updated. 
-  //For getting the revision changes, we need to verify with the previous revision if there is an NC from top to bottom of a  constituent column.
-  //The row at which we first encounter a value which is not NC will be the row or block from which the revision change happens in this particular constituent column.
-  //So  we save this number as revchange[<constituent column index>] = blkNumber.
-  //And, to get a revision summary we store this revChange Array also in the database.
-  //ToDO Stub
-  //verifyWithPrevRev();
-
   calulateFormulaColumns();
+  //Formulas implemented
   document.getElementById('tiedInfo').innerHTML = 'Revision Summary, tied to grid and Manual Entry';
   //Now to find the revision tag to be attached, find the smallest row index of this requested revision column which differs from the previous revision cell and from that cell all below cells are of the requested revision
   //stub
@@ -401,7 +394,6 @@ function updateFromGrid() {
 }
 
 function validateGrid() {
-  //Stub
   //ToDo validate grid dynamically using on cellchange listener
   for (var i = 0; i < 96; i++) {
     //Validating the data values of the grid here...
@@ -641,6 +633,7 @@ function markCellsWithRevs()
  var tab = document.getElementById("revMarkTable");
  tab.innerHTML = '';
  tab.border = '1';
+ tab.width = '100px';
  for(var i=0;i<96;i++)
  {
    //Add a row
@@ -657,4 +650,18 @@ function markCellsWithRevs()
    }
    tab.appendChild(tr);
  }
+}
+
+function resetGrid(val)
+{
+  //ToDo validate grid dynamically using on cellchange listener
+  for (var i = 0; i < 96; i++) {
+    //i is iterator for the row i ...
+    var d = (data[i]);
+    for (var j = 0; j < constituentNames.length; j++) {
+      //j is iterator the column j ...
+      //Resetting the data values of the cell i,j(row,column) to val
+      d[j] = val;
+    }
+  }
 }
