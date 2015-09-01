@@ -1,6 +1,7 @@
 var curRev = 0; //can be modified only by loadRevision() function
 var grid;
 var data = [];
+var genName = 'CGPL';
 var constituentNames = ['MSEB', 'GUVNL', 'MPSEB', 'CSEB', 'DD', 'DNH'];
 var consReqPercentages = [0.2, 0.3, 0.2, 0.1, 0.1, 0.1];
 var genRamp = 30;
@@ -196,9 +197,11 @@ function addRow(tableID) {
       selectmenu = document.getElementById('selectReqConst');
       break;
   }
-  var chosenval = constituentNames[selectmenu.selectedIndex];
-  var alreadypr = false;
-
+  var chosenval;
+  if(tableID == 'genDCInputTable')
+    chosenval = genName;
+  else
+    chosenval = constituentNames[selectmenu.selectedIndex];
   //check for duplicates for urs and rsd inputs
   for (var i = 1; i < rowCount && (tableID == "URSInputTable" || tableID == "RSDInputTable"); i++) {
     if (table.rows[i].cells[0].childNodes[0].innerHTML == chosenval) {
@@ -209,7 +212,7 @@ function addRow(tableID) {
         }
       } else //tableID == RSDInputTable
       {
-        //No duplicate rsd columns allowed...
+        //No duplicate rsd columns allowed...Can keep alert if wanted design decision
         return false; //jumping out of the function
       }
       break;
@@ -243,8 +246,6 @@ function deleteRow(tableID) {
   try {            
     var table = document.getElementById(tableID);            
     var rowCount = table.rows.length;
-
-                
     for (var i = 1; i < rowCount; i++) {
       var row = table.rows[i];
       var colCount = table.rows[0].cells.length;
@@ -664,4 +665,9 @@ function resetGrid(val)
       d[j] = val;
     }
   }
+}
+
+function modifyDC()
+{
+  
 }
