@@ -595,7 +595,8 @@ function markCellsWithRevs()
      m[j]=0;
    }
  }
- //Iterate from 1st to current revision //works only for saved revisions now, if rev not saved or a new revision, then doesnot work
+ //Iterate from 1st to current revision 
+ //works only for saved revisions now, if rev not saved or a new revision, then doesnot work
  var sectionsArray = revDataArray[0];
  for(var rev = 1;rev<=curRev;rev++)
  {
@@ -619,8 +620,7 @@ function markCellsWithRevs()
      var changeRow = 96;
      for (var i = 0; i < sectionsprev.length; i++) {
       for (var blkNum = Number(sectionsprev[i]["secStart"]); blkNum <= Number(sectionsprev[i]["secEnd"]); blkNum++) {
-        //columnprev[blkNum] = sectionsprev[i]["val"];
-        //Check if prev mismatch with present and declare the min blk number or row
+        //Check if prev column mismatches with present and declare the min blk number or row
         if(sectionsprev[i]["val"]!=column[blkNum])//change row found
         {
           changeRow = blkNum;
@@ -628,10 +628,15 @@ function markCellsWithRevs()
         }
       }
      }
-     //marking the row rev on the basis of changeRow variable
+     //TODO
+     //This computation for changeRow of each column in a rev can be avoided by calculating and saving the array of this variable in the database
+     //Marking the row rev on the basis of changeRow variable
      for (var i = changeRow; i < 96; i++) {
        (markRev[i])[constcol] = rev;
      }
    }
  }
+ //Now cells are marked with the latest rev change tags.
+ //Lets output them
+ alert(markRev.toString());
 }
