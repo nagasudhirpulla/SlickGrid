@@ -3,11 +3,16 @@ var grid;
 var data = [];
 var genName = 'CGPL';
 var constituentNames = ['MSEB', 'GUVNL', 'MPSEB', 'CSEB', 'DD', 'DNH'];
+constituentNames['generator'] = genName;
 var consReqPercentages = [0.2, 0.3, 0.2, 0.1, 0.1, 0.1];
 var genRamp = 30;
 var genOnBar = 100;
-var markRev = []; 
-
+var markRev = [];
+var tiedToGrid = true;
+var tiedToReq = false;
+var tiedToDC = false;
+var tiedToRamp = false;
+//Bug - There should only be one modify revision button which ties all input tables to  the grid.
 //LOCAL Instance Data
 var sectionsArray = [];
 var revStrtBlkNums = [];
@@ -81,12 +86,14 @@ var columns = [
     id: 'ramp',
     name: 'MaxRamp',
     field: 'rampNum',
-    width: 30
+    width: 30,
+    editor: Slick.Editors.Text
   }, {
     id: 'onBarDC',
     name: 'OnBarDC',
     field: 'onBar',
-    width: 40
+    width: 40,
+    editor: Slick.Editors.Text
   }, {
     id: "selector",
     name: "BlockNo",
@@ -182,7 +189,6 @@ $(function() {
 })
 
 function addRow(tableID) {
-  //stub
   var table = document.getElementById(tableID);
   var rowCount = table.rows.length;
   var selectmenu;
@@ -198,8 +204,10 @@ function addRow(tableID) {
       break;
   }
   var chosenval;
-  if(tableID == 'genDCInputTable')
+  if (tableID == 'genDCInputTable')
     chosenval = genName;
+  else if (tableID == 'genMaxRampInputTable')
+    chosenval = "MaxRamp"
   else
     chosenval = constituentNames[selectmenu.selectedIndex];
   //check for duplicates for urs and rsd inputs
@@ -218,22 +226,64 @@ function addRow(tableID) {
       break;
     }
   }
-  var row = table.insertRow(rowCount); 
+  var row = table.insertRow(rowCount);
   var colCount = table.rows[0].cells.length;
   var newcell = row.insertCell(0);
   var t = document.createTextNode(chosenval);
   var s = document.createElement("span");
   s.appendChild(t);
   newcell.appendChild(s);
-  for (var i = 1; i < colCount - 1; i++) { 
+  for (var i = 1; i < colCount - 1; i++) {
     newcell = row.insertCell(i);
     var t = document.createElement("input");
+    t.min = '0';
+    t.value = '';
     if (i != colCount - 2) {
       t.type = 'number';
       t.onkeypress = isNumberKey;
+      t.min = '1';
     }
-    t.min = '0';
-    t.value = '';
+    newcell.appendChild(t);
+  }
+  newcell = row.insertCell(colCount - 1);
+  var cb = document.createElement("input");
+  cb.type = 'checkbox';
+  newcell.appendChild(cb);
+  //row inserted in to the table
+
+  //If rsd row is inserted add it to the set of columns of the grid with default value of 0;
+  if (tableID == "RSDInputTable") {
+    addAnRSDColumnToGrid(chosenval);
+  }
+}
+
+function addRowOfInput(tableID, colName, fromb, tob, val, chosenval) {
+  var table = document.getElementById(tableID);
+  var rowCount = table.rows.length;
+  var row = table.insertRow(rowCount);
+  var colCount = table.rows[0].cells.length;
+  var newcell = row.insertCell(0);
+  var t = document.createTextNode(colName);
+  var s = document.createElement("span");
+  s.appendChild(t);
+  newcell.appendChild(s);
+  for (var i = 1; i < 4; i++) {
+    newcell = row.insertCell(i);
+    var t = document.createElement("input");
+    if (i == 1) {
+      t.min = '1';
+      t.type = 'number';
+      t.onkeypress = isNumberKey;
+      t.value = fromb;
+    } else if (i == 2) {
+      t.min = '1';
+      t.type = 'number';
+      t.onkeypress = isNumberKey;
+      t.value = tob;
+    } else {
+      t.min = '0';
+      t.value = val;
+    }
     newcell.appendChild(t);
   }
   newcell = row.insertCell(colCount - 1);
@@ -243,17 +293,17 @@ function addRow(tableID) {
 }
 
 function deleteRow(tableID) {
-  try {            
-    var table = document.getElementById(tableID);            
+  try {
+    var table = document.getElementById(tableID);
     var rowCount = table.rows.length;
     for (var i = 1; i < rowCount; i++) {
       var row = table.rows[i];
       var colCount = table.rows[0].cells.length;
-      var chkbox = row.cells[colCount - 1].childNodes[0];                
-      if (null != chkbox && true == chkbox.checked) {                    
-        table.deleteRow(i);                    
-        rowCount--;                    
-        i--;                
+      var chkbox = row.cells[colCount - 1].childNodes[0];
+      if (null != chkbox && true == chkbox.checked) {
+        table.deleteRow(i);
+        rowCount--;
+        i--;
       }
     }
   } catch (e) {
@@ -286,7 +336,7 @@ function createSumm(overridePermissionRequired) { //by pressing validate inputs 
     //For cell value validation
     var isValid = cellval.match(/^\d+(\.\d+)?\p$/i) || cellval.match(/^\FULL$/i) || cellval.match(/^[+]?\d+(\.\d+)?$/i);
     if (!isValid) {
-      alert('Invalid values at row ' + i + '. Invalid values not allowed');
+      alert('Invalid values at block ' + (i + 1) + '. Invalid values not allowed');
       return false;
     }
     //from block <  to block   
@@ -323,9 +373,14 @@ function createSumm(overridePermissionRequired) { //by pressing validate inputs 
       (data[blkNum])[constcol] = cellvalue;
     }
   }
+  //tieing all the tables to one button
+  modifyDC(false);
+  modifyRamp(false);
+  //tieing all the tables to one button
   calulateFormulaColumns();
   //Formulas implemented
-  document.getElementById('tiedInfo').innerHTML = 'Revision Summary, tied to grid and Manual Entry';
+  tiedToGrid = true;
+  tiedToReq = true;
   //Now to find the revision tag to be attached, find the smallest row index of this requested revision column which differs from the previous revision cell and from that cell all below cells are of the requested revision
   //stub
   createSections();
@@ -335,7 +390,18 @@ function createSumm(overridePermissionRequired) { //by pressing validate inputs 
 function createSections() {
   //Find the sections of the columns
   sectionsArray = new Array();
-  for (var constcol = 0; constcol < constituentNames.length; constcol++) {
+  for (var constcol1 = 0; constcol1 < constituentNames.length + 2; constcol1++) { //last two for onBarDC and MaxRamp respectively
+    switch (constcol1) {
+      case constituentNames.length:
+        constcol = "onBar";
+        break;
+      case constituentNames.length + 1:
+        constcol = "rampNum";
+        break;
+      default:
+        constcol = constcol1;
+        break;
+    }
     var sections = new Array();
     var sectionStart = 0;
     for (var blkNum = 1; blkNum < 96; blkNum++) {
@@ -362,27 +428,39 @@ function createSectionSummaryTable() {
   var summTab = document.getElementById('summTab');
   summTab.innerHTML = '';
   for (var j = 0; j < sectionsArray.length; j++) {
-    var sections = sectionsArray[j];
-    for (var i = 0; i < sections.length; i++) {
-      var tr = document.createElement('tr');
-      var td0 = document.createElement('td');
-      var td1 = document.createElement('td');
-      var td2 = document.createElement('td');
-      var td3 = document.createElement('td');
-      td0.appendChild(document.createTextNode(constituentNames[j]));
-      td1.appendChild(document.createTextNode((sections[i])['secStart'] + 1));
-      td2.appendChild(document.createTextNode((sections[i])['secEnd'] + 1));
-      td3.appendChild(document.createTextNode((sections[i])['val']));
-      tr.appendChild(td0);
-      tr.appendChild(td1);
-      tr.appendChild(td2);
-      tr.appendChild(td3);
-      summTab.appendChild(tr);
-    }
+    createSectionSummaryTableRow(j)
   }
   summTab.border = '1';
   summTab.width = '200px';
   //created the section summary table
+  createSummTableTiedInfo();
+}
+
+function createSectionSummaryTableRow(j) {
+  var sections = sectionsArray[j];
+  var textStr;
+  if (j == sectionsArray.length - 2)
+    textStr = constituentNames['generator'];
+  else if (j == sectionsArray.length - 1)
+    textStr = "MaxRamp";
+  else
+    textStr = constituentNames[j];
+  for (var i = 0; i < sections.length; i++) {
+    var tr = document.createElement('tr');
+    var td0 = document.createElement('td');
+    var td1 = document.createElement('td');
+    var td2 = document.createElement('td');
+    var td3 = document.createElement('td');
+    td0.appendChild(document.createTextNode(textStr));
+    td1.appendChild(document.createTextNode((sections[i])['secStart'] + 1));
+    td2.appendChild(document.createTextNode((sections[i])['secEnd'] + 1));
+    td3.appendChild(document.createTextNode((sections[i])['val']));
+    tr.appendChild(td0);
+    tr.appendChild(td1);
+    tr.appendChild(td2);
+    tr.appendChild(td3);
+    summTab.appendChild(tr);
+  }
 }
 
 function updateFromGrid() {
@@ -390,8 +468,11 @@ function updateFromGrid() {
     return false;
   calulateFormulaColumns();
   createSections();
+  tiedToGrid = true;
+  tiedToReq = false;
+  tiedToDC = false;
+  tiedToRamp = false;
   createSectionSummaryTable();
-  document.getElementById('tiedInfo').innerHTML = 'Revision Summary, tied to grid only';
 }
 
 function validateGrid() {
@@ -400,17 +481,20 @@ function validateGrid() {
     //Validating the data values of the grid here...
     //i is iterator for the row i ...
     var d = (data[i]);
+    var cellval;
+    var alertstr;
+    //validating constituent columns
     for (var j = 0; j < constituentNames.length; j++) {
       //j is iterator the column j ...
       //Validating the data value for the cell i,j(row,column)
-      var cellval = d[j];
+      cellval = d[j];
       //check if it is a number
       if (typeof cellval == "number") {
         //No Validation required
       } else {
         var isValid = cellval.match(/^\d+(\.\d+)?\p$/i) || cellval.match(/^\FULL$/i) || cellval.match(/^[+]?\d+(\.\d+)?$/i);
         if (!isValid) {
-          alert('Invalid values at Block ' + i + 'of the Constituent ' + constituentNames[j] + '. Invalid values not allowed');
+          alert('Invalid values at Block ' + (i + 1) + 'of the Constituent ' + constituentNames[j] + '. Invalid values not allowed');
           return false;
         } else {
           //if valid then capitalize all letters.Design  decision
@@ -418,46 +502,78 @@ function validateGrid() {
         }
       }
     }
+    //validating MaxRamps and onBarDC
+    for (var j = 0; j < 2; j++) {
+      //j is iterator the column j ...
+      //Validating the data value for the cell i,j(row,column)
+      var colstr;
+      switch (j) {
+        case 0:
+          colstr = 'onBar'
+          alertstr = 'Invalid values at Block ' + (i + 1) + 'of OnBarDC grid column' + '. Invalid values not allowed';
+          break;
+        case 1:
+          colstr = 'rampNum'
+          alertstr = 'Invalid values at Block ' + (i + 1) + 'of MaxRamp grid column' + '. Invalid values not allowed';
+          break;
+      }
+      cellval = d[colstr];
+      //check if it is a number
+      if (typeof cellval == "number") {
+        //No Validation required
+      } else {
+        var isValid = cellval.match(/^[+]?\d+(\.\d+)?$/i);
+        if (!isValid) {
+          alert(alertstr);
+          return false;
+        } else {
+          //if valid then capitalize all letters.Design  decision
+          d[colstr] = cellval;
+        }
+      }
+    }
   }
   return true;
 }
 
-function getSummToManual() {
-  //stub
+function getSummSecsToManual() //sections version of summtomanual
+{
   var table = document.getElementById("reqInputTable");
-  var sumtab = document.getElementById("summTab");
-  table.innerHTML = "<tbody><tr><td>Constituent Name</td><td>From Block</td><td>To Block</td><td>Value</td><td></td></tr></tbody>";
-  for (var j = 0; j < sumtab.rows.length; j++) {
-    var rowCount = table.rows.length;
-    var row = table.insertRow(rowCount); 
-    var colCount = table.rows[0].cells.length;
-    var newcell = row.insertCell(0);
-    var t = document.createTextNode(sumtab.rows[j].cells[0].innerHTML);
-    var s = document.createElement("span");
-    s.appendChild(t);
-    newcell.appendChild(s);
-    for (var i = 1; i < colCount - 1; i++) { 
-      newcell = row.insertCell(i);
-      var t = document.createElement("input");
-      if (i != 3) {
-        t.type = 'number';
-        t.onkeypress = isNumberKey;
-      }
-      t.min = '0';
-      if (i == 1)
-        t.value = sumtab.rows[j].cells[1].innerHTML;
-      else if (i == 2)
-        t.value = sumtab.rows[j].cells[2].innerHTML;
-      else if (i == 3)
-        t.value = sumtab.rows[j].cells[3].innerHTML;
-      newcell.appendChild(t);
+  var sections;
+  table.innerHTML = "<tbody><tr><td>Constituent Name</td><td>From Block</td><td>To Block</td><td>Value</td><td>Delete?</td></tr></tbody>";
+  for (var j = 0; j < sectionsArray.length - 2; j++) {
+    sections = sectionsArray[j];
+    for (var k = 0; k < sections.length; k++)
+      addRowOfInput("reqInputTable", constituentNames[j], sections[k].secStart + 1, sections[k].secEnd + 1, sections[k].val);
+  }
+  getSummDCToManual();
+  getSummRampToManual();
+}
+
+function getSummDCToManual() {
+  var table = document.getElementById("genDCInputTable");
+  var sections;
+  table.innerHTML = "<tbody><tr><td>Generator Name</td><td>From Block</td><td>To Block</td><td>OnBarDc Value</td><td>Delete?</td></tr></tbody>";
+  if (sectionsArray.length) {
+    sections = sectionsArray[sectionsArray.length - 2];
+    for (var k = 0; k < sections.length; k++) {
+      addRowOfInput("genDCInputTable", constituentNames['generator'], sections[k].secStart + 1, sections[k].secEnd + 1, sections[k].val);
     }
-    newcell = row.insertCell(colCount - 1);
-    var cb = document.createElement("input");
-    cb.type = 'checkbox';
-    newcell.appendChild(cb);
   }
 }
+
+function getSummRampToManual() {
+  var table = document.getElementById("genMaxRampInputTable");
+  var sections;
+  table.innerHTML = "<tbody><tr><td>Generator Name</td><td>From Block</td><td>To Block</td><td>MaxRamp Value</td><td>Delete?</td></tr></tbody>";
+  if (sectionsArray.length) {
+    sections = sectionsArray[sectionsArray.length - 1];
+    for (var k = 0; k < sections.length; k++) {
+      addRowOfInput("genMaxRampInputTable", 'MaxRamp', sections[k].secStart + 1, sections[k].secEnd + 1, sections[k].val);
+    }
+  }
+}
+
 
 function addOptions(selNameArray) {
   for (var j = 0; j < selNameArray.length; j++) {
@@ -511,9 +627,11 @@ function loadRevision() //Read Operation of the database.
   sectionsArray = revDataArray[curRev];
   createSectionSummaryTable();
   //press the button getfromsummarytable virtually and modify the grid
-  getSummToManual();
+  getSummSecsToManual();
+  getSummDCToManual();
+  getSummRampToManual();
   //now press the button reqFeedByTableButton virtually to recreate the summary table and modify the grid
-  createSumm(false);
+  createsumm(false);
 }
 
 function checkForRevInDb(loadRev) {
@@ -577,84 +695,77 @@ function calulateFormulaColumns() {
 //Iterate through each revision from 1st till current revision and find the smallest block or row number affected 
 //by the revision and mark the next remaining blocks of the column as the same rev number.
 //Continue this till current revision.
-function markCellsWithRevs()
-{
- //First mark all cells with 0 rev.
- for(var i=0;i<96;i++)
- {
-   var m = (markRev[i]);
-   for(var j=0;j<constituentNames.length;j++)
-   {
-     m[j]=0;
-   }
- }
- //Iterate from 1st to current revision 
- //works only for saved revisions now, if rev not saved or a new revision, then doesnot work
- var sectionsArray = revDataArray[0];
- for(var rev = 1;rev<=curRev;rev++)
- {
-   //Get the revision data of the present ad prev revisons
-   var sectionsArrayPrev = sectionsArray;
-   sectionsArray = revDataArray[rev];
-   //iterate through each column of this revision to find the min blk num affected by this rev in this column
-   for(var constcol=0;constcol<constituentNames.length;constcol++)
-   {
-     //Column data of prev and present revisions
-     var sectionsprev = sectionsArrayPrev[constcol];
-     var sections = sectionsArray[constcol];
-     var column = new Array(96);
-     //var columnprev = new Array(96);
-     //Build the columns of prev and present revisions of this constituent
-     for (var i = 0; i < sections.length; i++) {
-      for (var blkNum = Number(sections[i]["secStart"]); blkNum <= Number(sections[i]["secEnd"]); blkNum++) {
-        column[blkNum] = sections[i]["val"];
-      }
-     }
-     var changeRow = 96;
-     for (var i = 0; i < sectionsprev.length; i++) {
-      for (var blkNum = Number(sectionsprev[i]["secStart"]); blkNum <= Number(sectionsprev[i]["secEnd"]); blkNum++) {
-        //Check if prev column mismatches with present and declare the min blk number or row
-        if(sectionsprev[i]["val"]!=column[blkNum])//change row found
-        {
-          changeRow = blkNum;
-          break;
+function markCellsWithRevs() {
+  //First mark all cells with 0 rev.
+  for (var i = 0; i < 96; i++) {
+    var m = (markRev[i]);
+    for (var j = 0; j < constituentNames.length; j++) {
+      m[j] = 0;
+    }
+  }
+  //Iterate from 1st to current revision 
+  //works only for saved revisions now, if rev not saved or a new revision, then doesnot work
+  var sectionsArray = revDataArray[0];
+  for (var rev = 1; rev <= curRev; rev++) {
+    //Get the revision data of the present ad prev revisons
+    var sectionsArrayPrev = sectionsArray;
+    sectionsArray = revDataArray[rev];
+    //iterate through each column of this revision to find the min blk num affected by this rev in this column
+    for (var constcol = 0; constcol < constituentNames.length; constcol++) {
+      //Column data of prev and present revisions
+      var sectionsprev = sectionsArrayPrev[constcol];
+      var sections = sectionsArray[constcol];
+      var column = new Array(96);
+      //var columnprev = new Array(96);
+      //Build the columns of prev and present revisions of this constituent
+      for (var i = 0; i < sections.length; i++) {
+        for (var blkNum = Number(sections[i]["secStart"]); blkNum <= Number(sections[i]["secEnd"]); blkNum++) {
+          column[blkNum] = sections[i]["val"];
         }
       }
-     }
-     //TODO
-     //This computation for changeRow of each column in a rev can be avoided by calculating and saving the array of this variable in the database
-     //Marking the row rev on the basis of changeRow variable
-     for (var i = changeRow; i < 96; i++) {
-       (markRev[i])[constcol] = rev;
-     }
-   }
- }
- //Now cells are marked with the latest rev change tags.
- //Lets output them to the revMarkTable
- var tab = document.getElementById("revMarkTable");
- tab.innerHTML = '';
- tab.border = '1';
- tab.width = '100px';
- for(var i=0;i<96;i++)
- {
-   //Add a row
-   var tr = document.createElement('tr');
-   var td0 = document.createElement('td');
-   td0.appendChild(document.createTextNode(i+1));
-   tr.appendChild(td0);
-   for(var constcol = 0;constcol<constituentNames.length;constcol++)
-   {
-     //Add cells to the table
-     var td0 = document.createElement('td');
-     td0.appendChild(document.createTextNode((markRev[i])[constcol]));
-     tr.appendChild(td0);
-   }
-   tab.appendChild(tr);
- }
+      var changeRow = 96;
+      for (var i = 0; i < sectionsprev.length; i++) {
+        for (var blkNum = Number(sectionsprev[i]["secStart"]); blkNum <= Number(sectionsprev[i]["secEnd"]); blkNum++) {
+          //Check if prev column mismatches with present and declare the min blk number or row
+          if (sectionsprev[i]["val"] != column[blkNum]) //change row found
+          {
+            changeRow = blkNum;
+            break;
+          }
+        }
+      }
+      //TODO
+      //This computation for changeRow of each column in a rev can be avoided by calculating and saving the array of this variable in the database
+      //Marking the row rev on the basis of changeRow variable
+      for (var i = changeRow; i < 96; i++) {
+        (markRev[i])[constcol] = rev;
+      }
+    }
+  }
+  //Now cells are marked with the latest rev change tags.
+  //Lets output them to the revMarkTable
+  var tab = document.getElementById("revMarkTable");
+  tab.innerHTML = '';
+  tab.border = '1';
+  tab.width = '100px';
+  for (var i = 0; i < 96; i++) {
+    //Add a row
+    var tr = document.createElement('tr');
+    var td0 = document.createElement('td');
+    td0.appendChild(document.createTextNode(i + 1));
+    tr.appendChild(td0);
+    for (var constcol = 0; constcol < constituentNames.length; constcol++) {
+      //Add cells to the table
+      var td0 = document.createElement('td');
+      td0.appendChild(document.createTextNode((markRev[i])[constcol]));
+      tr.appendChild(td0);
+    }
+    tab.appendChild(tr);
+  }
+  performAlgo();
 }
 
-function resetGrid(val)
-{
+function resetGrid(val) {
   //ToDo validate grid dynamically using on cellchange listener
   for (var i = 0; i < 96; i++) {
     //i is iterator for the row i ...
@@ -667,7 +778,126 @@ function resetGrid(val)
   }
 }
 
-function modifyDC(overRidePermissionRequired)
-{
-  
+function resetGridDCorRamp(val) {
+  for (var i = 0; i < 96; i++) {
+    //i is iterator for the row i ...
+    if (val == "DC")
+      (data[i])['onBar'] = genOnBar;
+    else if (val == "Ramp")
+      (data[i])['rampNum'] = genRamp;
+  }
+}
+
+
+function modifyDC(overridePermissionRequired) {
+  var table = document.getElementById("genDCInputTable");
+  var rowCount = table.rows.length;
+  if (rowCount < 2)
+    return false;
+  //Fisrt validate the input semantics.Allowable values are 1 to 96 in case of block numbers and possitive integers along with null, full, nochange, percentage loads.
+  for (var i = 1; i < rowCount; i++) {
+    var cellval = table.rows[i].cells[3].childNodes[0].value;
+    //For null cell value validation
+    if (!cellval) {
+      alert('Null values at row ' + i + '. Null values not allowed');
+      return false;
+    }
+    //For cell value validation
+    var isValid = cellval.match(/^[+]?\d+(\.\d+)?$/i);
+    if (!isValid) {
+      alert('Invalid values at row ' + i + '. Invalid values not allowed');
+      return false;
+    }
+    //from block <  to block   
+    if (Number(table.rows[i].cells[1].childNodes[0].value) > Number(table.rows[i].cells[2].childNodes[0].value)) {
+      alert('From value > TO value at row ' + i);
+      return false;
+    }
+    //from block &  to block belong to [1,96]
+    if ((Number(table.rows[i].cells[1].childNodes[0].value) < 1) || (Number(table.rows[i].cells[1].childNodes[0].value) > 96) || (Number(table.rows[i].cells[2].childNodes[0].value) < 1) || (Number(table.rows[i].cells[2].childNodes[0].value) > 96)) {
+      alert('From value or TO value not in limits at row ' + i + " of Generator DC Input Table");
+      return false;
+    }
+  }
+  //DC Input Table Validation over...
+  if (overridePermissionRequired) {
+    if (!confirm("Override the grid Data...?"))
+      return false;
+  }
+  //Resetting the table DC values to be equal to default onBarDC value of the generator
+  resetGridDCorRamp("DC");
+  //Changing the table data depending on the requisition input table
+  //formulas not implemented 
+  for (var i = 1; i < rowCount; i++) { //iterator leaving the the table header
+    for (var blkNum = Number(table.rows[i].cells[1].childNodes[0].value) - 1; blkNum <= Number(table.rows[i].cells[2].childNodes[0].value) - 1; blkNum++) {
+      //table.rows[i].cells[3].childNodes[0].value = number in the form of string and no need to convert to number since javascript takes care of it
+      var cellvalue = table.rows[i].cells[3].childNodes[0].value;
+      (data[blkNum])["onBar"] = cellvalue;
+    }
+  }
+}
+
+function modifyRamp(overridePermissionRequired) {
+  var table = document.getElementById("genMaxRampInputTable");
+  var rowCount = table.rows.length;
+  if (rowCount < 2)
+    return false;
+  //Fisrt validate the input semantics.Allowable values are 1 to 96 in case of block numbers and possitive integers along with null, full, nochange, percentage loads.
+  for (var i = 1; i < rowCount; i++) {
+    var cellval = table.rows[i].cells[3].childNodes[0].value;
+    //For null cell value validation
+    if (!cellval) {
+      alert('Null values at row ' + i + '. Null values not allowed');
+      return false;
+    }
+    //For cell value validation
+    var isValid = cellval.match(/^[+]?\d+(\.\d+)?$/i);
+    if (!isValid) {
+      alert('Invalid values at row ' + i + '. Invalid values not allowed');
+      return false;
+    }
+    //from block <  to block   
+    if (Number(table.rows[i].cells[1].childNodes[0].value) > Number(table.rows[i].cells[2].childNodes[0].value)) {
+      alert('From value > TO value at row ' + i);
+      return false;
+    }
+    //from block &  to block belong to [1,96]
+    if ((Number(table.rows[i].cells[1].childNodes[0].value) < 1) || (Number(table.rows[i].cells[1].childNodes[0].value) > 96) || (Number(table.rows[i].cells[2].childNodes[0].value) < 1) || (Number(table.rows[i].cells[2].childNodes[0].value) > 96)) {
+      alert('From value or TO value not in limits at row ' + i + " of Generator DC Input Table");
+      return false;
+    }
+  }
+  //MaxRamp Input Table Validation over...
+  if (overridePermissionRequired) {
+    if (!confirm("Override the grid Data...?"))
+      return false;
+  }
+  //Resetting the table DC values to be equal to default onBarDC value of the generator
+  resetGridDCorRamp("Ramp"); //changed
+  //Changing the table data depending on the requisition input table
+  //formulas not implemented 
+  for (var i = 1; i < rowCount; i++) { //iterator leaving the the table header
+    for (var blkNum = Number(table.rows[i].cells[1].childNodes[0].value) - 1; blkNum <= Number(table.rows[i].cells[2].childNodes[0].value) - 1; blkNum++) {
+      //table.rows[i].cells[3].childNodes[0].value = number in the form of string and no need to convert to number since javascript takes care of it
+      var cellvalue = table.rows[i].cells[3].childNodes[0].value;
+      (data[blkNum])["rampNum"] = cellvalue; //changed
+    }
+  }
+}
+
+function createSummTableTiedInfo(atrr, val) {
+  var gridTied, reqTableTied, DCTableTied, RampTableTied;
+  gridTied = tiedToGrid ? 'grid' : '';
+  reqTableTied = tiedToReq ? ', Manual Entry' : '';
+  DCTableTied = tiedToDC ? ', DC Manual Entry' : '';
+  RampTableTied = tiedToRamp ? ', MaxRamp Manual Entry' : '';
+  document.getElementById('tiedInfo').innerHTML = 'Revision Summary, tied to ' + gridTied + reqTableTied + DCTableTied + RampTableTied + '.';
+}
+
+function addAnRSDColumnToGrid(constName) {
+
+}
+
+function performAlgo() {
+
 }
