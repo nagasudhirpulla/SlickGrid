@@ -254,6 +254,8 @@ function addRow(tableID) {
   var chosenval;
   if (tableID == 'genDCInputTable')
     chosenval = genName;
+  else if(tableID == 'genDecInputTable')
+    chosenval = genName;
   else if (tableID == 'genMaxRampInputTable')
     chosenval = "MaxRamp"
   else
@@ -388,6 +390,7 @@ function createSumm(overridePermissionRequired) { //by pressing modify revision 
   }
   //tieing all the tables to one button
   modifyDC(false);
+  modifyDec(false);
   modifyRamp(false);
   //tieing all the tables to one button
   calulateFormulaColumns();
@@ -418,6 +421,8 @@ function resetGridDCorRamp(val) {
     //i is iterator for the row i ...
     if (val == "DC")
       (data[i])['onBar'] = genOnBar;
+    else if(val == "Dec")
+      (data[i])['DC'] = genDecCap;
     else if (val == "Ramp")
       (data[i])['rampNum'] = genRamp;
   }
@@ -426,13 +431,16 @@ function resetGridDCorRamp(val) {
 function createSections() {
   //Find the sections of the columns
   sectionsArray = new Array();
-  for (var constcol1 = 0; constcol1 < constituentNames.length + 2; constcol1++) { //last two for onBarDC and MaxRamp respectively
+  for (var constcol1 = 0; constcol1 < constituentNames.length+3; constcol1++) { //last two for onBarDC and MaxRamp and DC respectively
     switch (constcol1) {
       case constituentNames.length:
         constcol = "onBar";
         break;
       case constituentNames.length + 1:
         constcol = "rampNum";
+        break;
+      case constituentNames.length + 2:
+        constcol = "DC";
         break;
       default:
         constcol = constcol1;
@@ -455,7 +463,8 @@ function createSections() {
       'secEnd': 95,
       'val': (data[95])[constcol]
     });
-    sectionsArray.push(sections);
+    //sectionsArray.push(sections);
+    sectionsArray[constcol] = sections;
   }
   //sections of the column found
 }
@@ -464,8 +473,11 @@ function createSectionSummaryTable() {
   var summTab = document.getElementById('summTab');
   summTab.innerHTML = '';
   for (var j = 0; j < sectionsArray.length; j++) {
-    createSectionSummaryTableRow(j)
+    createSectionSummaryTableRow(j);
   }
+  createSectionSummaryTableRow("DC");
+  createSectionSummaryTableRow("onBar");
+  createSectionSummaryTableRow("rampNum");
   summTab.border = '1';
   summTab.width = '200px';
   //created the section summary table
@@ -475,10 +487,8 @@ function createSectionSummaryTable() {
 function createSectionSummaryTableRow(j) {
   var sections = sectionsArray[j];
   var textStr;
-  if (j == sectionsArray.length - 2)
-    textStr = constituentNames['generator'];
-  else if (j == sectionsArray.length - 1)
-    textStr = "MaxRamp";
+  if(isNaN(j))
+    textStr = j;
   else
     textStr = constituentNames[j];
   for (var i = 0; i < sections.length; i++) {
@@ -575,12 +585,13 @@ function getSummSecsToManual() //sections version of summtomanual
   var table = document.getElementById("reqInputTable");
   var sections;
   table.innerHTML = "<tbody><tr><td>Constituent Name</td><td>From Block</td><td>To Block</td><td>Value</td><td>Delete?</td></tr></tbody>";
-  for (var j = 0; j < sectionsArray.length - 2; j++) {
+  for (var j = 0; j < sectionsArray.length; j++) {
     sections = sectionsArray[j];
     for (var k = 0; k < sections.length; k++)
       addRowOfInput("reqInputTable", constituentNames[j], sections[k].secStart + 1, sections[k].secEnd + 1, sections[k].val);
   }
   getSummDCToManual();
+  getSummDecToManual();
   getSummRampToManual();
 }
 
@@ -589,9 +600,21 @@ function getSummDCToManual() {
   var sections;
   table.innerHTML = "<tbody><tr><td>Generator Name</td><td>From Block</td><td>To Block</td><td>OnBarDc Value</td><td>Delete?</td></tr></tbody>";
   if (sectionsArray.length) {
-    sections = sectionsArray[sectionsArray.length - 2];
+    sections = sectionsArray["onBar"];
     for (var k = 0; k < sections.length; k++) {
       addRowOfInput("genDCInputTable", constituentNames['generator'], sections[k].secStart + 1, sections[k].secEnd + 1, sections[k].val);
+    }
+  }
+}
+
+function getSummDecToManual() {
+  var table = document.getElementById("genDecInputTable");
+  var sections;
+  table.innerHTML = "<tbody><tr><td>Generator Name</td><td>From Block</td><td>To Block</td><td>DC Value</td><td>Delete?</td></tr></tbody>";
+  if (sectionsArray.length) {
+    sections = sectionsArray["DC"];
+    for (var k = 0; k < sections.length; k++) {
+      addRowOfInput("genDecInputTable", constituentNames['generator'], sections[k].secStart + 1, sections[k].secEnd + 1, sections[k].val);
     }
   }
 }
@@ -601,7 +624,7 @@ function getSummRampToManual() {
   var sections;
   table.innerHTML = "<tbody><tr><td>Generator Name</td><td>From Block</td><td>To Block</td><td>MaxRamp Value</td><td>Delete?</td></tr></tbody>";
   if (sectionsArray.length) {
-    sections = sectionsArray[sectionsArray.length - 1];
+    sections = sectionsArray["rampNum"];
     for (var k = 0; k < sections.length; k++) {
       addRowOfInput("genMaxRampInputTable", 'MaxRamp', sections[k].secStart + 1, sections[k].secEnd + 1, sections[k].val);
     }
@@ -687,9 +710,10 @@ function loadRevision() //Read Operation of the database.
   //press the button getfromsummarytable virtually and modify the grid
   getSummSecsToManual();
   getSummDCToManual();
+  getSummDecToManual();
   getSummRampToManual();
   //now press the button reqFeedByTableButton virtually to recreate the summary table and modify the grid
-  createsumm(false);
+  createSumm(false);
 }
 
 function checkForRevInDb(loadRev) {
@@ -843,11 +867,11 @@ function modifyDC(overridePermissionRequired) {
     }
     //from block &  to block belong to [1,96]
     if ((Number(table.rows[i].cells[1].childNodes[0].value) < 1) || (Number(table.rows[i].cells[1].childNodes[0].value) > 96) || (Number(table.rows[i].cells[2].childNodes[0].value) < 1) || (Number(table.rows[i].cells[2].childNodes[0].value) > 96)) {
-      alert('From value or TO value not in limits at row ' + i + " of Generator DC Input Table");
+      alert('From value or TO value not in limits at row ' + i + " of Generator onBar DC Input Table");
       return false;
     }
   }
-  //DC Input Table Validation over...
+  //onBar DC Input Table Validation over...
   if (overridePermissionRequired) {
     if (!confirm("Override the grid Data...?"))
       return false;
@@ -861,6 +885,54 @@ function modifyDC(overridePermissionRequired) {
       //table.rows[i].cells[3].childNodes[0].value = number in the form of string and no need to convert to number since javascript takes care of it
       var cellvalue = table.rows[i].cells[3].childNodes[0].value;
       (data[blkNum])["onBar"] = cellvalue;
+    }
+  }
+}
+
+function modifyDec(overridePermissionRequired) {
+  var table = document.getElementById("genDecInputTable");
+  var rowCount = table.rows.length;
+  if (rowCount < 2)
+    return false;
+  //Fisrt validate the input semantics.Allowable values are 1 to 96 in case of block numbers and possitive integers along with null, full, nochange, percentage loads.
+  for (var i = 1; i < rowCount; i++) {
+    var cellval = table.rows[i].cells[3].childNodes[0].value;
+    //For null cell value validation
+    if (!cellval) {
+      alert('Null values at row ' + i + '. Null values not allowed');
+      return false;
+    }
+    //For cell value validation
+    var isValid = cellval.match(/^[+]?\d+(\.\d+)?$/i);
+    if (!isValid) {
+      alert('Invalid values at row ' + i + '. Invalid values not allowed');
+      return false;
+    }
+    //from block <  to block   
+    if (Number(table.rows[i].cells[1].childNodes[0].value) > Number(table.rows[i].cells[2].childNodes[0].value)) {
+      alert('From value > TO value at row ' + i);
+      return false;
+    }
+    //from block &  to block belong to [1,96]
+    if ((Number(table.rows[i].cells[1].childNodes[0].value) < 1) || (Number(table.rows[i].cells[1].childNodes[0].value) > 96) || (Number(table.rows[i].cells[2].childNodes[0].value) < 1) || (Number(table.rows[i].cells[2].childNodes[0].value) > 96)) {
+      alert('From value or TO value not in limits at row ' + i + " of Generator DC Input Table");
+      return false;
+    }
+  }
+  //DC Input Table Validation over...
+  if (overridePermissionRequired) {
+    if (!confirm("Override the grid Data...?"))
+      return false;
+  }
+  //Resetting the table DC values to be equal to default onBarDC value of the generator
+  resetGridDCorRamp("Dec");
+  //Changing the table data depending on the requisition input table
+  //formulas not implemented 
+  for (var i = 1; i < rowCount; i++) { //iterator leaving the the table header
+    for (var blkNum = Number(table.rows[i].cells[1].childNodes[0].value) - 1; blkNum <= Number(table.rows[i].cells[2].childNodes[0].value) - 1; blkNum++) {
+      //table.rows[i].cells[3].childNodes[0].value = number in the form of string and no need to convert to number since javascript takes care of it
+      var cellvalue = table.rows[i].cells[3].childNodes[0].value;
+      (data[blkNum])["DC"] = cellvalue;
     }
   }
 }
