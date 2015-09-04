@@ -93,27 +93,51 @@
 				<button id="reqDeleteRowButton" onclick="deleteRow('reqInputTable')">DeleteRows</button>
 				<p id="addRowConsole"></p>
 			</div>
-			<div id="genDCInputDiv" style="display:table-cell;height:100%;padding-left:10px;">
-				<table id="genDCInputTable" border="1" style="width:100px">
-					<tr>
-						<td style="width:50px">
-							Generator Name
-						</td>            
-						<td>
-							From Block
-						</td>
-						<td>
-							To Block
-						</td>
-						<td>
-							OnBarDC Value
-						</td>
-						<td><input type="checkbox" name="chk"/></td>
-					</tr>
-				</table>
-				<br>
-				<button id="dCAddRowButton" onclick="addRow('genDCInputTable')">AddRow</button>
-				<button id="dCDeleteRowButton" onclick="deleteRow('genDCInputTable')">DeleteRows</button>
+			<div style="display:table-cell;height:100%;padding-left:10px;">
+				<div id="genDCInputDiv" style="">
+					<table id="genDCInputTable" border="1" style="width:100px">
+						<tr>
+							<td style="width:50px">
+								Generator Name
+							</td>            
+							<td>
+								From Block
+							</td>
+							<td>
+								To Block
+							</td>
+							<td>
+								OnBarDC Value
+							</td>
+							<td><input type="checkbox" name="chk"/></td>
+						</tr>
+					</table>
+					<br>
+					<button id="dCAddRowButton" onclick="addRow('genDCInputTable')">AddRow</button>
+					<button id="dCDeleteRowButton" onclick="deleteRow('genDCInputTable')">DeleteRows</button>
+				</div>
+				<div id="genDecInputDiv" style="">
+					<table id="genDecInputTable" border="1" style="width:100px">
+						<tr>
+							<td style="width:50px">
+								Generator Name
+							</td>            
+							<td>
+								From Block
+							</td>
+							<td>
+								To Block
+							</td>
+							<td>
+								DC Value
+							</td>
+							<td><input type="checkbox" name="chk"/></td>
+						</tr>
+					</table>
+					<br>
+					<button id="decAddRowButton" onclick="addRow('genDecInputTable')">AddRow</button>
+					<button id="decDeleteRowButton" onclick="deleteRow('genDecInputTable')">DeleteRows</button>
+				</div>
 			</div>
 			<div id="genMaxRampDiv" style="height:100%;padding-left:10px;">
 				<table id="genMaxRampInputTable" border="1" style="width:100px">
