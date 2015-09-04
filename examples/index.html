@@ -55,7 +55,7 @@
 				<button id="URSAddRowButton" onclick="addRow('URSInputTable')">AddRow</button>
 				<button id="URSDeleteRowButton" onclick="deleteRow('URSInputTable')">DeleteRows</button>
 				<p id="URSConsole"></p>
-				<button id="reqFeedByTableButton" onclick="updateFromGrid()">Modify Revision</button>
+				<button id="reqFeedByGridButton" onclick="updateFromGrid()">Modify Revision from Grid</button>
 			</div><br>
 		</div>
 		<div id="summTabDiv" style="width=100%">
@@ -69,8 +69,8 @@
 				<h3>Enter the desired requisition values and onBarDC</h3>
 				<span>Note: The order matters!</span>
 			</div>		
-			<div id="reqInputDiv" style="display:table-cell;">
-				<table id="reqInputTable" border="1" style="width:400px">
+			<div id="reqInputDiv" style="display:table-cell;padding-left:10px;">
+				<table id="reqInputTable" border="1" style="width:200px">
 					<tr>
 						<td style="width:100px">
 							Constituent Name
@@ -92,13 +92,11 @@
 				<button id="reqAddRowButton" onclick="addRow('reqInputTable')">AddRow</button>
 				<button id="reqDeleteRowButton" onclick="deleteRow('reqInputTable')">DeleteRows</button>
 				<p id="addRowConsole"></p>
-				<button id="reqGetFromSummButton" onclick="getSummSecsToManual()">Get from revision Summary</button>
-				<button id="reqFeedByTableButton" onclick="createSumm(1)">Modify revision</button>
 			</div>
 			<div id="genDCInputDiv" style="display:table-cell;height:100%;padding-left:10px;">
 				<table id="genDCInputTable" border="1" style="width:100px">
 					<tr>
-						<td style="width:100px">
+						<td style="width:50px">
 							Generator Name
 						</td>            
 						<td>
@@ -117,7 +115,7 @@
 				<button id="dCAddRowButton" onclick="addRow('genDCInputTable')">AddRow</button>
 				<button id="dCDeleteRowButton" onclick="deleteRow('genDCInputTable')">DeleteRows</button>
 			</div>
-			<div id="genMaxRampDiv" style="display:table-cell;height:100%;padding-left:10px;">
+			<div id="genMaxRampDiv" style="height:100%;padding-left:10px;">
 				<table id="genMaxRampInputTable" border="1" style="width:100px">
 					<tr>
 						<td style="width:100px">
@@ -139,6 +137,11 @@
 				<button id="rampAddRowButton" onclick="addRow('genMaxRampInputTable')">AddRow</button>
 				<button id="rampDeleteRowButton" onclick="deleteRow('genMaxRampInputTable')">DeleteRows</button>
 			</div>
+		</div>
+		<div>
+		    <br>
+			<button id="reqGetFromSummButton" onclick="getSummSecsToManual()">Get from revision Summary</button>
+			<button id="reqFeedByTableButton" onclick="createSumm(1)">Modify revision from Input Tables</button>
 		</div>
 		<div>
 			<h2>Undo/redo support :</h2>
