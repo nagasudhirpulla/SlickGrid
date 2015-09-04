@@ -1,27 +1,31 @@
-var curRev = 0; //can be modified only by loadRevision() function
-var grid;
-var data = [];
+var grid;//The cell grid object.
+var data = [];//The data used by the cell grid
+//The Generator  default Parameters or the generator cofiguration
 var genName = 'CGPL';
+//Below are default values for initialisation, can change if wanted through grid or input tables.
+var genRamp = 30;
+var genOnBar = 100;
+var genDecCap = 110;
+//The constituent configuration settings for this particular generator.These are same throughout all revisions.
 var constituentNames = ['MSEB', 'GUVNL', 'MPSEB', 'CSEB', 'DD', 'DNH'];
 constituentNames['generator'] = genName;
 var consReqPercentages = [0.2, 0.3, 0.2, 0.1, 0.1, 0.1];
-var genRamp = 30;
-var genOnBar = 100;
+var consRSDPercentages = [0.2, 0.3, 0.2, 0.1, 0.1, 0.1];
+//Temporary Instance Data
+var curRev = 0; //can be modified only by loadRevision() function
 var markRev = [];
+var sectionsArray = [];
+var revStrtBlkNums = [];//yet to be used for improved computation optimization.
+
 var tiedToGrid = true;
 var tiedToReq = false;
 var tiedToDC = false;
 var tiedToRamp = false;
-//Bug - There should only be one modify revision button which ties all input tables to  the grid.
-//LOCAL Instance Data
-var sectionsArray = [];
-var revStrtBlkNums = [];
-//Revision Summary Tables stored as the main revision data, from which the latest rev tag can be computed for every cell in the grid.
-//Database Array
+
+//Database Array-Used right now as the database
 var revDataArray = new Array();
-//Add the sections and the column rev start array as the object data into the database
 
-
+//cell grid options for customization
 var options = {
   editable: true,
   enableAddRow: true,
@@ -79,15 +83,27 @@ var pluginOptions = {
   },
   includeHeaderWhenCopying: false
 };
+//cell grid options for customization over
 
+//Setting the Column names of the grid
 var columns = [
-  //This is the serial number column - can be used for block number display
   {
     id: 'ramp',
     name: 'MaxRamp',
     field: 'rampNum',
     width: 30,
     editor: Slick.Editors.Text
+  }, {
+    id: 'DC',
+    name: 'DC',
+    field: 'DC',
+    width: 40,
+    editor: Slick.Editors.Text
+  }, {
+    id: "offBarDC",
+    name: "OffBarDC",
+    field: "offBar",
+    width: 40
   }, {
     id: 'onBarDC',
     name: 'OnBarDC',
@@ -111,12 +127,10 @@ var columns = [
     width: 40
   }
 ];
-
-//Adding more columns iteratively
+//Adding Constituent Requisition columns iteratively
 for (var i = 0; i < constituentNames.length; i++) {
   columns.push({
     id: i,
-    //name: String.fromCharCode("A".charCodeAt(0) + i),
     //name field is just for display
     name: constituentNames[i],
     //"field" is the field used by the program a particular cell in row
@@ -125,9 +139,11 @@ for (var i = 0; i < constituentNames.length; i++) {
     editor: Slick.Editors.Text
   });
 }
+//Setting the Column names of the grid over
 
+//On loading of the html page do the following
 $(function() {
-  //add options to the dropdowns
+  //Add options to the dropdowns og the following 'select' inouts
   addOptions(['selectRSDConst', 'selectURSConst', 'selectReqConst']);
   /*TODO
   This is to add the select all and deselect all capability to all the  forms with checkboxes
@@ -142,42 +158,43 @@ $(function() {
       };
     });
   */
+  //Set the whole grid to default values, rsd urs not included
   for (var i = 0; i < 96; i++) {
     //Setting the data values of the grid here...
-    //i is iterator for the row i ...
+    //i is iterator for the row i or block i+1...
     var d = (data[i] = {});
-    //Accommodating markRev
+    //Creating markRev Array
     var m = (markRev[i] = {});
     d["SNo"] = i + 1;
     d["rampNum"] = genRamp;
+    d["DC"] = genDecCap;
+    d["onBar"] = genOnBar;
+    d["offBar"] = genDecCap - genOnBar;
     var sumgen = 0;
     for (var j = 0; j < constituentNames.length; j++) {
       //j is iterator the column j ...
-      //Setting the data value for the cell i,j(row,column)
+      //Setting the data value for the cell i,j(row,column) or block i+1,j
       //d[j] = genOnBar*consReqPercentages[j];
       d[j] = 'FULL';
-      sumgen += ConvertCellValToNum(d[j], j, i);
       //Accommodating markRev
       m[j] = 0;
-    }
-    d["onBar"] = genOnBar;
-    d["avail"] = genOnBar - sumgen;
+    }    
+    d["avail"] = 0;
     if (i > 0) {
-      d["rampedVal"] = d["avail"] - (data[i - 1])["avail"];
+      d["rampedVal"] = 0;
     } else
       d["rampedVal"] = "NA";
   }
-
+  //Building the grid and configuring the grid
   grid = new Slick.Grid("#myGrid", data, columns, options);
   grid.setSelectionModel(new Slick.CellSelectionModel());
   grid.registerPlugin(new Slick.AutoTooltips());
   grid.onCellChanged;
-
   // set keyboard focus on the grid
   grid.getCanvasNode().focus();
-
+  //enabling the excel style functionality by the plugin
   grid.registerPlugin(new Slick.CellExternalCopyManager(pluginOptions));
-
+  //Things to do on adding a new Row - TODO - not needed coz we dont add new rows other than 96
   grid.onAddNewRow.subscribe(function(e, args) {
     var item = args.item;
     var column = args.column;
@@ -188,6 +205,37 @@ $(function() {
   });
 })
 
+/*
+Adds the options as constituent Names into the dropdowns input elements
+*/
+function addOptions(selNameArray) {
+  for (var j = 0; j < selNameArray.length; j++) {
+    var selList = document.getElementById(selNameArray[j]);
+    selList.innerHTML = '';
+    for (var i = 0; i < constituentNames.length; i++) {
+      var option = document.createElement('option');
+      option.text = constituentNames[i];
+      selList.appendChild(option);
+    }
+  }
+}
+
+/*
+Returns the cell value as a number
+*/
+function ConvertCellValToNum(cVal, constIndex, blk, Cat) //Cat = 0:Normal;1:RSD;2:URS
+{
+  var onBarVal = (data[blk])['onBar'];
+  if (isNaN(cVal)) {
+    if (cVal.match(/^\FULL$/i))
+      return consReqPercentages[constIndex] * onBarVal;
+    else if (cVal.match(/^\d+(\.\d+)?\p$/i))
+      return consReqPercentages[constIndex] * onBarVal * (+(cVal.substr(0, cVal.length - 1))) * 0.01;
+  } else
+    return cVal;
+}
+
+//Add Row to the tables of input requisitions and rsd and urs tables
 function addRow(tableID) {
   var table = document.getElementById(tableID);
   var rowCount = table.rows.length;
@@ -236,7 +284,7 @@ function addRow(tableID) {
   for (var i = 1; i < colCount - 1; i++) {
     newcell = row.insertCell(i);
     var t = document.createElement("input");
-    t.min = '0';
+    t.min = '1';
     t.value = '';
     if (i != colCount - 2) {
       t.type = 'number';
@@ -251,45 +299,19 @@ function addRow(tableID) {
   newcell.appendChild(cb);
   //row inserted in to the table
 
-  //If rsd row is inserted add it to the set of columns of the grid with default value of 0;
+  //If rsd row is inserted add it to the set of columns of the grid with default value of 0;//TODO - not implemented
   if (tableID == "RSDInputTable") {
     addAnRSDColumnToGrid(chosenval);
   }
 }
 
-function addRowOfInput(tableID, colName, fromb, tob, val, chosenval) {
-  var table = document.getElementById(tableID);
-  var rowCount = table.rows.length;
-  var row = table.insertRow(rowCount);
-  var colCount = table.rows[0].cells.length;
-  var newcell = row.insertCell(0);
-  var t = document.createTextNode(colName);
-  var s = document.createElement("span");
-  s.appendChild(t);
-  newcell.appendChild(s);
-  for (var i = 1; i < 4; i++) {
-    newcell = row.insertCell(i);
-    var t = document.createElement("input");
-    if (i == 1) {
-      t.min = '1';
-      t.type = 'number';
-      t.onkeypress = isNumberKey;
-      t.value = fromb;
-    } else if (i == 2) {
-      t.min = '1';
-      t.type = 'number';
-      t.onkeypress = isNumberKey;
-      t.value = tob;
-    } else {
-      t.min = '0';
-      t.value = val;
-    }
-    newcell.appendChild(t);
+function isNumberKey(evt) {
+  evt = (evt) ? evt : window.event
+  var charCode = (evt.which) ? evt.which : evt.keyCode
+  if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+    return false;
   }
-  newcell = row.insertCell(colCount - 1);
-  var cb = document.createElement("input");
-  cb.type = 'checkbox';
-  newcell.appendChild(cb);
+  return true;
 }
 
 function deleteRow(tableID) {
@@ -311,16 +333,7 @@ function deleteRow(tableID) {
   }
 }
 
-function isNumberKey(evt) {
-  evt = (evt) ? evt : window.event
-  var charCode = (evt.which) ? evt.which : evt.keyCode
-  if (charCode > 31 && (charCode < 48 || charCode > 57)) {
-    return false;
-  }
-  return true;
-}
-
-function createSumm(overridePermissionRequired) { //by pressing validate inputs button
+function createSumm(overridePermissionRequired) { //by pressing modify revision by input tables button
   var table = document.getElementById("reqInputTable");
   var rowCount = table.rows.length;
   if (rowCount < 2)
@@ -385,6 +398,29 @@ function createSumm(overridePermissionRequired) { //by pressing validate inputs 
   //stub
   createSections();
   createSectionSummaryTable();
+}
+
+function resetGrid(val) {
+  //ToDo validate grid dynamically using on cellchange listener
+  for (var i = 0; i < 96; i++) {
+    //i is iterator for the row i ...
+    var d = (data[i]);
+    for (var j = 0; j < constituentNames.length; j++) {
+      //j is iterator the column j ...
+      //Resetting the data values of the cell i,j(row,column) to val
+      d[j] = val;
+    }
+  }
+}
+
+function resetGridDCorRamp(val) {
+  for (var i = 0; i < 96; i++) {
+    //i is iterator for the row i ...
+    if (val == "DC")
+      (data[i])['onBar'] = genOnBar;
+    else if (val == "Ramp")
+      (data[i])['rampNum'] = genRamp;
+  }
 }
 
 function createSections() {
@@ -470,8 +506,6 @@ function updateFromGrid() {
   createSections();
   tiedToGrid = true;
   tiedToReq = false;
-  tiedToDC = false;
-  tiedToRamp = false;
   createSectionSummaryTable();
 }
 
@@ -574,18 +608,42 @@ function getSummRampToManual() {
   }
 }
 
-
-function addOptions(selNameArray) {
-  for (var j = 0; j < selNameArray.length; j++) {
-    var selList = document.getElementById(selNameArray[j]);
-    selList.innerHTML = '';
-    for (var i = 0; i < constituentNames.length; i++) {
-      var option = document.createElement('option');
-      option.text = constituentNames[i];
-      selList.appendChild(option);
+//Adds a row of edittext inputs with values specified already, used in getsummtomanual
+function addRowOfInput(tableID, colName, fromb, tob, val, chosenval) {
+  var table = document.getElementById(tableID);
+  var rowCount = table.rows.length;
+  var row = table.insertRow(rowCount);
+  var colCount = table.rows[0].cells.length;
+  var newcell = row.insertCell(0);
+  var t = document.createTextNode(colName);
+  var s = document.createElement("span");
+  s.appendChild(t);
+  newcell.appendChild(s);
+  for (var i = 1; i < 4; i++) {
+    newcell = row.insertCell(i);
+    var t = document.createElement("input");
+    if (i == 1) {
+      t.min = '1';
+      t.type = 'number';
+      t.onkeypress = isNumberKey;
+      t.value = fromb;
+    } else if (i == 2) {
+      t.min = '1';
+      t.type = 'number';
+      t.onkeypress = isNumberKey;
+      t.value = tob;
+    } else {
+      t.min = '0';
+      t.value = val;
     }
+    newcell.appendChild(t);
   }
+  newcell = row.insertCell(colCount - 1);
+  var cb = document.createElement("input");
+  cb.type = 'checkbox';
+  newcell.appendChild(cb);
 }
+
 
 function saveToDatabase() //Update Operations of the database.
 {
@@ -660,22 +718,15 @@ function setCurrRevDisplay(loadrev) {
   document.getElementById("revDisplay").innerHTML = curRev;
 }
 
-function ConvertCellValToNum(cVal, constIndex, blk, Cat) //Cat = 0:Normal;1:RSD;2:URS
-{
-  if (isNaN(cVal)) {
-    if (cVal.match(/^\FULL$/i))
-      return consReqPercentages[constIndex] * genOnBar;
-    else if (cVal.match(/^\d+(\.\d+)?\p$/i))
-      return consReqPercentages[constIndex] * genOnBar * (+(cVal.substr(0, cVal.length - 1))) * 0.01;
-  } else
-    return cVal;
-}
+/*
+Calculate the formula columns values
 
+*/
 function calulateFormulaColumns() {
   for (var i = 0; i < 96; i++) {
-    //Validating the data values of the grid here...
-    //i is iterator for the row i ...
+    //i is iterator for the row i or block i+1...
     var d = (data[i]);
+    d["offBar"] = d["DC"] - d["onBar"];
     var sumgen = 0;
     for (var j = 0; j < constituentNames.length; j++) {
       //j is iterator the column j ...
@@ -763,29 +814,6 @@ function markCellsWithRevs() {
     tab.appendChild(tr);
   }
   performAlgo();
-}
-
-function resetGrid(val) {
-  //ToDo validate grid dynamically using on cellchange listener
-  for (var i = 0; i < 96; i++) {
-    //i is iterator for the row i ...
-    var d = (data[i]);
-    for (var j = 0; j < constituentNames.length; j++) {
-      //j is iterator the column j ...
-      //Resetting the data values of the cell i,j(row,column) to val
-      d[j] = val;
-    }
-  }
-}
-
-function resetGridDCorRamp(val) {
-  for (var i = 0; i < 96; i++) {
-    //i is iterator for the row i ...
-    if (val == "DC")
-      (data[i])['onBar'] = genOnBar;
-    else if (val == "Ramp")
-      (data[i])['rampNum'] = genRamp;
-  }
 }
 
 
