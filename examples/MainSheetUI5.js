@@ -335,6 +335,17 @@ function deleteRow(tableID) {
   }
 }
 
+function SelectAll(ele, tabname) {
+   var table = document.getElementById(tabname);
+   var action = true;
+   if (!ele.checked) action = false;
+   var cb;
+   for (var i = 1; i < table.rows.length; i++) {
+     cb = table.rows[i].cells[table.rows[i].cells.length - 1].childNodes[0];
+     cb.checked = action;
+   }
+}
+
 function createSumm(overridePermissionRequired) { //by pressing modify revision by input tables button
   var table = document.getElementById("reqInputTable");
   var rowCount = table.rows.length;
