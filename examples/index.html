@@ -32,7 +32,7 @@
 				<span>RSD Columns</span><br>
 				<table id="RSDInputTable" border="1">
 					<tr><td>Constituent Name</td>
-						<td><span>Delete?</span></td>            
+						<td><input type="checkbox" name="chk" onClick="SelectAll(this,'RSDInputTable')"/></td>            
 					</tr>
 				</table>
 				<br>
@@ -47,7 +47,7 @@
 				<span>URS Columns</span><br>
 				<table id="URSInputTable" border="1">
 					<tr><td><span>Constituent Name</span></td>
-						<td><input type="checkbox" name="chk"/></td>            
+						<td><input type="checkbox" name="chk" onClick="SelectAll(this,'URSInputTable')"/></td>            
 					</tr>
 				</table><br>
 				<select id="selectURSConst"><option>MSEB</option><option>Const2</option><option>Const3</option></select>
@@ -109,7 +109,7 @@
 							<td>
 								OnBarDC Value
 							</td>
-							<td><input type="checkbox" name="chk"/></td>
+							<td><input type="checkbox" name="chk" onClick="SelectAll(this,'genDCInputTable')"/></td>
 						</tr>
 					</table>
 					<br>
@@ -131,7 +131,7 @@
 							<td>
 								DC Value
 							</td>
-							<td><input type="checkbox" name="chk"/></td>
+							<td><input type="checkbox" name="chk" onClick="SelectAll(this,'genDecInputTable')/></td>
 						</tr>
 					</table>
 					<br>
@@ -154,7 +154,7 @@
 						<td>
 							Max Ramp Value
 						</td>
-						<td><input type="checkbox" name="chk"/></td>
+						<td><input type="checkbox" name="chk" onClick="SelectAll(this,'genMaxRampInputTable')/></td>
 					</tr>
 				</table>
 				<br>
