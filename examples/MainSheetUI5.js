@@ -595,7 +595,7 @@ function getSummSecsToManual() //sections version of summtomanual
 {
   var table = document.getElementById("reqInputTable");
   var sections;
-  table.innerHTML = "<tbody><tr><td>Constituent Name</td><td>From Block</td><td>To Block</td><td>Value</td><td>Delete?</td></tr></tbody>";
+  table.innerHTML = "<tbody><tr><td>Constituent Name</td><td>From Block</td><td>To Block</td><td>Value</td><td><input type="checkbox" name="chk" onclick="SelectAll(this,'reqInputTable')"></input></td></tr></tbody>";
   for (var j = 0; j < sectionsArray.length; j++) {
     sections = sectionsArray[j];
     for (var k = 0; k < sections.length; k++)
@@ -609,7 +609,7 @@ function getSummSecsToManual() //sections version of summtomanual
 function getSummDCToManual() {
   var table = document.getElementById("genDCInputTable");
   var sections;
-  table.innerHTML = "<tbody><tr><td>Generator Name</td><td>From Block</td><td>To Block</td><td>OnBarDc Value</td><td>Delete?</td></tr></tbody>";
+  table.innerHTML = "<tbody><tr><td>Generator Name</td><td>From Block</td><td>To Block</td><td>OnBarDc Value</td><td><input type="checkbox" name="chk" onclick="SelectAll(this,'genDCInputTable')"></input></td></tr></tbody>";
   if (sectionsArray.length) {
     sections = sectionsArray["onBar"];
     for (var k = 0; k < sections.length; k++) {
@@ -621,7 +621,7 @@ function getSummDCToManual() {
 function getSummDecToManual() {
   var table = document.getElementById("genDecInputTable");
   var sections;
-  table.innerHTML = "<tbody><tr><td>Generator Name</td><td>From Block</td><td>To Block</td><td>DC Value</td><td>Delete?</td></tr></tbody>";
+  table.innerHTML = "<tbody><tr><td>Generator Name</td><td>From Block</td><td>To Block</td><td>DC Value</td><td><input type="checkbox" name="chk" onclick="SelectAll(this,'genDecInputTable')"></input></td></tr></tbody>";
   if (sectionsArray.length) {
     sections = sectionsArray["DC"];
     for (var k = 0; k < sections.length; k++) {
@@ -633,7 +633,7 @@ function getSummDecToManual() {
 function getSummRampToManual() {
   var table = document.getElementById("genMaxRampInputTable");
   var sections;
-  table.innerHTML = "<tbody><tr><td>Generator Name</td><td>From Block</td><td>To Block</td><td>MaxRamp Value</td><td>Delete?</td></tr></tbody>";
+  table.innerHTML = "<tbody><tr><td>Generator Name</td><td>From Block</td><td>To Block</td><td>MaxRamp Value</td><td><input type="checkbox" name="chk" onclick="SelectAll(this,'genMaxRampInputTable')"></input></td></tr></tbody>";
   if (sectionsArray.length) {
     sections = sectionsArray["rampNum"];
     for (var k = 0; k < sections.length; k++) {
