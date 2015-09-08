@@ -36,16 +36,24 @@ function Catagorise() {
 		cellRamp = rowRevVals[i] - rowPrevRevVals[i];
 		rampOfRow += cellRamp;
 	}
-	//modify the present rev values to stisfy *hard constraints* and ramp of row calculation over
-	var rampDiffOfRow = Math.abs(rampOfRow) - maxRampOfRow; //rampDiffOfRow is possitive if rampedUp more than maxRampOfRow
-	if (rampDiffOfRow < 0) //then no problem!!!
+	//modify the present rev values to satisfy *hard constraints* and ramp of row calculation over
+	var rampDiffOfRow = 0;
+	if(rampOfRow>=0)
+	{
+		rampDiffOfRow = rampOfRow - maxRampOfRow; //rampDiffOfRow is possitive if rampedUp more than maxRampOfRow
+	}
+	else{//rampOfRow neagtive
+		rampDiffOfRow = rampOfRow + maxRampOfRow; //rampDiffOfRow is negative if rampedUp more than maxRampOfRow
+	}
+	
+	if((rampDiffOfRow<=0 && rampOfRow>=0)||(rampDiffOfRow>=0 && rampOfRow<=0)) //then no problem!!!
 	{
 
 	} else {
 		//sacrificing from bigger revision till smallest revision
 		var rampUpByRevCells;
-		for (var i = 0; i < rowRevsDupExcluded.length && rampDiffOfRow > 0.1; i++) {
-			//Now we can access the columns with a specific revision number			
+		for (var i = 0; i < rowRevsDupExcluded.length && Math.abs(rampDiffOfRow)>0.1; i++) {
+			//Access the *columns of a specific revision* number			
 			var colNums = rowRevsCatagorised[rowRevsDupExcluded[i]].cols;
 			//Get the amount of ramp up they have been through
 			rampUpByRevCells = 0;
@@ -53,10 +61,11 @@ function Catagorise() {
 				//TODO do negative ramped cell segregation and updating the rampUp benifit of rampedUpCells here.
 				rampUpByRevCells += rowRevVals[colNums[j]] - rowPrevRevVals[colNums[j]];
 			} //amount of rampUp the cells of a particular revision have been through is found out
+			
 			//Now make the rev to sacrifice rampUp and update the rampOfRow value.
 			//Maximum rampUp sacrifice will be equal to rampUpByRevCells.
 			var rampUpToSacrifice = 0;
-			if (rampDiffOfRow <= rampUpByRevCells) //Then the row can sacrifice the complete excess ramp up
+			if (((rampDiffOfRow <= rampUpByRevCells) && rampDiffOfRow>=0)||((rampDiffOfRow >= rampUpByRevCells) && rampDiffOfRow<=0)) //Then the row can sacrifice the complete excess ramp up
 			{
 				rampUpToSacrifice = rampDiffOfRow;
 				rampDiffOfRow = 0;
@@ -65,7 +74,8 @@ function Catagorise() {
 				rampUpToSacrifice = rampUpByRevCells;
 				rampDiffOfRow = rampDiffOfRow - rampUpByRevCells;
 			}
-			//Now rampDiffOfRow updated and the rampUpToBeSacrificed by the particular rev cells found out.
+
+			//RampDiffOfRow updated and the rampUpToBeSacrificed by the particular rev cells found out.
 
 			//Now we take the rowPrevRevVals of the particular revision and ramp them all up by the value rampUpByRevCells - rampUpToSacrifice
 			var toRampUpPrev = rampUpByRevCells - rampUpToSacrifice;
@@ -77,14 +87,16 @@ function Catagorise() {
 				var colsToRampUp = [];
 				for (var k = 0; k < colNums.length; k++) {
 					//if the column cell wants to ramp up
-					if (rowRevVals[colNums[k]] - rowPrevRevVals[colNums[k]] > 0)
+					if ((rowRevVals[colNums[k]] - rowPrevRevVals[colNums[k]] > 0) && rampDiffOfRow>=0)
+						colsToRampUp.push(colNums[k]);
+					else if((rowRevVals[colNums[k]] - rowPrevRevVals[colNums[k]] < 0) && rampDiffOfRow<=0)//redundant...
 						colsToRampUp.push(colNums[k]);
 				}
 				//Now we know the columns to ramp up in a particular revision.
 				//Now try to distribute the ramp up according to rampUpShare of each cell and update iteration ramp up and toRampUpPrev
 				for (var k = 0; k < colsToRampUp.length; k++) {
 					var ramptocell = toRampUpPrev * shareincolstorampup(colsToRampUp[k], colsToRampUp); //todo function
-					if (ramptocell > rowRevVals[colsToRampUp[k]] - rowPrevRevVals[colsToRampUp[k]]) {
+					if (((ramptocell > rowRevVals[colsToRampUp[k]]-rowPrevRevVals[colsToRampUp[k]])&&ramptocell>0) || ((ramptocell < rowRevVals[colsToRampUp[k]]-rowPrevRevVals[colsToRampUp[k]])&&ramptocell<0)) {
 						ramptocell = rowRevVals[colsToRampUp[k]] - rowPrevRevVals[colsToRampUp[k]];
 					}
 					modifiedRowRevVals[colsToRampUp[k]] = rowPrevRevVals[colsToRampUp[k]] + ramptocell;
@@ -92,7 +104,7 @@ function Catagorise() {
 				}
 				toRampUpPrev -= iterationRampUp;
 			}
-			while (toRampUpPrev > 0.1);
+			while (Math.abs(toRampUpPrev) > 0.1);
 		}
 	}
 	var resString = '';
