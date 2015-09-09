@@ -4,24 +4,45 @@ function handle(e)
 	return false;
 }
 
-function Catagorise() {
+function Catagorise(){
 	//Revisions of all the cells in a particular row
 	//var rowRevs = [1, 1, 1, 3, 4, 5, 4, 3];
 	var rowRevs = document.getElementById('RevsIn').value.split(",");
 	rowRevs = convertToNums(rowRevs);
-	//An object created to catagorise the row cells according to the revision number in descending order
-	var rowRevsCatagorised = segregateColumns(rowRevs);
-	//An array initialised which has to contain the rev number present in the row in descending order
-	var rowRevsDupExcluded = getRevNumsinDescOrder(rowRevsCatagorised);
-	document.getElementById('console').innerHTML = '';
-	document.getElementById('console').appendChild(document.createTextNode('Revision_Numbers_Data=' + JSON.stringify(rowRevsCatagorised, null, '\t') + '------' + rowRevsDupExcluded));
-	//Now we have the  revision numbers ordered and categorised
-
 	maxRampOfRow = +document.getElementById('maxRamp').value;
 	var rowPrevRevVals = document.getElementById('prevRevRow').value.split(",");
 	rowPrevRevVals = convertToNums(rowPrevRevVals);
 	var rowRevVals = document.getElementById('revRow').value.split(",");
 	rowRevVals = convertToNums(rowRevVals);
+	var maxCellVals = document.getElementById('CellMaxIn').value.split(",");
+	maxCellVals = convertToNums(maxCellVals);
+	var maxShareVals = document.getElementById('CellSharesIn').value.split(",");
+	maxShareVals = convertToNums(maxShareVals);
+	var modifiedRowRevVals = solveRamping(maxShareVals,rowRevs,rowRevVals,rowPrevRevVals,maxCellVals,maxRampOfRow);
+
+	document.getElementById('console').innerHTML = '';
+	document.getElementById('console').appendChild(document.createTextNode('Revision_Numbers_Data=' + JSON.stringify(segregateColumns(rowRevs), null, '\t') + '------' + getRevNumsinDescOrder(segregateColumns(rowRevs))));
+	document.getElementById('console').appendChild(document.createElement("br"));
+	document.getElementById('console').appendChild(document.createTextNode(modifiedRowRevVals));
+}
+
+function convertToNums(arr) {
+	var temp = [];
+	for (var i = 0; i < arr.length; i++) {
+		temp.push(+arr[i]);
+	}
+	return temp;
+}
+
+function solveRamping(maxShareVals,rowRevs,rowRevVals,rowPrevRevVals,maxCellVals,maxRampOfRow) {	
+	//An object created to catagorise the row cells according to the revision number in descending order
+	var rowRevsCatagorised = segregateColumns(rowRevs);
+	//An array initialised which has to contain the rev number present in the row in descending order
+	var rowRevsDupExcluded = getRevNumsinDescOrder(rowRevsCatagorised);
+	//document.getElementById('console').innerHTML = '';
+	//document.getElementById('console').appendChild(document.createTextNode('Revision_Numbers_Data=' + JSON.stringify(rowRevsCatagorised, null, '\t') + '------' + rowRevsDupExcluded));
+	
+	//Now we have the  revision numbers ordered and categorised	
 	var modifiedRowRevVals = rowRevVals;
 	var cellRamp = 0;
 	var rampOfRow = 0;
@@ -29,9 +50,9 @@ function Catagorise() {
 	for (var i = 0; i < rowRevVals.length; i++) {
 		if (rowRevVals[i] < 0) {
 			rowRevVals[i] = 0;
-		} else if (rowRevVals[i] > 10) //here 10 is the maximum share value of the constituent 
+		} else if (rowRevVals[i] > maxCellVals[i]) //restricting the cell  value to the maximum share value of the constituent 
 		{
-			rowRevVals[i] = 10;
+			rowRevVals[i] = maxCellVals[i];
 		}
 		cellRamp = rowRevVals[i] - rowPrevRevVals[i];
 		rampOfRow += cellRamp;
@@ -95,7 +116,7 @@ function Catagorise() {
 				//Now we know the columns to ramp up in a particular revision.
 				//Now try to distribute the ramp up according to rampUpShare of each cell and update iteration ramp up and toRampUpPrev
 				for (var k = 0; k < colsToRampUp.length; k++) {
-					var ramptocell = toRampUpPrev * shareincolstorampup(colsToRampUp[k], colsToRampUp); //todo function
+					var ramptocell = toRampUpPrev * shareincolstorampup(maxShareVals, colsToRampUp[k], colsToRampUp); //todo function
 					if (((ramptocell > rowRevVals[colsToRampUp[k]]-rowPrevRevVals[colsToRampUp[k]])&&ramptocell>0) || ((ramptocell < rowRevVals[colsToRampUp[k]]-rowPrevRevVals[colsToRampUp[k]])&&ramptocell<0)) {
 						ramptocell = rowRevVals[colsToRampUp[k]] - rowPrevRevVals[colsToRampUp[k]];
 					}
@@ -107,11 +128,7 @@ function Catagorise() {
 			while (Math.abs(toRampUpPrev) > 0.1);
 		}
 	}
-	var resString = '';
-	for (var k = 0; k < modifiedRowRevVals.length; k++) {
-		resString += (modifiedRowRevVals[k] + ',');
-	}
-	document.getElementById('console').innerHTML = resString;
+	return modifiedRowRevVals;
 }
 
 function segregateColumns(rowRevs) {
@@ -138,14 +155,12 @@ function getRevNumsinDescOrder(rowRevsCatagorised) {
 	});
 }
 
-function shareincolstorampup(colsToRampUpIndex, colsToRampUp) {
-	return 1 / colsToRampUp.length;
-}
-
-function convertToNums(arr) {
-	var temp = [];
-	for (var i = 0; i < arr.length; i++) {
-		temp.push(+arr[i]);
+function shareincolstorampup(maxShareVals, colsToRampUpIndex, colsToRampUp) {
+	//return 1 / colsToRampUp.length;
+	var shareSum = 0;
+	for(var i=0;i<colsToRampUp.length;i++)
+	{
+		shareSum += maxShareVals[colsToRampUp[i]];
 	}
-	return temp;
+	return maxShareVals[colsToRampUpIndex]/shareSum;
 }
