@@ -1014,4 +1014,11 @@ function performAlgo() {
 //So we consider the current revision Revision Summary table as a deisired table and solve the ramps and Maximum share constraints
 //The maximum share can be found out by the consReqPercentages array 
 //The maximum available ramp can be found out by the RevisionSummaryTable.
+
+//Rebuild a data matrix of the desired cell values in a numeric form translating the terms full and %p from revision summary sections
+var data2 = [];//for storing desired cell values
+
+for(var i=1;i<96;i++){
+  
+}
 }
