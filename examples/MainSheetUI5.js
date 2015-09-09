@@ -1010,5 +1010,8 @@ function addAnRSDColumnToGrid(constName) {
 }
 
 function performAlgo() {
-
+//The whole current revision tags are present in the markRev table
+//So we consider the current revision Revision Summary table as a deisired table and solve the ramps and Maximum share constraints
+//The maximum share can be found out by the consReqPercentages array 
+//The maximum available ramp can be found out by the RevisionSummaryTable.
 }
