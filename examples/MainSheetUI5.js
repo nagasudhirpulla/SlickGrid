@@ -1090,7 +1090,7 @@ function performAlgo() {
     for (var j = 0; j < maxCellVals.length; j++) {
       maxCellVals[j] = consReqPercentages[j] * (data1[i])["onBar"];
       rowRevVals.push((data1[i])[j]);
-      rowPrevRevVals.push((data1[i - 1])[j]);
+      rowPrevRevVals.push((data2[i - 1])[j]);
       rowRevs.push((markRev[i])[j]);
     }
     data2[i] = solveRamping(consReqPercentages, rowRevs, rowRevVals, rowPrevRevVals, maxCellVals, (data1[i])["rampNum"]);
