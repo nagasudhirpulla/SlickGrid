@@ -1,5 +1,5 @@
-var grid;//The cell grid object.
-var data = [];//The data used by the cell grid
+var grid; //The cell grid object.
+var data = []; //The data used by the cell grid
 //The Generator  default Parameters or the generator cofiguration
 var genName = 'CGPL';
 //Below are default values for initialisation, can change if wanted through grid or input tables.
@@ -15,7 +15,7 @@ var consRSDPercentages = [0.2, 0.3, 0.2, 0.1, 0.1, 0.1];
 var curRev = 0; //can be modified only by loadRevision() function
 var markRev = [];
 var sectionsArray = [];
-var revStrtBlkNums = [];//yet to be used for improved computation optimization.
+var revStrtBlkNums = []; //yet to be used for improved computation optimization.
 
 var tiedToGrid = true;
 var tiedToReq = false;
@@ -24,6 +24,7 @@ var tiedToRamp = false;
 
 //Database Array-Used right now as the database
 var revDataArray = new Array();
+
 
 //cell grid options for customization
 var options = {
@@ -86,47 +87,45 @@ var pluginOptions = {
 //cell grid options for customization over
 
 //Setting the Column names of the grid
-var columns = [
-  {
-    id: 'ramp',
-    name: 'MaxRamp',
-    field: 'rampNum',
-    width: 30,
-    editor: Slick.Editors.Text
-  }, {
-    id: 'DC',
-    name: 'DC',
-    field: 'DC',
-    width: 40,
-    editor: Slick.Editors.Text
-  }, {
-    id: "offBarDC",
-    name: "OffBarDC",
-    field: "offBar",
-    width: 40
-  }, {
-    id: 'onBarDC',
-    name: 'OnBarDC',
-    field: 'onBar',
-    width: 40,
-    editor: Slick.Editors.Text
-  }, {
-    id: "selector",
-    name: "BlockNo",
-    field: "SNo",
-    width: 40
-  }, {
-    id: "ramp",
-    name: "Ramp",
-    field: "rampedVal",
-    width: 40
-  }, {
-    id: "availGen",
-    name: "AvailableGeneration",
-    field: "avail",
-    width: 40
-  }
-];
+var columns = [{
+  id: 'maxRamp',
+  name: 'MaxRamp',
+  field: 'rampNum',
+  width: 30,
+  editor: Slick.Editors.Text
+}, {
+  id: 'DC',
+  name: 'DC',
+  field: 'DC',
+  width: 40,
+  editor: Slick.Editors.Text
+}, {
+  id: "offBarDC",
+  name: "OffBarDC",
+  field: "offBar",
+  width: 40
+}, {
+  id: 'onBarDC',
+  name: 'OnBarDC',
+  field: 'onBar',
+  width: 40,
+  editor: Slick.Editors.Text
+}, {
+  id: "selector",
+  name: "BlockNo",
+  field: "SNo",
+  width: 40
+}, {
+  id: "ramp",
+  name: "Ramp",
+  field: "rampedVal",
+  width: 40
+}, {
+  id: "availGen",
+  name: "AvailableGeneration",
+  field: "avail",
+  width: 40
+}];
 //Adding Constituent Requisition columns iteratively
 for (var i = 0; i < constituentNames.length; i++) {
   columns.push({
@@ -145,19 +144,6 @@ for (var i = 0; i < constituentNames.length; i++) {
 $(function() {
   //Add options to the dropdowns og the following 'select' inouts
   addOptions(['selectRSDConst', 'selectURSConst', 'selectReqConst']);
-  /*TODO
-  This is to add the select all and deselect all capability to all the  forms with checkboxes
-    var checkbox = document.getElementById('no_photo');
-    checkbox.addEventListener('click', function() {
-      var photo = document.getElementById('photo_upload');
-      if(photo.style.display != 'none') {
-        photo.style.display = 'none';
-      } 
-      else if(photo.style.display == 'none') {
-        photo.style.display = 'block';
-      };
-    });
-  */
   //Set the whole grid to default values, rsd urs not included
   for (var i = 0; i < 96; i++) {
     //Setting the data values of the grid here...
@@ -178,7 +164,7 @@ $(function() {
       d[j] = 'FULL';
       //Accommodating markRev
       m[j] = 0;
-    }    
+    }
     d["avail"] = 0;
     if (i > 0) {
       d["rampedVal"] = 0;
@@ -223,9 +209,8 @@ function addOptions(selNameArray) {
 /*
 Returns the cell value as a number
 */
-function ConvertCellValToNum(cVal, constIndex, blk, Cat) //Cat = 0:Normal;1:RSD;2:URS
+function ConvertCellValToNum(cVal, constIndex, blk, Cat, onBarVal) //Cat = 0:Normal;1:RSD;2:URS
 {
-  var onBarVal = (data[blk])['onBar'];
   if (isNaN(cVal)) {
     if (cVal.match(/^\FULL$/i))
       return consReqPercentages[constIndex] * onBarVal;
@@ -254,7 +239,7 @@ function addRow(tableID) {
   var chosenval;
   if (tableID == 'genDCInputTable')
     chosenval = genName;
-  else if(tableID == 'genDecInputTable')
+  else if (tableID == 'genDecInputTable')
     chosenval = genName;
   else if (tableID == 'genMaxRampInputTable')
     chosenval = "MaxRamp"
@@ -333,17 +318,6 @@ function deleteRow(tableID) {
   } catch (e) {
     alert(e);
   }
-}
-
-function SelectAll(ele, tabname) {
-   var table = document.getElementById(tabname);
-   var action = true;
-   if (!ele.checked) action = false;
-   var cb;
-   for (var i = 1; i < table.rows.length; i++) {
-     cb = table.rows[i].cells[table.rows[i].cells.length - 1].childNodes[0];
-     cb.checked = action;
-   }
 }
 
 function createSumm(overridePermissionRequired) { //by pressing modify revision by input tables button
@@ -432,7 +406,7 @@ function resetGridDCorRamp(val) {
     //i is iterator for the row i ...
     if (val == "DC")
       (data[i])['onBar'] = genOnBar;
-    else if(val == "Dec")
+    else if (val == "Dec")
       (data[i])['DC'] = genDecCap;
     else if (val == "Ramp")
       (data[i])['rampNum'] = genRamp;
@@ -442,7 +416,7 @@ function resetGridDCorRamp(val) {
 function createSections() {
   //Find the sections of the columns
   sectionsArray = new Array();
-  for (var constcol1 = 0; constcol1 < constituentNames.length+3; constcol1++) { //last two for onBarDC and MaxRamp and DC respectively
+  for (var constcol1 = 0; constcol1 < constituentNames.length + 3; constcol1++) { //last two for onBarDC and MaxRamp and DC respectively
     switch (constcol1) {
       case constituentNames.length:
         constcol = "onBar";
@@ -498,7 +472,7 @@ function createSectionSummaryTable() {
 function createSectionSummaryTableRow(j) {
   var sections = sectionsArray[j];
   var textStr;
-  if(isNaN(j))
+  if (isNaN(j))
     textStr = j;
   else
     textStr = constituentNames[j];
@@ -558,7 +532,7 @@ function validateGrid() {
       }
     }
     //validating MaxRamps and onBarDC
-    for (var j = 0; j < 2; j++) {
+    for (var j = 0; j < 3; j++) {
       //j is iterator the column j ...
       //Validating the data value for the cell i,j(row,column)
       var colstr;
@@ -570,6 +544,10 @@ function validateGrid() {
         case 1:
           colstr = 'rampNum'
           alertstr = 'Invalid values at Block ' + (i + 1) + 'of MaxRamp grid column' + '. Invalid values not allowed';
+          break;
+        case 3:
+          colstr = 'DC'
+          alertstr = 'Invalid values at Block ' + (i + 1) + 'of DC grid column' + '. Invalid values not allowed';
           break;
       }
       cellval = d[colstr];
@@ -595,7 +573,7 @@ function getSummSecsToManual() //sections version of summtomanual
 {
   var table = document.getElementById("reqInputTable");
   var sections;
-  table.innerHTML = "<tbody><tr><td>Constituent Name</td><td>From Block</td><td>To Block</td><td>Value</td><td><input type=\"checkbox\" name=\"chk\" onclick=\"SelectAll(this,'reqInputTable')\"></input></td></tr></tbody>";
+  table.innerHTML = "<tbody><tr><td>Constituent Name</td><td>From Block</td><td>To Block</td><td>Value</td><td>Delete?</td></tr></tbody>";
   for (var j = 0; j < sectionsArray.length; j++) {
     sections = sectionsArray[j];
     for (var k = 0; k < sections.length; k++)
@@ -609,7 +587,7 @@ function getSummSecsToManual() //sections version of summtomanual
 function getSummDCToManual() {
   var table = document.getElementById("genDCInputTable");
   var sections;
-  table.innerHTML = "<tbody><tr><td>Generator Name</td><td>From Block</td><td>To Block</td><td>OnBarDc Value</td><td><input type=\"checkbox\" name=\"chk\" onclick=\"SelectAll(this,'genDCInputTable')\"></input></td></tr></tbody>";
+  table.innerHTML = "<tbody><tr><td>Generator Name</td><td>From Block</td><td>To Block</td><td>OnBarDc Value</td><td>Delete?</td></tr></tbody>";
   if (sectionsArray.length) {
     sections = sectionsArray["onBar"];
     for (var k = 0; k < sections.length; k++) {
@@ -621,7 +599,7 @@ function getSummDCToManual() {
 function getSummDecToManual() {
   var table = document.getElementById("genDecInputTable");
   var sections;
-  table.innerHTML = "<tbody><tr><td>Generator Name</td><td>From Block</td><td>To Block</td><td>DC Value</td><td><input type=\"checkbox\" name=\"chk\" onclick=\"SelectAll(this,'genDecInputTable')\"></input></td></tr></tbody>";
+  table.innerHTML = "<tbody><tr><td>Generator Name</td><td>From Block</td><td>To Block</td><td>DC Value</td><td>Delete?</td></tr></tbody>";
   if (sectionsArray.length) {
     sections = sectionsArray["DC"];
     for (var k = 0; k < sections.length; k++) {
@@ -633,7 +611,7 @@ function getSummDecToManual() {
 function getSummRampToManual() {
   var table = document.getElementById("genMaxRampInputTable");
   var sections;
-  table.innerHTML = "<tbody><tr><td>Generator Name</td><td>From Block</td><td>To Block</td><td>MaxRamp Value</td><td><input type=\"checkbox\" name=\"chk\" onclick=\"SelectAll(this,'genMaxRampInputTable')\"></input></td></tr></tbody>";
+  table.innerHTML = "<tbody><tr><td>Generator Name</td><td>From Block</td><td>To Block</td><td>MaxRamp Value</td><td>Delete?</td></tr></tbody>";
   if (sectionsArray.length) {
     sections = sectionsArray["rampNum"];
     for (var k = 0; k < sections.length; k++) {
@@ -765,7 +743,7 @@ function calulateFormulaColumns() {
     var sumgen = 0;
     for (var j = 0; j < constituentNames.length; j++) {
       //j is iterator the column j ...
-      sumgen += +ConvertCellValToNum(d[j], j, i);
+      sumgen += +ConvertCellValToNum(d[j], j, i, 0, d['onBar']);
     }
     d["avail"] = d["onBar"] - sumgen;
     if (i > 0) {
@@ -834,15 +812,56 @@ function markCellsWithRevs() {
   tab.innerHTML = '';
   tab.border = '1';
   tab.width = '100px';
+  //Add a row
+  var tr = document.createElement('tr');
+  for (var constcol = -4; constcol < constituentNames.length; constcol++) {
+    //Add cells to the table
+    var td0 = document.createElement('td');
+    switch (constcol) {
+      case -4:
+        td0.appendChild(document.createTextNode("BlockNumber"));
+        break;
+      case -3:
+        td0.appendChild(document.createTextNode("DC"));
+        break;
+      case -2:
+        td0.appendChild(document.createTextNode("OnBarDC"));
+        break;
+      case -1:
+        td0.appendChild(document.createTextNode("MaxRamp"));
+        break;
+      default:
+        td0.appendChild(document.createTextNode(constituentNames[constcol]));
+        break;
+    }
+    tr.appendChild(td0);
+  }
+  tab.appendChild(tr);
   for (var i = 0; i < 96; i++) {
     //Add a row
-    var tr = document.createElement('tr');
-    var td0 = document.createElement('td');
-    td0.appendChild(document.createTextNode(i + 1));
-    tr.appendChild(td0);
+    tr = document.createElement('tr');
+    for (var constcol = 0; constcol < 4; constcol++) {
+      //Add cells to the table
+      td0 = document.createElement('td');
+      switch (constcol) {
+        case 0:
+          td0.appendChild(document.createTextNode(i + 1));
+          break;
+        case 1:
+          td0.appendChild(document.createTextNode("DC"));
+          break;
+        case 2:
+          td0.appendChild(document.createTextNode("OnBarDC"));
+          break;
+        case 3:
+          td0.appendChild(document.createTextNode("MaxRamp"));
+          break;
+      }
+      tr.appendChild(td0);
+    }
     for (var constcol = 0; constcol < constituentNames.length; constcol++) {
       //Add cells to the table
-      var td0 = document.createElement('td');
+      td0 = document.createElement('td');
       td0.appendChild(document.createTextNode((markRev[i])[constcol]));
       tr.appendChild(td0);
     }
@@ -1010,15 +1029,71 @@ function addAnRSDColumnToGrid(constName) {
 }
 
 function performAlgo() {
-//The whole current revision tags are present in the markRev table
-//So we consider the current revision Revision Summary table as a deisired table and solve the ramps and Maximum share constraints
-//The maximum share can be found out by the consReqPercentages array 
-//The maximum available ramp can be found out by the RevisionSummaryTable.
+  var data1 = new Array(96);
+  //Initialize the data1 array
+  for (var i = 0; i < data1.length; i++) {
+    data1[i] = {};
+  }
+  //First get all cells with desired numeric cell values into a  table dataDes from the revision summary array of the current revision
+  //constraint - this  has to be saved.
+  var sectionsArray = revDataArray[curRev];
+  for (var constcol1 = -3; constcol1 < constituentNames.length; constcol1++) { //last two for onBarDC and MaxRamp and DC respectively
+    switch (constcol1) {
+      case -3:
+        constcol = "onBar";
+        break;
+      case -2:
+        constcol = "rampNum";
+        break;
+      case -1:
+        constcol = "DC";
+        break;
+      default:
+        constcol = constcol1;
+        break;
+    }
+    var sections = sectionsArray[constcol];
+    for (var j = 0; j < sections.length; j++) {
+      for (var k = sections[j].secStart; k <= sections[j].secEnd; k++) {
+        if (isNaN(constcol))
+          (data1[k])[constcol] = +sections[j].val;
+        else
+          (data1[k])[constcol] = +ConvertCellValToNum(sections[j].val, constcol, k, 0, (data1[k])['onBar']);
+      }
+    }
+  }
+  //Now the desired numeric values fo the grid are known
+  //Building the grid and configuring the grid
+  grid1 = new Slick.Grid("#myGridDes", data1, columns, options);
+  //Now the desired numeric values of the grid are displayed in the grid1 cellgrid
 
-//Rebuild a data matrix of the desired cell values in a numeric form translating the terms full and %p from revision summary sections
-var data2 = [];//for storing desired cell values
-
-for(var i=1;i<96;i++){
-  
-}
+  //Now find the feasible cell values from the data1 array values and store in data2 array
+  var data2 = [];
+  for (var i = 0; i < data1.length; i++) {
+    data2[i] = {};
+  }
+  for (var i = 0; i < consReqPercentages.length; i++) {
+    (data2[0])[i] = (data1[0])[i];
+  }
+  var maxCellVals = new Array(consReqPercentages.length);
+  //initialize the array maxcellvals array with 0
+  for (var j = 0; j < maxCellVals.length; j++) {
+      maxCellVals[j] = 0;
+    }
+  var rowRevVals;
+  var rowPrevRevVals;
+  var rowRevs;
+  for (var i = 1; i < data1.length; i++) { //data1.length = 96
+    rowRevVals = [];
+    rowPrevRevVals = [];
+    rowRevs = [];
+    for (var j = 0; j < maxCellVals.length; j++) {
+      maxCellVals[j] = consReqPercentages[j] * (data1[i])["onBar"];
+      rowRevVals.push((data1[i])[j]);
+      rowPrevRevVals.push((data1[i - 1])[j]);
+      rowRevs.push((markRev[i])[j]);
+    }
+    data2[i] = solveRamping(consReqPercentages, rowRevs, rowRevVals, rowPrevRevVals, maxCellVals, (data1[i])["rampNum"]);
+  }
+  grid2 = new Slick.Grid("#myGridFeasible", data2, columns, options);
 }
