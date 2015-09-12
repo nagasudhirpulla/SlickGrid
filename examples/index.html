@@ -178,7 +178,8 @@
 	</div>
 	<div>
 		<div>
-			<table id="revMarkTable">
+			<button onclick="showhide(this)">RevisionTags Of Cells</button>
+			<table id="revMarkTable" class="hidingClass">
 			</table>
 		</div>
 		<div>
@@ -188,8 +189,14 @@
 			
 		</div>	
 	</div>
-	<div id="myGridDes" style="height:300px"> </div>
-	<div id="myGridFeasible" style="height:300px"> </div>
+	<div>
+		<button onclick="showhide(this)">Desired Numeric Requisions</button>
+		<div id="myGridDes" style="height:300px" class="hidingClass"> </div>
+	</div>
+	<div>
+		<button onclick="showhide(this)">Feasible Requisions of Constituents</button>
+		<div id="myGridFeasible" style="height:300px" class="hidingClass"> </div>
+	</div>
 
 	<script src="../lib/firebugx.js"></script>
 	<script src="../lib/jquery-1.7.min.js"></script>
