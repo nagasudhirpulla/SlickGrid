@@ -10,7 +10,6 @@ var genDecCap = 110;
 var constituentNames = ['MSEB', 'GUVNL', 'MPSEB', 'CSEB', 'DD', 'DNH'];
 constituentNames['generator'] = genName;
 var consReqPercentages = [0.2, 0.3, 0.2, 0.1, 0.1, 0.1];
-var consRSDPercentages = [0.2, 0.3, 0.2, 0.1, 0.1, 0.1];
 //Temporary Instance Data
 var curRev = 0; //can be modified only by loadRevision() function
 var markRev = [];
@@ -137,6 +136,31 @@ for (var i = 0; i < constituentNames.length; i++) {
     editor: Slick.Editors.Text
   });
 }
+//version URS
+for (var i = 0; i < constituentNames.length; i++) {
+  columns.push({
+    id: 'RSD' + i,
+    //name field is just for display
+    name: constituentNames[i] + 'RSD',
+    //"field" is the field used by the program a particular cell in row
+    field: 'RSD' + i,
+    width: 65,
+    editor: Slick.Editors.Text
+  });
+}
+
+for (var i = 0; i < constituentNames.length; i++) {
+  columns.push({
+    id: 'URS' + i,
+    //name field is just for display
+    name: constituentNames[i] + 'URS',
+    //"field" is the field used by the program a particular cell in row
+    field: 'URS' + i,
+    width: 65,
+    editor: Slick.Editors.Text
+  });
+}
+//version URS
 //Setting the Column names of the grid over
 
 function SelectAll(ele, tabname) {
@@ -159,17 +183,17 @@ function showhide(el) {
   }
 }
 
-function findSibling (el, cls) {
-    while (!el.classList.contains(cls)) {
+function findSibling(el, cls) {
+  while (!el.classList.contains(cls)) {
     el = el.nextElementSibling;
   }
-    return el;
+  return el;
 }
 
 //On loading of the html page do the following
 $(function() {
   //Add options to the dropdowns og the following 'select' inouts
-  addOptions(['selectRSDConst', 'selectURSConst', 'selectReqConst']);
+  addOptions(['selectRSDConst', 'selectURSConst', 'selectReqConst', 'selectRSDInputConst']);
   //Set the whole grid to default values, rsd urs not included
   for (var i = 0; i < 96; i++) {
     //Setting the data values of the grid here...
@@ -190,6 +214,10 @@ $(function() {
       d[j] = 'FULL';
       //Accommodating markRev
       m[j] = 0;
+      //RSD version
+      d['RSD'+j]=0;
+      d['URS'+j]=0;
+      //RSD version
     }
     d["avail"] = 0;
     if (i > 0) {
@@ -261,6 +289,10 @@ function addRow(tableID) {
     case 'reqInputTable':
       selectmenu = document.getElementById('selectReqConst');
       break;
+    case 'reqRSDInputTable':
+      selectmenu = document.getElementById('selectRSDInputConst');
+      break;
+
   }
   var chosenval;
   if (tableID == 'genDCInputTable')
@@ -311,11 +343,55 @@ function addRow(tableID) {
   cb.type = 'checkbox';
   newcell.appendChild(cb);
   //row inserted in to the table
+}
 
-  //If rsd row is inserted add it to the set of columns of the grid with default value of 0;//TODO - not implemented
-  if (tableID == "RSDInputTable") {
-    addAnRSDColumnToGrid(chosenval);
+function addRowRSDURS(tableID) {
+  var table = document.getElementById(tableID);
+  var rowCount = table.rows.length;
+  var selectmenu;
+  switch (tableID) {
+    case 'reqRSDInputTable':
+      selectmenu = document.getElementById('selectRSDInputConst');
+      break;
   }
+  var chosenval;
+  chosenval = constituentNames[selectmenu.selectedIndex];
+  var row = table.insertRow(rowCount);
+  var colCount = table.rows[0].cells.length;
+  var newcell = row.insertCell(0);
+  var t = document.createTextNode(chosenval);
+  var s = document.createElement("span");
+  s.appendChild(t);
+  newcell.appendChild(s);
+  for (var i = 1; i < colCount - 2; i++) {
+    newcell = row.insertCell(i);
+    var t = document.createElement("input");
+    t.min = '1';
+    t.value = '';
+    if (i != colCount - 3) { //change coz  of insertion in column
+      t.type = 'number';
+      t.onkeypress = isNumberKey;
+      t.min = '1';
+    }
+    newcell.appendChild(t);
+  }
+  //for rsdInputTable
+  newcell = row.insertCell(colCount - 2);
+  var t = document.createElement("select");
+  var op = new Option();
+  op.value = 'Yes';
+  op.text = "Yes";
+  t.options.add(op);
+  op = new Option();
+  op.value = 'No';
+  op.text = "No";
+  t.options.add(op);
+  newcell.appendChild(t);
+  newcell = row.insertCell(colCount - 1);
+  var cb = document.createElement("input");
+  cb.type = 'checkbox';
+  newcell.appendChild(cb);
+  //row inserted in to the table
 }
 
 function isNumberKey(evt) {
@@ -892,7 +968,7 @@ function markCellsWithRevs() {
     tab.appendChild(tr);
   }
   tab.border = '1';
-  tab.width = '100px';
+  //tab.width = '100px';
   performAlgo();
 }
 
