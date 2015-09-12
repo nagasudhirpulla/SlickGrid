@@ -24,8 +24,6 @@
         clipboardCommandHandler : option to specify a custom handler for paste actions
         includeHeaderWhenCopying : set to true and the plugin will take the name property from each column (which is usually what appears in your header) and put that as the first row of the text that's copied to the clipboard
         bodyElement: option to specify a custom DOM element which to will be added the hidden textbox. It's useful if the grid is inside a modal dialog.
-        onCopyInit: optional handler to run when copy action initializes
-        onCopySuccess: optional handler to run when copy action is complete
     */
     var _grid;
     var _self = this;
@@ -35,15 +33,12 @@
     var _copiedCellStyle = _options.copiedCellStyle || "copied";
     var _clearCopyTI = 0;
     var _bodyElement = _options.bodyElement || document.body;
-    var _onCopyInit = _options.onCopyInit || null;
-    var _onCopySuccess = _options.onCopySuccess || null;
     
     var keyCodes = {
-      'C': 67,
-      'V': 86,
-      'ESC': 27,
-      'INSERT': 45
-    };
+      'C':67,
+      'V':86,
+      'ESC':27
+    }
 
     function init(grid) {
       _grid = grid;
@@ -67,21 +62,22 @@
     
     function getDataItemValueForColumn(item, columnDef) {
       if (_options.dataItemColumnValueExtractor) {
-        var dataItemColumnValueExtractorValue = _options.dataItemColumnValueExtractor(item, columnDef);
-
-        if (dataItemColumnValueExtractorValue)
-          return dataItemColumnValueExtractorValue;
+        return _options.dataItemColumnValueExtractor(item, columnDef);
       }
 
       var retVal = '';
 
+      // use formatter if available; much faster than editor
+      if (columnDef.formatter) {
+          return columnDef.formatter(0, 0, item[columnDef.field], columnDef, item);
+      }
+
       // if a custom getter is not defined, we call serializeValue of the editor to serialize
       if (columnDef.editor){
         var editorArgs = {
-          'container':$("<p>"),  // a dummy container
+          'container':$("body"),  // a dummy container
           'column':columnDef,
-          'position':{'top':0, 'left':0},  // a dummy position required by some editors
-          'grid':_grid
+          'position':{'top':0, 'left':0}  // a dummy position required by some editors
         };
         var editor = new columnDef.editor(editorArgs);
         editor.loadValue(item);
@@ -105,8 +101,7 @@
         var editorArgs = {
           'container':$("body"),  // a dummy container
           'column':columnDef,
-          'position':{'top':0, 'left':0},  // a dummy position required by some editors
-          'grid':_grid
+          'position':{'top':0, 'left':0}  // a dummy position required by some editors
         };
         var editor = new columnDef.editor(editorArgs);
         editor.loadValue(item);
@@ -135,12 +130,12 @@
       var clippedRange = [];
       
       _bodyElement.removeChild(ta);
+
       for (var i=0; i<clipRows.length; i++) {
         if (clipRows[i]!="")
           clippedRange[i] = clipRows[i].split("\t");
-        else
-          clippedRange[i] = [""];
       }
+
       var selectedCell = _grid.getActiveCell();
       var ranges = _grid.getSelectionModel().getSelectedRanges();
       var selectedRange = ranges && ranges.length ? ranges[0] : null;   // pick only one selection
@@ -166,16 +161,16 @@
         destH = selectedRange.toRow - selectedRange.fromRow +1;
         destW = selectedRange.toCell - selectedRange.fromCell +1;
       }
-      var availableRows = _grid.getData().length - activeRow;
-      var addRows = 0;
-      if(availableRows < destH)
-      {
-        var d = _grid.getData();
-        for(addRows = 1; addRows <= destH - availableRows; addRows++)
-          d.push({});
-        _grid.setData(d);
-        _grid.render();
-      }  
+    var availableRows = _grid.getData().length - activeRow;
+    var addRows = 0;
+    if(availableRows < destH)
+    {
+    var d = _grid.getData();
+    for(addRows = 1; addRows <= destH - availableRows; addRows++)
+      d.push({});
+    _grid.setData(d);
+    _grid.render();
+    }  
       var clipCommand = {
 
         isClipboardCommand: true,
@@ -217,13 +212,6 @@
                 else
                   this.setDataItemValueForColumn(dt, columns[destx], clippedRange[y] ? clippedRange[y][x] : '');
                 _grid.updateCell(desty, destx);
-                _grid.onCellChange.notify({
-                    row: desty,
-                    cell: destx,
-                    item: dt,
-                    grid: _grid
-                });
-
               }
             }
           }
@@ -254,12 +242,6 @@
                 else
                   this.setDataItemValueForColumn(dt, columns[destx], this.oldValues[y][x]);
                 _grid.updateCell(desty, destx);
-                _grid.onCellChange.notify({
-                    row: desty,
-                    cell: destx,
-                    item: dt,
-                    grid: _grid
-                });
               }
             }
           }
@@ -305,11 +287,8 @@
             _copiedRanges = null;
           }
         }
-
-        if ((e.which === keyCodes.C || e.which === keyCodes.INSERT) && (e.ctrlKey || e.metaKey) && !e.shiftKey) {    // CTRL+C or CTRL+INS
-          if (_onCopyInit) {
-            _onCopyInit.call();
-          }
+        
+        if (e.which == keyCodes.C && (e.ctrlKey || e.metaKey)) {    // CTRL + C
           ranges = _grid.getSelectionModel().getSelectedRanges();
           if (ranges.length != 0) {
             _copiedRanges = ranges;
@@ -318,7 +297,7 @@
             
             var columns = _grid.getColumns();
             var clipText = "";
-
+            
             for (var rg = 0; rg < ranges.length; rg++){
                 var range = ranges[rg];
                 var clipTextRows = [];
@@ -326,7 +305,7 @@
                     var clipTextCells = [];
                     var dt = _grid.getDataItem(i);
                     
-                    if (clipTextRows == "" && _options.includeHeaderWhenCopying) {
+                    if (clipText == "" && _options.includeHeaderWhenCopying) {
                         var clipTextHeaders = [];
                         for (var j = range.fromCell; j < range.toCell + 1 ; j++) {
                             if (columns[j].name.length > 0)
@@ -343,44 +322,26 @@
                 clipText += clipTextRows.join("\r\n") + "\r\n";
             }
             
-            if(window.clipboardData) {
-                window.clipboardData.setData("Text", clipText);
-                return true;
-            }
-            else {
-                var $focus = $(_grid.getActiveCellNode());
-                var ta = _createTextBox(clipText);
+            var $focus = $(_grid.getActiveCellNode());
+            var ta = _createTextBox(clipText);
 
-                ta.focus();
-                
-                setTimeout(function(){
-                     _bodyElement.removeChild(ta);
-                    // restore focus
-                    if ($focus && $focus.length>0) {
-                        $focus.attr('tabIndex', '-1');
-                        $focus.focus();
-                        $focus.removeAttr('tabIndex');
-                    }
-                }, 100);
-
-                if (_onCopySuccess) {
-                    var rowCount = 0;
-                    // If it's cell selection, use the toRow/fromRow fields
-                    if (ranges.length === 1) {
-                        rowCount = (ranges[0].toRow + 1) - ranges[0].fromRow;
-                    }
-                    else {
-                        rowCount = ranges.length;
-                    }
-                    _onCopySuccess.call(this, rowCount);
+            ta.focus();
+            
+            setTimeout(function(){
+                 _bodyElement.removeChild(ta);
+                // restore focus
+                if ($focus && $focus.length>0) {
+                    $focus.attr('tabIndex', '-1');
+                    $focus.focus();
+                    $focus.removeAttr('tabIndex');
                 }
+            }, 100);
 
-                return false;
-            }
+            return false;
           }
         }
 
-        if ((e.which === keyCodes.V && (e.ctrlKey || e.metaKey) && !e.shiftKey || (e.which === keyCodes.INSERT && e.shiftKey && !e.ctrlKey))) {    // CTRL+V or Shift+INS
+        if (e.which == keyCodes.V && (e.ctrlKey || e.metaKey)) {    // CTRL + V
             var ta = _createTextBox('');
             
             setTimeout(function(){
