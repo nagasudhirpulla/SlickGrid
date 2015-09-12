@@ -36,38 +36,37 @@ var options = {
 };
 
 var undoRedoBuffer = {
-  commandQueue: [],
-  commandCtr: 0,
+    commandQueue: [],
+    commandCtr: 0,
 
-  queueAndExecuteCommand: function(editCommand) {
-    this.commandQueue[this.commandCtr] = editCommand;
-    this.commandCtr++;
-    editCommand.execute();
-  },
+    queueAndExecuteCommand: function(editCommand) {
+      this.commandQueue[this.commandCtr] = editCommand;
+      this.commandCtr++;
+      editCommand.execute();
+    },
 
-  undo: function() {
-    if (this.commandCtr == 0)
-      return;
+    undo: function() {
+      if (this.commandCtr == 0)
+        return;
 
-    this.commandCtr--;
-    var command = this.commandQueue[this.commandCtr];
+      this.commandCtr--;
+      var command = this.commandQueue[this.commandCtr];
 
-    if (command && Slick.GlobalEditorLock.cancelCurrentEdit()) {
-      command.undo();
-    }
-  },
-  redo: function() {
-    if (this.commandCtr >= this.commandQueue.length)
-      return;
-    var command = this.commandQueue[this.commandCtr];
-    this.commandCtr++;
-    if (command && Slick.GlobalEditorLock.cancelCurrentEdit()) {
-      command.execute();
+      if (command && Slick.GlobalEditorLock.cancelCurrentEdit()) {
+        command.undo();
+      }
+    },
+    redo: function() {
+      if (this.commandCtr >= this.commandQueue.length)
+        return;
+      var command = this.commandQueue[this.commandCtr];
+      this.commandCtr++;
+      if (command && Slick.GlobalEditorLock.cancelCurrentEdit()) {
+        command.execute();
+      }
     }
   }
-}
-
-// undo shortcut
+  // undo shortcut
 $(document).keydown(function(e) {
   if (e.which == 90 && (e.ctrlKey || e.metaKey)) { // CTRL + (shift) + Z
     if (e.shiftKey) {
@@ -141,14 +140,30 @@ for (var i = 0; i < constituentNames.length; i++) {
 //Setting the Column names of the grid over
 
 function SelectAll(ele, tabname) {
-   var table = document.getElementById(tabname);
-   var action = true;
-   if (!ele.checked) action = false;
-   var cb;
-   for (var i = 1; i < table.rows.length; i++) {
-     cb = table.rows[i].cells[table.rows[i].cells.length - 1].childNodes[0];
-     cb.checked = action;
-   }
+  var table = document.getElementById(tabname);
+  var action = true;
+  if (!ele.checked) action = false;
+  var cb;
+  for (var i = 1; i < table.rows.length; i++) {
+    cb = table.rows[i].cells[table.rows[i].cells.length - 1].childNodes[0];
+    cb.checked = action;
+  }
+}
+
+function showhide(el) {
+  var div = findSibling(el, "hidingClass");
+  if (div.style.display !== "none") {
+    div.style.display = "none";
+  } else {
+    div.style.display = "block";
+  }
+}
+
+function findSibling (el, cls) {
+    while (!el.classList.contains(cls)) {
+    el = el.nextElementSibling;
+  }
+    return el;
 }
 
 //On loading of the html page do the following
@@ -821,8 +836,6 @@ function markCellsWithRevs() {
   //Lets output them to the revMarkTable
   var tab = document.getElementById("revMarkTable");
   tab.innerHTML = '';
-  tab.border = '1';
-  tab.width = '100px';
   //Add a row
   var tr = document.createElement('tr');
   for (var constcol = -4; constcol < constituentNames.length; constcol++) {
@@ -878,6 +891,8 @@ function markCellsWithRevs() {
     }
     tab.appendChild(tr);
   }
+  tab.border = '1';
+  tab.width = '100px';
   performAlgo();
 }
 
@@ -1076,6 +1091,11 @@ function performAlgo() {
   //Now the desired numeric values fo the grid are known
   //Building the grid and configuring the grid
   grid1 = new Slick.Grid("#myGridDes", data1, columns, options);
+  grid1.setSelectionModel(new Slick.CellSelectionModel());
+  grid1.registerPlugin(new Slick.AutoTooltips());
+  grid1.onCellChanged;
+  //enabling the excel style functionality by the plugin
+  grid1.registerPlugin(new Slick.CellExternalCopyManager(pluginOptions));
   //Now the desired numeric values of the grid are displayed in the grid1 cellgrid
 
   //Now find the feasible cell values from the data1 array values and store in data2 array
@@ -1086,11 +1106,12 @@ function performAlgo() {
   for (var i = 0; i < consReqPercentages.length; i++) {
     (data2[0])[i] = (data1[0])[i];
   }
+  (data2[0])["SNo"] = 1;
   var maxCellVals = new Array(consReqPercentages.length);
   //initialize the array maxcellvals array with 0
   for (var j = 0; j < maxCellVals.length; j++) {
-      maxCellVals[j] = 0;
-    }
+    maxCellVals[j] = 0;
+  }
   var rowRevVals;
   var rowPrevRevVals;
   var rowRevs;
@@ -1105,6 +1126,11 @@ function performAlgo() {
       rowRevs.push((markRev[i])[j]);
     }
     data2[i] = solveRamping(consReqPercentages, rowRevs, rowRevVals, rowPrevRevVals, maxCellVals, (data1[i])["rampNum"]);
+    (data2[i])["SNo"] = i + 1;
   }
   grid2 = new Slick.Grid("#myGridFeasible", data2, columns, options);
+  grid2.setSelectionModel(new Slick.CellSelectionModel());
+  grid2.onCellChanged;
+  //enabling the excel style functionality by the plugin
+  grid2.registerPlugin(new Slick.CellExternalCopyManager(pluginOptions));
 }
