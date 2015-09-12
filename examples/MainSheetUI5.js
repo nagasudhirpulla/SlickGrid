@@ -140,6 +140,17 @@ for (var i = 0; i < constituentNames.length; i++) {
 }
 //Setting the Column names of the grid over
 
+function SelectAll(ele, tabname) {
+   var table = document.getElementById(tabname);
+   var action = true;
+   if (!ele.checked) action = false;
+   var cb;
+   for (var i = 1; i < table.rows.length; i++) {
+     cb = table.rows[i].cells[table.rows[i].cells.length - 1].childNodes[0];
+     cb.checked = action;
+   }
+}
+
 //On loading of the html page do the following
 $(function() {
   //Add options to the dropdowns og the following 'select' inouts
@@ -573,7 +584,7 @@ function getSummSecsToManual() //sections version of summtomanual
 {
   var table = document.getElementById("reqInputTable");
   var sections;
-  table.innerHTML = "<tbody><tr><td>Constituent Name</td><td>From Block</td><td>To Block</td><td>Value</td><td>Delete?</td></tr></tbody>";
+  table.innerHTML = "<tbody><tr><td>Constituent Name</td><td>From Block</td><td>To Block</td><td>Value</td><td><input type=\"checkbox\" name=\"chk\" onclick=\"SelectAll(this,'reqInputTable')\"></input></td></tr></tbody>";
   for (var j = 0; j < sectionsArray.length; j++) {
     sections = sectionsArray[j];
     for (var k = 0; k < sections.length; k++)
@@ -587,7 +598,7 @@ function getSummSecsToManual() //sections version of summtomanual
 function getSummDCToManual() {
   var table = document.getElementById("genDCInputTable");
   var sections;
-  table.innerHTML = "<tbody><tr><td>Generator Name</td><td>From Block</td><td>To Block</td><td>OnBarDc Value</td><td>Delete?</td></tr></tbody>";
+  table.innerHTML = "<tbody><tr><td>Generator Name</td><td>From Block</td><td>To Block</td><td>OnBarDc Value</td><td><input type=\"checkbox\" name=\"chk\" onclick=\"SelectAll(this,'genDCInputTable')\"></input></td></tr></tbody>";
   if (sectionsArray.length) {
     sections = sectionsArray["onBar"];
     for (var k = 0; k < sections.length; k++) {
@@ -599,7 +610,7 @@ function getSummDCToManual() {
 function getSummDecToManual() {
   var table = document.getElementById("genDecInputTable");
   var sections;
-  table.innerHTML = "<tbody><tr><td>Generator Name</td><td>From Block</td><td>To Block</td><td>DC Value</td><td>Delete?</td></tr></tbody>";
+  table.innerHTML = "<tbody><tr><td>Generator Name</td><td>From Block</td><td>To Block</td><td>DC Value</td><td><input type=\"checkbox\" name=\"chk\" onclick=\"SelectAll(this,'genDecInputTable')\"></input></td></tr></tbody>";
   if (sectionsArray.length) {
     sections = sectionsArray["DC"];
     for (var k = 0; k < sections.length; k++) {
@@ -611,7 +622,7 @@ function getSummDecToManual() {
 function getSummRampToManual() {
   var table = document.getElementById("genMaxRampInputTable");
   var sections;
-  table.innerHTML = "<tbody><tr><td>Generator Name</td><td>From Block</td><td>To Block</td><td>MaxRamp Value</td><td>Delete?</td></tr></tbody>";
+  table.innerHTML = "<tbody><tr><td>Generator Name</td><td>From Block</td><td>To Block</td><td>MaxRamp Value</td><td><input type=\"checkbox\" name=\"chk\" onclick=\"SelectAll(this,'genMaxRampInputTable')\"></input></td></tr></tbody>";
   if (sectionsArray.length) {
     sections = sectionsArray["rampNum"];
     for (var k = 0; k < sections.length; k++) {
@@ -1090,7 +1101,7 @@ function performAlgo() {
     for (var j = 0; j < maxCellVals.length; j++) {
       maxCellVals[j] = consReqPercentages[j] * (data1[i])["onBar"];
       rowRevVals.push((data1[i])[j]);
-      rowPrevRevVals.push((data2[i - 1])[j]);
+      rowPrevRevVals.push((data1[i - 1])[j]);
       rowRevs.push((markRev[i])[j]);
     }
     data2[i] = solveRamping(consReqPercentages, rowRevs, rowRevVals, rowPrevRevVals, maxCellVals, (data1[i])["rampNum"]);
