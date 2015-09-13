@@ -215,8 +215,8 @@ $(function() {
       //Accommodating markRev
       m[j] = 0;
       //RSD version
-      d['RSD'+j]=0;
-      d['URS'+j]=0;
+      d['RSD' + j] = 0;
+      d['URS' + j] = 0;
       //RSD version
     }
     d["avail"] = 0;
@@ -422,6 +422,7 @@ function deleteRow(tableID) {
   }
 }
 
+//TODO grid can be modified only if reqInputTable has atleast one row but doesnot care if other tables are not empty.Fix this
 function createSumm(overridePermissionRequired) { //by pressing modify revision by input tables button
   var table = document.getElementById("reqInputTable");
   var rowCount = table.rows.length;
@@ -432,13 +433,13 @@ function createSumm(overridePermissionRequired) { //by pressing modify revision 
     var cellval = table.rows[i].cells[3].childNodes[0].value;
     //For null cell value validation
     if (!cellval) {
-      alert('Null values at row ' + i + '. Null values not allowed');
+      alert('Null values at row ' + i + ' of RequisitionInput Table. Null values not allowed');
       return false;
     }
     //For cell value validation
     var isValid = cellval.match(/^\d+(\.\d+)?\p$/i) || cellval.match(/^\FULL$/i) || cellval.match(/^[+]?\d+(\.\d+)?$/i);
     if (!isValid) {
-      alert('Invalid values at block ' + (i + 1) + '. Invalid values not allowed');
+      alert('Invalid values at block ' + (i + 1) + ' of RequisitionInput Table. Invalid values not allowed');
       return false;
     }
     //from block <  to block   
@@ -479,6 +480,9 @@ function createSumm(overridePermissionRequired) { //by pressing modify revision 
   modifyDC(false);
   modifyDec(false);
   modifyRamp(false);
+  //URS version
+  modifyRSD(false);
+  //URS version
   //tieing all the tables to one button
   calulateFormulaColumns();
   //Formulas implemented
@@ -499,6 +503,20 @@ function resetGrid(val) {
       //j is iterator the column j ...
       //Resetting the data values of the cell i,j(row,column) to val
       d[j] = val;
+    }
+  }
+}
+
+function resetGridRSDURS(val) {
+  //ToDo validate grid dynamically using on cellchange listener
+  for (var i = 0; i < 96; i++) {
+    //i is iterator for the row i ...
+    var d = (data[i]);
+    for (var j = 0; j < constituentNames.length; j++) {
+      //j is iterator the column j ...
+      //Resetting the data values of the cell i,j(row,column) to val
+      d['RSD' + j] = val;
+      d['URS' + j] = val;
     }
   }
 }
@@ -846,6 +864,9 @@ function calulateFormulaColumns() {
     for (var j = 0; j < constituentNames.length; j++) {
       //j is iterator the column j ...
       sumgen += +ConvertCellValToNum(d[j], j, i, 0, d['onBar']);
+      //URS Version
+      sumgen += +ConvertCellValToNum(d['RSD' + j], j, i, 0, d['offBar']);
+      //URS Version
     }
     d["avail"] = d["onBar"] - sumgen;
     if (i > 0) {
@@ -1079,13 +1100,13 @@ function modifyRamp(overridePermissionRequired) {
     var cellval = table.rows[i].cells[3].childNodes[0].value;
     //For null cell value validation
     if (!cellval) {
-      alert('Null values at row ' + i + '. Null values not allowed');
+      alert('Null values at row ' + i + ' of Maximum RampInput Table. Null values not allowed');
       return false;
     }
     //For cell value validation
     var isValid = cellval.match(/^[+]?\d+(\.\d+)?$/i);
     if (!isValid) {
-      alert('Invalid values at row ' + i + '. Invalid values not allowed');
+      alert('Invalid values at row ' + i + ' of Maximum RampInput Table. Invalid values not allowed');
       return false;
     }
     //from block <  to block   
@@ -1116,6 +1137,63 @@ function modifyRamp(overridePermissionRequired) {
     }
   }
 }
+
+//URS Version
+function modifyRSD(overridePermissionRequired) {
+  var table = document.getElementById("reqRSDInputTable");
+  var rowCount = table.rows.length;
+  if (rowCount < 2)
+    return false;
+  //Fisrt validate the input semantics.Allowable values are 1 to 96 in case of block numbers and possitive integers along with null, full, nochange, percentage loads.
+  for (var i = 1; i < rowCount; i++) {
+    var cellval = table.rows[i].cells[3].childNodes[0].value;
+    //For null cell value validation
+    if (!cellval) {
+      alert('Null values at row ' + i + ' of RSDInput Table. Null values not allowed');
+      return false;
+    }
+    //For cell value validation
+    var isValid = cellval.match(/^\d+(\.\d+)?\p$/i) || cellval.match(/^\FULL$/i) || cellval.match(/^[+]?\d+(\.\d+)?$/i);
+    if (!isValid) {
+      alert('Invalid values at row ' + i + ' of RSDInput Table. Invalid values not allowed');
+      return false;
+    }
+    //from block <  to block   
+    if (Number(table.rows[i].cells[1].childNodes[0].value) > Number(table.rows[i].cells[2].childNodes[0].value)) {
+      alert('From value > TO value at row ' + i);
+      return false;
+    }
+    //from block &  to block belong to [1,96]
+    if ((Number(table.rows[i].cells[1].childNodes[0].value) < 1) || (Number(table.rows[i].cells[1].childNodes[0].value) > 96) || (Number(table.rows[i].cells[2].childNodes[0].value) < 1) || (Number(table.rows[i].cells[2].childNodes[0].value) > 96)) {
+      alert('From value or TO value not in limits at row ' + i + " of Generator DC Input Table");
+      return false;
+    }
+  }
+  //RSD+URS Input Table Validation over...
+  if (overridePermissionRequired) {
+    if (!confirm("Override the grid RSD Data...?"))
+      return false;
+  }
+  //Resetting the table RSD and URS values to be equal to default value of 0
+  resetGridRSDURS(0);
+  //changing the table data depending on the requisition input table
+  //formulas not implemented 
+  for (var i = 1; i < rowCount; i++) { //iterator leaving the the table header
+    for (var blkNum = Number(table.rows[i].cells[1].childNodes[0].value) - 1; blkNum <= Number(table.rows[i].cells[2].childNodes[0].value) - 1; blkNum++) {
+      var constcol = table.rows[i].cells[0].childNodes[0].innerHTML.toString();
+      //alert(constcol);
+      constcol = constituentNames.indexOf(constcol);
+      //alert(constcol);
+      //table.rows[i].cells[3].childNodes[0].value = number in the form of string and no need to convert to number since javascript takes care of it
+      var cellvalue = table.rows[i].cells[3].childNodes[0].value;
+      if (isNaN(cellvalue)) {
+        cellvalue = cellvalue.toUpperCase();
+      }
+      (data[blkNum])['RSD' + constcol] = cellvalue;
+    }
+  }
+}
+//URS Version
 
 function createSummTableTiedInfo(atrr, val) {
   var gridTied, reqTableTied, DCTableTied, RampTableTied;
