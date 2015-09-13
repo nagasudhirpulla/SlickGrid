@@ -216,7 +216,7 @@ $(function() {
       m[j] = 0;
       //RSD version
       d['RSD' + j] = 0;
-      d['URS' + j] = 0;
+      d['URS' + j] = 'Yes';
       //RSD version
     }
     d["avail"] = 0;
@@ -516,7 +516,7 @@ function resetGridRSDURS(val) {
       //j is iterator the column j ...
       //Resetting the data values of the cell i,j(row,column) to val
       d['RSD' + j] = val;
-      d['URS' + j] = val;
+      d['URS' + j] = 'Yes';
     }
   }
 }
@@ -533,6 +533,7 @@ function resetGridDCorRamp(val) {
   }
 }
 
+//TODO : sectionsArray being global variable.Make it local variable and pass between the functions like createSections,createSectionSummaryTable etc., whereever required
 function createSections() {
   //Find the sections of the columns
   sectionsArray = new Array();
@@ -571,7 +572,52 @@ function createSections() {
     //sectionsArray.push(sections);
     sectionsArray[constcol] = sections;
   }
-  //sections of the column found
+  //URS Version
+  for (var constcol = 0; constcol < constituentNames.length; constcol++) {
+    var sections = new Array();
+    var sectionStart = 0;
+    for (var blkNum = 1; blkNum < 96; blkNum++) {
+      if ((data[blkNum])['RSD' + constcol] != (data[blkNum - 1])['RSD' + constcol]) {
+        sections.push({
+          'secStart': sectionStart,
+          'secEnd': blkNum - 1,
+          'val': (data[blkNum - 1])['RSD' + constcol]
+        });
+        sectionStart = blkNum;
+      }
+    }
+    sections.push({
+      'secStart': sectionStart,
+      'secEnd': 95,
+      'val': (data[95])['RSD' + constcol]
+    });
+    //sectionsArray.push(sections);
+    sectionsArray['RSD' + constcol] = sections;
+  }
+  //For URS option
+  for (var constcol = 0; constcol < constituentNames.length; constcol++) {
+    var sections = new Array();
+    var sectionStart = 0;
+    for (var blkNum = 1; blkNum < 96; blkNum++) {
+      if ((data[blkNum])['URS' + constcol] != (data[blkNum - 1])['URS' + constcol]) {
+        sections.push({
+          'secStart': sectionStart,
+          'secEnd': blkNum - 1,
+          'val': (data[blkNum - 1])['URS' + constcol]
+        });
+        sectionStart = blkNum;
+      }
+    }
+    sections.push({
+      'secStart': sectionStart,
+      'secEnd': 95,
+      'val': (data[95])['URS' + constcol]
+    });
+    //sectionsArray.push(sections);
+    sectionsArray['URS' + constcol] = sections;
+  }
+  //URS Version
+  //sections of the columns found
 }
 
 function createSectionSummaryTable() {
@@ -580,13 +626,45 @@ function createSectionSummaryTable() {
   for (var j = 0; j < sectionsArray.length; j++) {
     createSectionSummaryTableRow(j);
   }
-  createSectionSummaryTableRow("DC");
-  createSectionSummaryTableRow("onBar");
-  createSectionSummaryTableRow("rampNum");
+  createSectionSummaryTableRSDURS(summTab);
+  createSectionSummaryTableRow("DC", summTab);
+  createSectionSummaryTableRow("onBar", summTab);
+  createSectionSummaryTableRow("rampNum", summTab);
   summTab.border = '1';
   summTab.width = '200px';
   //created the section summary table
   createSummTableTiedInfo();
+}
+
+function createSectionSummaryTableRSDURS(summTab) {
+  for (var j = 0; j < sectionsArray.length; j++) {
+    createSectionSummaryTableRowRSDURS(j, 'RSD', summTab);
+  }
+  for (var j = 0; j < sectionsArray.length; j++) {
+    createSectionSummaryTableRowRSDURS(j, 'URS', summTab);
+  }
+}
+
+function createSectionSummaryTableRowRSDURS(j, val, summTab) {
+  var sections = sectionsArray[val + j];
+  var textStr;
+  textStr = constituentNames[j] + " " + val;
+  for (var i = 0; i < sections.length; i++) {
+    var tr = document.createElement('tr');
+    var td0 = document.createElement('td');
+    var td1 = document.createElement('td');
+    var td2 = document.createElement('td');
+    var td3 = document.createElement('td');
+    td0.appendChild(document.createTextNode(textStr));
+    td1.appendChild(document.createTextNode((sections[i])['secStart'] + 1));
+    td2.appendChild(document.createTextNode((sections[i])['secEnd'] + 1));
+    td3.appendChild(document.createTextNode((sections[i])['val']));
+    tr.appendChild(td0);
+    tr.appendChild(td1);
+    tr.appendChild(td2);
+    tr.appendChild(td3);
+    summTab.appendChild(tr);
+  }
 }
 
 function createSectionSummaryTableRow(j) {
@@ -1186,10 +1264,12 @@ function modifyRSD(overridePermissionRequired) {
       //alert(constcol);
       //table.rows[i].cells[3].childNodes[0].value = number in the form of string and no need to convert to number since javascript takes care of it
       var cellvalue = table.rows[i].cells[3].childNodes[0].value;
+      var cellvalueurs = table.rows[i].cells[4].childNodes[0].value;
       if (isNaN(cellvalue)) {
         cellvalue = cellvalue.toUpperCase();
       }
       (data[blkNum])['RSD' + constcol] = cellvalue;
+      (data[blkNum])['URS' + constcol] = cellvalueurs;
     }
   }
 }
