@@ -193,7 +193,7 @@ function findSibling(el, cls) {
 //On loading of the html page do the following
 $(function() {
   //Add options to the dropdowns og the following 'select' inouts
-  addOptions(['selectRSDConst', 'selectURSConst', 'selectReqConst', 'selectRSDInputConst']);
+  addOptions(['selectReqConst', 'selectRSDInputConst']);
   //Set the whole grid to default values, rsd urs not included
   for (var i = 0; i < 96; i++) {
     //Setting the data values of the grid here...
@@ -283,12 +283,6 @@ function addRow(tableID) {
   var rowCount = table.rows.length;
   var selectmenu;
   switch (tableID) {
-    case 'URSInputTable':
-      selectmenu = document.getElementById('selectURSConst');
-      break;
-    case 'RSDInputTable':
-      selectmenu = document.getElementById('selectRSDConst');
-      break;
     case 'reqInputTable':
       selectmenu = document.getElementById('selectReqConst');
       break;
@@ -306,22 +300,6 @@ function addRow(tableID) {
     chosenval = "MaxRamp"
   else
     chosenval = constituentNames[selectmenu.selectedIndex];
-  //check for duplicates for urs and rsd inputs
-  for (var i = 1; i < rowCount && (tableID == "URSInputTable" || tableID == "RSDInputTable"); i++) {
-    if (table.rows[i].cells[0].childNodes[0].innerHTML == chosenval) {
-      if (tableID == "URSInputTable") {
-        var ifok = confirm("Constituent already present, add duplicates?");
-        if (ifok == false) {
-          return false; //jumping out of the function
-        }
-      } else //tableID == RSDInputTable
-      {
-        //No duplicate rsd columns allowed...Can keep alert if wanted design decision
-        return false; //jumping out of the function
-      }
-      break;
-    }
-  }
   var row = table.insertRow(rowCount);
   var colCount = table.rows[0].cells.length;
   var newcell = row.insertCell(0);
@@ -425,8 +403,28 @@ function deleteRow(tableID) {
   }
 }
 
-//TODO grid can be modified only if reqInputTable has atleast one row but doesnot care if other tables are not empty.Fix this
 function createSumm(overridePermissionRequired) { //by pressing modify revision by input tables button
+  //tieing all the tables to one button
+  var x1 = modifyReq(false);
+  var x2 = modifyDC(false);
+  var x3 = modifyDec(false);
+  var x4 = modifyRamp(false);
+  //URS version
+  var x5 = modifyRSD(false);
+  //URS version
+  if (x1 || x2 || x3 || x4 || x5) {
+    calulateFormulaColumns();
+    //Formulas implemented
+    tiedToGrid = true;
+    tiedToReq = true;
+    //Now to find the revision tag to be attached, find the smallest row index of this requested revision column which differs from the previous revision cell and from that cell all below cells are of the requested revision
+    //stub
+    createSections();
+    createSectionSummaryTable();
+  }
+}
+
+function modifyReq(overridePermissionRequired) {
   var table = document.getElementById("reqInputTable");
   var rowCount = table.rows.length;
   if (rowCount < 2)
@@ -452,7 +450,7 @@ function createSumm(overridePermissionRequired) { //by pressing modify revision 
     }
     //from block &  to block belong to [1,96]
     if ((Number(table.rows[i].cells[1].childNodes[0].value) < 1) || (Number(table.rows[i].cells[1].childNodes[0].value) > 96) || (Number(table.rows[i].cells[2].childNodes[0].value) < 1) || (Number(table.rows[i].cells[2].childNodes[0].value) > 96)) {
-      alert('From value or TO value not in limits at row ' + i);
+      alert('From value or TO value not in limits at row ' + i + ' of RequisitionInput Table');
       return false;
     }
   }
@@ -479,22 +477,7 @@ function createSumm(overridePermissionRequired) { //by pressing modify revision 
       (data[blkNum])[constcol] = cellvalue;
     }
   }
-  //tieing all the tables to one button
-  modifyDC(false);
-  modifyDec(false);
-  modifyRamp(false);
-  //URS version
-  modifyRSD(false);
-  //URS version
-  //tieing all the tables to one button
-  calulateFormulaColumns();
-  //Formulas implemented
-  tiedToGrid = true;
-  tiedToReq = true;
-  //Now to find the revision tag to be attached, find the smallest row index of this requested revision column which differs from the previous revision cell and from that cell all below cells are of the requested revision
-  //stub
-  createSections();
-  createSectionSummaryTable();
+  return true;
 }
 
 function resetGrid(val) {
@@ -804,8 +787,10 @@ function validateGrid() {
 function getSummSecsToManual() //sections version of summtomanual
 {
   var table = document.getElementById("reqInputTable");
+  var tableRSDURS = document.getElementById("reqRSDInputTable");
   var sections;
   table.innerHTML = "<tbody><tr><td>Constituent Name</td><td>From Block</td><td>To Block</td><td>Value</td><td><input type=\"checkbox\" name=\"chk\" onclick=\"SelectAll(this,'reqInputTable')\"></input></td></tr></tbody>";
+  tableRSDURS.innerHTML = "<tr><td style=\"width:100px\">Constituent Name</td><td>From Block</td><td>To Block</td><td>RSD+URS Value</td><td>WantURS?</td><td><input type=\"checkbox\" name=\"chk\" onclick=\"SelectAll(this,'reqRSDInputTable')\"></td></tr>";
   for (var j = 0; j < sectionsArray.length; j++) {
     sections = sectionsArray[j];
     for (var k = 0; k < sections.length; k++) {
@@ -1155,6 +1140,18 @@ function markCellsWithRevs() {
     }
     tr.appendChild(td0);
   }
+  for (var constcol = 0; constcol < constituentNames.length; constcol++) {
+    //Add cells to the table
+    var td0 = document.createElement('td');
+    td0.appendChild(document.createTextNode("RSD" + constituentNames[constcol]));
+    tr.appendChild(td0);
+  }
+  for (var constcol = 0; constcol < constituentNames.length; constcol++) {
+    //Add cells to the table
+    var td0 = document.createElement('td');
+    td0.appendChild(document.createTextNode("URS" + constituentNames[constcol]));
+    tr.appendChild(td0);
+  }
   tab.appendChild(tr);
   for (var i = 0; i < 96; i++) {
     //Add a row
@@ -1184,6 +1181,18 @@ function markCellsWithRevs() {
       td0.appendChild(document.createTextNode((markRev[i])[constcol]));
       tr.appendChild(td0);
     }
+    for (var constcol = 0; constcol < constituentNames.length; constcol++) {
+      //Add cells to the table
+      td0 = document.createElement('td');
+      td0.appendChild(document.createTextNode((markRev[i])["RSD" + constcol]));
+      tr.appendChild(td0);
+    }
+    for (var constcol = 0; constcol < constituentNames.length; constcol++) {
+      //Add cells to the table
+      td0 = document.createElement('td');
+      td0.appendChild(document.createTextNode((markRev[i])["URS" + constcol]));
+      tr.appendChild(td0);
+    }
     tab.appendChild(tr);
   }
   tab.border = '1';
@@ -1202,18 +1211,18 @@ function modifyDC(overridePermissionRequired) {
     var cellval = table.rows[i].cells[3].childNodes[0].value;
     //For null cell value validation
     if (!cellval) {
-      alert('Null values at row ' + i + '. Null values not allowed');
+      alert('Null values at row ' + i + ' of Generator onBar DC Input Table. Null values not allowed');
       return false;
     }
     //For cell value validation
     var isValid = cellval.match(/^[+]?\d+(\.\d+)?$/i);
     if (!isValid) {
-      alert('Invalid values at row ' + i + '. Invalid values not allowed');
+      alert('Invalid values at row ' + i + ' of Generator onBar DC Input Table. Invalid values not allowed');
       return false;
     }
     //from block <  to block   
     if (Number(table.rows[i].cells[1].childNodes[0].value) > Number(table.rows[i].cells[2].childNodes[0].value)) {
-      alert('From value > TO value at row ' + i);
+      alert('From value > TO value at row ' + i + ' of Generator onBar DC Input Table');
       return false;
     }
     //from block &  to block belong to [1,96]
@@ -1238,6 +1247,7 @@ function modifyDC(overridePermissionRequired) {
       (data[blkNum])["onBar"] = cellvalue;
     }
   }
+  return true;
 }
 
 function modifyDec(overridePermissionRequired) {
@@ -1250,18 +1260,18 @@ function modifyDec(overridePermissionRequired) {
     var cellval = table.rows[i].cells[3].childNodes[0].value;
     //For null cell value validation
     if (!cellval) {
-      alert('Null values at row ' + i + '. Null values not allowed');
+      alert('Null values at row ' + i + ' of Generator DC Input Table. Null values not allowed');
       return false;
     }
     //For cell value validation
     var isValid = cellval.match(/^[+]?\d+(\.\d+)?$/i);
     if (!isValid) {
-      alert('Invalid values at row ' + i + '. Invalid values not allowed');
+      alert('Invalid values at row ' + i + ' of Generator DC Input Table. Invalid values not allowed');
       return false;
     }
     //from block <  to block   
     if (Number(table.rows[i].cells[1].childNodes[0].value) > Number(table.rows[i].cells[2].childNodes[0].value)) {
-      alert('From value > TO value at row ' + i);
+      alert('From value > TO value at row ' + i + " of Generator DC Input Table");
       return false;
     }
     //from block &  to block belong to [1,96]
@@ -1286,6 +1296,7 @@ function modifyDec(overridePermissionRequired) {
       (data[blkNum])["DC"] = cellvalue;
     }
   }
+  return true;
 }
 
 function modifyRamp(overridePermissionRequired) {
@@ -1314,7 +1325,7 @@ function modifyRamp(overridePermissionRequired) {
     }
     //from block &  to block belong to [1,96]
     if ((Number(table.rows[i].cells[1].childNodes[0].value) < 1) || (Number(table.rows[i].cells[1].childNodes[0].value) > 96) || (Number(table.rows[i].cells[2].childNodes[0].value) < 1) || (Number(table.rows[i].cells[2].childNodes[0].value) > 96)) {
-      alert('From value or TO value not in limits at row ' + i + " of Generator DC Input Table");
+      alert('From value or TO value not in limits at row ' + i + " of Maximum RampInput Table");
       return false;
     }
   }
@@ -1334,6 +1345,7 @@ function modifyRamp(overridePermissionRequired) {
       (data[blkNum])["rampNum"] = cellvalue; //changed
     }
   }
+  return true;
 }
 
 //URS Version
@@ -1358,12 +1370,12 @@ function modifyRSD(overridePermissionRequired) {
     }
     //from block <  to block   
     if (Number(table.rows[i].cells[1].childNodes[0].value) > Number(table.rows[i].cells[2].childNodes[0].value)) {
-      alert('From value > TO value at row ' + i);
+      alert('From value > TO value at row ' + i + " of RSD Input Table");
       return false;
     }
     //from block &  to block belong to [1,96]
     if ((Number(table.rows[i].cells[1].childNodes[0].value) < 1) || (Number(table.rows[i].cells[1].childNodes[0].value) > 96) || (Number(table.rows[i].cells[2].childNodes[0].value) < 1) || (Number(table.rows[i].cells[2].childNodes[0].value) > 96)) {
-      alert('From value or TO value not in limits at row ' + i + " of Generator DC Input Table");
+      alert('From value or TO value not in limits at row ' + i + " of RSD Input Table");
       return false;
     }
   }
@@ -1392,6 +1404,7 @@ function modifyRSD(overridePermissionRequired) {
       (data[blkNum])['URS' + constcol] = cellvalueurs;
     }
   }
+  return true;
 }
 //URS Version
 
@@ -1472,6 +1485,8 @@ function performAlgo() {
   var data2 = [];
   for (var i = 0; i < data1.length; i++) {
     data2[i] = {};
+    (data2[i])["onBar"] = (data1[i])["onBar"];
+    (data2[i])["DC"] = (data1[i])["DC"];
   }
   for (var i = 0; i < consReqPercentages.length; i++) {
     (data2[0])[i] = (data1[0])[i];
@@ -1524,7 +1539,7 @@ function performAlgo() {
       rowPrevRevVals.push((data2[i - 1])["URS" + j]);
       rowRevs.push((markRev[i])["URS" + j]);
       percentages.push(consReqPercentages[j]);
-    }    
+    }
     var result = solveRamping(consReqPercentages, rowRevs, rowRevVals, rowPrevRevVals, maxCellVals, (data1[i])["rampNum"], (data1[i])["onBar"]);
     for (var j = 0; j < consReqPercentages.length; j++) {
       (data2[i])[j] = result[j];
@@ -1540,4 +1555,33 @@ function performAlgo() {
   grid2.onCellChanged;
   //enabling the excel style functionality by the plugin
   grid2.registerPlugin(new Slick.CellExternalCopyManager(pluginOptions));
+  calculateFormulaColumnsSolution(grid2, data2);
+}
+
+/*
+Calculate the formula columns values for resulting solution
+
+*/
+function calculateFormulaColumnsSolution(grid2, data2) {
+  for (var i = 0; i < 96; i++) {
+    //i is iterator for the row i or block i+1...
+    var d = (data2[i]);
+    d["offBar"] = d["DC"] - d["onBar"];
+    var sumgen = 0;
+    for (var j = 0; j < constituentNames.length; j++) {
+      //j is iterator the column j ...
+      sumgen += d[j];
+      //URS Version
+      sumgen += d["RSD" + j];
+      sumgen += d["URS" + j];
+      //URS Version
+    }
+    d["avail"] = d["onBar"] - sumgen;
+    if (i > 0) {
+      d["rampedVal"] = d["avail"] - (data2[i - 1])["avail"];
+    } else
+      d["rampedVal"] = "NA";
+  }
+  grid2.invalidateAllRows();
+  grid2.render();
 }
