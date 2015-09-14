@@ -217,6 +217,9 @@ $(function() {
       //RSD version
       d['RSD' + j] = 0;
       d['URS' + j] = 'Yes';
+      //Accommodating markRev
+      m['RSD' + j] = 0;
+      m['URS' + j] = 0;
       //RSD version
     }
     d["avail"] = 0;
@@ -728,6 +731,37 @@ function validateGrid() {
           d[j] = cellval.toUpperCase();
         }
       }
+      //URS Version
+      cellval = d["RSD" + j];
+      //check if it is a number
+      if (typeof cellval == "number") {
+        //No Validation required
+      } else {
+        var isValid = cellval.match(/^\d+(\.\d+)?\p$/i) || cellval.match(/^\FULL$/i) || cellval.match(/^[+]?\d+(\.\d+)?$/i);
+        if (!isValid) {
+          alert('Invalid values at Block ' + (i + 1) + 'of the RSD Constituent ' + constituentNames[j] + '. Invalid values not allowed');
+          return false;
+        } else {
+          //if valid then capitalize all letters.Design  decision
+          d["RSD" + j] = cellval.toUpperCase();
+        }
+      }
+      cellval = d["URS" + j];
+      //check if it is a number
+      if (typeof cellval == "number") {
+        if (cellval == 0) {
+          d["URS" + j] = "No";
+        } else
+          d["URS" + j] = "Yes";
+      } else {
+        var isNO = cellval.match(/^\NO$/i) || cellval == '0';
+        if (isNO) {
+          d["URS" + j] = "No";
+        } else {
+          d["URS" + j] = "Yes";
+        }
+      }
+      //URS Version
     }
     //validating MaxRamps and onBarDC
     for (var j = 0; j < 3; j++) {
@@ -774,8 +808,16 @@ function getSummSecsToManual() //sections version of summtomanual
   table.innerHTML = "<tbody><tr><td>Constituent Name</td><td>From Block</td><td>To Block</td><td>Value</td><td><input type=\"checkbox\" name=\"chk\" onclick=\"SelectAll(this,'reqInputTable')\"></input></td></tr></tbody>";
   for (var j = 0; j < sectionsArray.length; j++) {
     sections = sectionsArray[j];
-    for (var k = 0; k < sections.length; k++)
+    for (var k = 0; k < sections.length; k++) {
       addRowOfInput("reqInputTable", constituentNames[j], sections[k].secStart + 1, sections[k].secEnd + 1, sections[k].val);
+    }
+    //URS Version
+    sections = sectionsArray["RSD" + j];
+    sectionsURS = sectionsArray["URS" + j];
+    for (var k = 0; k < sections.length; k++) {
+      addRowOfInput("reqRSDInputTable", constituentNames[j], sections[k].secStart + 1, sections[k].secEnd + 1, sections[k].val, sectionsURS[k].val);
+    }
+    //URS Version
   }
   getSummDCToManual();
   getSummDecToManual();
@@ -847,6 +889,21 @@ function addRowOfInput(tableID, colName, fromb, tob, val, chosenval) {
       t.value = val;
     }
     newcell.appendChild(t);
+  }
+  if (tableID == "reqRSDInputTable") {
+    //stubselect
+    newcell = row.insertCell(colCount - 2);
+    var t = document.createElement("select");
+    var op = new Option();
+    op.value = 'Yes';
+    op.text = "Yes";
+    t.options.add(op);
+    op = new Option();
+    op.value = 'No';
+    op.text = "No";
+    t.options.add(op);
+    newcell.appendChild(t);
+    t.value = chosenval;
   }
   newcell = row.insertCell(colCount - 1);
   var cb = document.createElement("input");
@@ -966,6 +1023,8 @@ function markCellsWithRevs() {
     var m = (markRev[i]);
     for (var j = 0; j < constituentNames.length; j++) {
       m[j] = 0;
+      m["RSD" + j] = 1000;
+      m["URS" + j] = 2000;
     }
   }
   //Iterate from 1st to current revision 
@@ -981,7 +1040,7 @@ function markCellsWithRevs() {
       var sectionsprev = sectionsArrayPrev[constcol];
       var sections = sectionsArray[constcol];
       var column = new Array(96);
-      //var columnprev = new Array(96);
+      //var columnprev = new Array(96);      
       //Build the columns of prev and present revisions of this constituent
       for (var i = 0; i < sections.length; i++) {
         for (var blkNum = Number(sections[i]["secStart"]); blkNum <= Number(sections[i]["secEnd"]); blkNum++) {
@@ -1005,7 +1064,68 @@ function markCellsWithRevs() {
       for (var i = changeRow; i < 96; i++) {
         (markRev[i])[constcol] = rev;
       }
+      //URS Version
+      //Column data of prev and present revisions
+      sectionsprev = sectionsArrayPrev["RSD" + constcol];
+      sections = sectionsArray["RSD" + constcol];
+      column = new Array(96);
+      //var columnprev = new Array(96);      
+      //Build the columns of prev and present revisions of this constituent
+      for (var i = 0; i < sections.length; i++) {
+        for (var blkNum = Number(sections[i]["secStart"]); blkNum <= Number(sections[i]["secEnd"]); blkNum++) {
+          column[blkNum] = sections[i]["val"];
+        }
+      }
+      changeRow = 96;
+      for (var i = 0; i < sectionsprev.length; i++) {
+        for (var blkNum = Number(sectionsprev[i]["secStart"]); blkNum <= Number(sectionsprev[i]["secEnd"]); blkNum++) {
+          //Check if prev column mismatches with present and declare the min blk number or row
+          if (sectionsprev[i]["val"] != column[blkNum]) //change row found
+          {
+            changeRow = blkNum;
+            break;
+          }
+        }
+      }
+      //TODO
+      //This computation for changeRow of each column in a rev can be avoided by calculating and saving the array of this variable in the database
+      //Marking the row rev on the basis of changeRow variable
+      for (var i = changeRow; i < 96; i++) {
+        (markRev[i])["RSD" + constcol] = 1000 + rev;
+      }
+      //Column data of prev and present revisions
+      sectionsprev = sectionsArrayPrev["URS" + constcol];
+      sections = sectionsArray["URS" + constcol];
+      column = new Array(96);
+      //var columnprev = new Array(96);      
+      //Build the columns of prev and present revisions of this constituent
+      for (var i = 0; i < sections.length; i++) {
+        for (var blkNum = Number(sections[i]["secStart"]); blkNum <= Number(sections[i]["secEnd"]); blkNum++) {
+          column[blkNum] = sections[i]["val"];
+        }
+      }
+      changeRow = 96;
+      for (var i = 0; i < sectionsprev.length; i++) {
+        for (var blkNum = Number(sectionsprev[i]["secStart"]); blkNum <= Number(sectionsprev[i]["secEnd"]); blkNum++) {
+          //Check if prev column mismatches with present and declare the min blk number or row
+          if (sectionsprev[i]["val"] != column[blkNum]) //change row found
+          {
+            changeRow = blkNum;
+            break;
+          }
+        }
+      }
+      //TODO
+      //This computation for changeRow of each column in a rev can be avoided by calculating and saving the array of this variable in the database
+      //Marking the row rev on the basis of changeRow variable
+      for (var i = changeRow; i < 96; i++) {
+        (markRev[i])["URS" + constcol] = 2000 + rev;
+      }
+      //URS Version
+
     }
+
+
   }
   //Now cells are marked with the latest rev change tags.
   //Lets output them to the revMarkTable
@@ -1321,6 +1441,22 @@ function performAlgo() {
           (data1[k])[constcol] = +ConvertCellValToNum(sections[j].val, constcol, k, 0, (data1[k])['onBar']);
       }
     }
+    //URS Version
+    if (!isNaN(constcol)) {
+      sections = sectionsArray["RSD" + constcol];
+      for (var j = 0; j < sections.length; j++) {
+        for (var k = sections[j].secStart; k <= sections[j].secEnd; k++) {
+          (data1[k])["RSD" + constcol] = +ConvertCellValToNum(sections[j].val, constcol, k, 0, (data1[k])['DC'] - (data1[k])['onBar']);
+        }
+      }
+      sections = sectionsArray["URS" + constcol];
+      for (var j = 0; j < sections.length; j++) {
+        for (var k = sections[j].secStart; k <= sections[j].secEnd; k++) {
+          (data1[k])["URS" + constcol] = sections[j].val;
+        }
+      }
+    }
+    //URS Version
   }
   //Now the desired numeric values fo the grid are known
   //Building the grid and configuring the grid
@@ -1339,9 +1475,13 @@ function performAlgo() {
   }
   for (var i = 0; i < consReqPercentages.length; i++) {
     (data2[0])[i] = (data1[0])[i];
+    //URS Version
+    (data2[0])["RSD" + i] = (data1[0])["RSD" + i];
+    (data2[0])["URS" + i] = 0; //ToDo Temporary setting for 1st URS row 
+    //URS Version
   }
   (data2[0])["SNo"] = 1;
-  var maxCellVals = new Array(consReqPercentages.length);
+  var maxCellVals = new Array(3 * consReqPercentages.length);
   //initialize the array maxcellvals array with 0
   for (var j = 0; j < maxCellVals.length; j++) {
     maxCellVals[j] = 0;
@@ -1349,17 +1489,50 @@ function performAlgo() {
   var rowRevVals;
   var rowPrevRevVals;
   var rowRevs;
+  var percentages;
   for (var i = 1; i < data1.length; i++) { //data1.length = 96
     rowRevVals = [];
     rowPrevRevVals = [];
     rowRevs = [];
-    for (var j = 0; j < maxCellVals.length; j++) {
+    percentages = [];
+    for (var j = 0; j < consReqPercentages.length; j++) {
       maxCellVals[j] = consReqPercentages[j] * (data1[i])["onBar"];
       rowRevVals.push((data1[i])[j]);
-      rowPrevRevVals.push((data1[i - 1])[j]);
+      rowPrevRevVals.push((data2[i - 1])[j]);
       rowRevs.push((markRev[i])[j]);
+      percentages.push(consReqPercentages[j]);
     }
-    data2[i] = solveRamping(consReqPercentages, rowRevs, rowRevVals, rowPrevRevVals, maxCellVals, (data1[i])["rampNum"]);
+    //URS Version
+    //Adding the RSD+URS requirements to the solving array
+    for (var j = 0; j < consReqPercentages.length; j++) {
+      maxCellVals[j + consReqPercentages.length] = consReqPercentages[j] * ((data1[i])["DC"] - (data1[i])["onBar"]);
+      rowRevVals.push((data1[i])["RSD" + j]);
+      rowPrevRevVals.push((data2[i - 1])["RSD" + j]);
+      rowRevs.push((markRev[i])["RSD" + j]);
+      percentages.push(consReqPercentages[j]);
+    }
+    //Now enter desired URS
+    for (var j = 0; j < consReqPercentages.length; j++) {
+      maxCellVals[j + 2 * consReqPercentages.length] = (data1[i])["onBar"];
+      var maxrsdshare = consReqPercentages[j] * ((data1[i])["DC"] - (data1[i])["onBar"]);
+      if ((data1[i])["RSD" + j] > maxrsdshare && (data1[i])["URS" + j] == "Yes") //if RSD+URS>RSD Share and URS asked == Yes then allocate desired URS
+      {
+        rowRevVals.push((data1[i])["RSD" + j] - maxrsdshare);
+      } else {
+        rowRevVals.push(0);
+      }
+      rowPrevRevVals.push((data2[i - 1])["URS" + j]);
+      rowRevs.push((markRev[i])["URS" + j]);
+      percentages.push(consReqPercentages[j]);
+    }    
+    var result = solveRamping(consReqPercentages, rowRevs, rowRevVals, rowPrevRevVals, maxCellVals, (data1[i])["rampNum"], (data1[i])["onBar"]);
+    for (var j = 0; j < consReqPercentages.length; j++) {
+      (data2[i])[j] = result[j];
+      (data2[i])["RSD" + j] = result[consReqPercentages.length + j];
+      (data2[i])["URS" + j] = result[2 * consReqPercentages.length + j];
+    }
+    //URS Version
+    //data2[i] = solveRamping(consReqPercentages, rowRevs, rowRevVals, rowPrevRevVals, maxCellVals, (data1[i])["rampNum"], (data1[i])["onBar"]);
     (data2[i])["SNo"] = i + 1;
   }
   grid2 = new Slick.Grid("#myGridFeasible", data2, columns, options);
