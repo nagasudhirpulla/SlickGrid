@@ -36,13 +36,12 @@
 				<button id="revSolButton" onclick="markCellsWithRevs()">GetFeasibleSchedule</button>
 			</div>
 		</div>
-		<div></div>
-		<div style="width=100%">
-			<div>
-				<h3>Enter the desired requisition values and onBarDC</h3>
-				<span>Note: The order matters!</span>
-			</div>		
-			<div id="reqInputDiv" style="display:table-cell;padding-left:10px;">
+		<div style="width=100%;display:table-row;">
+			<h3>Enter the desired requisition values and onBarDC</h3>
+			<span>Note: The order matters!</span>
+		</div>
+		<div style="width=100%;display:table-row;">
+			<div id="reqInputDiv" style="display:table-cell;padding-left:5px;">
 				<table id="reqInputTable" border="1" style="width:200px">
 					<tr>
 						<td style="width:100px">
@@ -96,7 +95,8 @@
 					<button id="reqRSDInputDeleteRowButton" onclick="deleteRow('reqRSDInputTable')">DeleteRows</button></div>
 
 				</div>
-				<div></div>
+		</div>
+		<div style="width=100%;display:table-row;">
 				<div id="genMaxRampDiv" style="display:table-cell;height:100%;padding-left:10px;">
 					<button onclick="showhide(this)">Max Ramp Inputs Table</button>
 					<div class="hidingClass">
@@ -174,7 +174,8 @@
 						</div>
 					</div>
 				</div>
-			</div>
+		</div>
+	</div>
 			<div>
 				<br>
 				<button id="reqGetFromSummButton" onclick="getSummSecsToManual()">Get from revision Summary</button>
