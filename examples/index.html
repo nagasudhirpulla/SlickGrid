@@ -41,31 +41,33 @@
 			<span>Note: The order matters!</span><br>
 		</div>
 		<div style="width=100%;display:table-row;">
-			<div id="reqInputDiv" style="display:table-cell;padding-left:5px;">
-				<table id="reqInputTable" border="1" style="width:200px">
-					<tr>
-						<td style="width:100px">
-							Constituent Name
-						</td>            
-						<td>
-							From Block
-						</td>
-						<td>
-							To Block
-						</td>
-						<td>
-							Value
-						</td>
-						<td><input type="checkbox" name="chk" onClick="SelectAll(this,'reqInputTable')"/></td>
-					</tr>
-				</table>
-				<br>
-				<select id="selectReqConst"><option>MSEB</option><option>Const2</option><option>Const3</option></select>
-				<button id="reqAddRowButton" onclick="addRow('reqInputTable')">AddRow</button>
-				<button id="reqDeleteRowButton" onclick="deleteRow('reqInputTable')">DeleteRows</button>
-				<p id="addRowConsole"></p><br>
+			<div style="display:table-cell;padding-left:5px;">
+				<button onclick="showhide(this)">Normal Share Inputs Table</button>
+				<div id="reqInputDiv" class="hidingClass">
+					<table id="reqInputTable" border="1" style="width:200px">
+						<tr>
+							<td style="width:100px">
+								Constituent Name
+							</td>            
+							<td>
+								From Block
+							</td>
+							<td>
+								To Block
+							</td>
+							<td>
+								Value
+							</td>
+							<td><input type="checkbox" name="chk" onClick="SelectAll(this,'reqInputTable')"/></td>
+						</tr>
+					</table>
+					<br>
+					<select id="selectReqConst"><option>MSEB</option><option>Const2</option><option>Const3</option></select>
+					<button id="reqAddRowButton" onclick="addRow('reqInputTable')">AddRow</button>
+					<button id="reqDeleteRowButton" onclick="deleteRow('reqInputTable')">DeleteRows</button>
+					<p id="addRowConsole"></p><br>
+				</div>
 			</div>
-
 			<div id="reqRSDInputDiv" style="display:table-cell;height:100%;padding-left:10px;">
 				<button onclick="showhide(this)">RSD+URS Inputs Table</button>
 				<div class="hidingClass">
