@@ -38,7 +38,7 @@
 		</div>
 		<div style="width=100%;display:table-row;">
 			<h3>Enter the desired requisition values and onBarDC</h3>
-			<span>Note: The order matters!</span>
+			<span>Note: The order matters!</span><br>
 		</div>
 		<div style="width=100%;display:table-row;">
 			<div id="reqInputDiv" style="display:table-cell;padding-left:5px;">
@@ -63,7 +63,7 @@
 				<select id="selectReqConst"><option>MSEB</option><option>Const2</option><option>Const3</option></select>
 				<button id="reqAddRowButton" onclick="addRow('reqInputTable')">AddRow</button>
 				<button id="reqDeleteRowButton" onclick="deleteRow('reqInputTable')">DeleteRows</button>
-				<p id="addRowConsole"></p>
+				<p id="addRowConsole"></p><br>
 			</div>
 
 			<div id="reqRSDInputDiv" style="display:table-cell;height:100%;padding-left:10px;">
@@ -93,10 +93,11 @@
 					<select id="selectRSDInputConst"><option>MSEB</option><option>Const2</option><option>Const3</option></select>
 					<button id="reqRSDInputAddRowButton" onclick="addRowRSDURS('reqRSDInputTable')">AddRow</button>
 					<button id="reqRSDInputDeleteRowButton" onclick="deleteRow('reqRSDInputTable')">DeleteRows</button></div>
-
+					<br>
 				</div>
 		</div>
 		<div style="width=100%;display:table-row;">
+				<br>
 				<div id="genMaxRampDiv" style="display:table-cell;height:100%;padding-left:10px;">
 					<button onclick="showhide(this)">Max Ramp Inputs Table</button>
 					<div class="hidingClass">
@@ -120,6 +121,7 @@
 						<br>
 						<button id="rampAddRowButton" onclick="addRow('genMaxRampInputTable')">AddRow</button>
 						<button id="rampDeleteRowButton" onclick="deleteRow('genMaxRampInputTable')">DeleteRows</button>					
+						<br>
 					</div>					
 				</div>
 				<div style="display:table-cell;height:100%;padding-left:10px;">
@@ -146,6 +148,7 @@
 							<br>
 							<button id="dCAddRowButton" onclick="addRow('genDCInputTable')">AddRow</button>
 							<button id="dCDeleteRowButton" onclick="deleteRow('genDCInputTable')">DeleteRows</button>
+							<br>
 						</div>
 					</div>
 					<div id="genDecInputDiv">
@@ -171,6 +174,7 @@
 							<br>
 							<button id="decAddRowButton" onclick="addRow('genDecInputTable')">AddRow</button>
 							<button id="decDeleteRowButton" onclick="deleteRow('genDecInputTable')">DeleteRows</button>
+							<br>
 						</div>
 					</div>
 				</div>
