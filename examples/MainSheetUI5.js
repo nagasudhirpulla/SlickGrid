@@ -311,11 +311,13 @@ function addRow(tableID) {
     newcell = row.insertCell(i);
     var t = document.createElement("input");
     t.min = '1';
+    t.maxlength="5";
     t.value = '';
     if (i != colCount - 2) {
       t.type = 'number';
       t.onkeypress = isNumberKey;
       t.min = '1';
+      t.max = '100';
     }
     newcell.appendChild(t);
   }
@@ -348,11 +350,13 @@ function addRowRSDURS(tableID) {
     newcell = row.insertCell(i);
     var t = document.createElement("input");
     t.min = '1';
+    t.maxlength="5";
     t.value = '';
     if (i != colCount - 3) { //change coz  of insertion in column
       t.type = 'number';
       t.onkeypress = isNumberKey;
       t.min = '1';
+      t.max = '100';
     }
     newcell.appendChild(t);
   }
@@ -790,7 +794,7 @@ function getSummSecsToManual() //sections version of summtomanual
   var tableRSDURS = document.getElementById("reqRSDInputTable");
   var sections;
   table.innerHTML = "<tbody><tr><td>Constituent Name</td><td>From Block</td><td>To Block</td><td>Value</td><td><input type=\"checkbox\" name=\"chk\" onclick=\"SelectAll(this,'reqInputTable')\"></input></td></tr></tbody>";
-  tableRSDURS.innerHTML = "<tr><td style=\"width:100px\">Constituent Name</td><td>From Block</td><td>To Block</td><td>RSD+URS Value</td><td>WantURS?</td><td><input type=\"checkbox\" name=\"chk\" onclick=\"SelectAll(this,'reqRSDInputTable')\"></td></tr>";
+  tableRSDURS.innerHTML = "<tr><td>Constituent Name</td><td>From Block</td><td>To Block</td><td>RSD+URS Value</td><td>WantURS?</td><td><input type=\"checkbox\" name=\"chk\" onclick=\"SelectAll(this,'reqRSDInputTable')\"></td></tr>";
   for (var j = 0; j < sectionsArray.length; j++) {
     sections = sectionsArray[j];
     for (var k = 0; k < sections.length; k++) {
@@ -861,16 +865,19 @@ function addRowOfInput(tableID, colName, fromb, tob, val, chosenval) {
     var t = document.createElement("input");
     if (i == 1) {
       t.min = '1';
+      t.max = '100';
       t.type = 'number';
       t.onkeypress = isNumberKey;
       t.value = fromb;
     } else if (i == 2) {
       t.min = '1';
+      t.max = '100';
       t.type = 'number';
       t.onkeypress = isNumberKey;
       t.value = tob;
     } else {
       t.min = '0';
+      t.maxlength="5";
       t.value = val;
     }
     newcell.appendChild(t);
