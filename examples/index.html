@@ -53,7 +53,7 @@
 		<div class="row">
 			<div class="col-md-6">
 				<button onclick="showhide(this)" class="btn btn-default btn-xs">Normal Share Inputs Table</button>
-				<div id="reqInputDiv" class="hidingClass">
+				<div id="reqInputDiv" class="hidingClass table-responsive">
 					<table id="reqInputTable" class="table table-bordered table-hover">
 						<tr>
 							<td>
@@ -80,7 +80,7 @@
 			</div>
 			<div class="col-md-6">
 				<button onclick="showhide(this)" class="btn btn-default btn-xs">RSD+URS Inputs Table</button>
-				<div class="hidingClass" style="display:none">
+				<div class="hidingClass table-responsive" style="display:none">
 					<table id="reqRSDInputTable" class="table table-bordered table-hover">
 						<tr>
 							<td>
@@ -110,7 +110,7 @@
 			<div class="row">
 				<div class="col-md-6">
 					<button onclick="showhide(this)" class="btn btn-default btn-xs">DC Inputs Table</button><br>
-					<div class="hidingClass" style="display:none">
+					<div class="hidingClass table-responsive" style="display:none">
 						<table id="genDecInputTable" class="table table-bordered table-hover">
 							<tr>
 								<td style="width:50px">
@@ -136,7 +136,7 @@
 				</div>
 				<div class="col-md-6">
 					<button onclick="showhide(this)" class="btn btn-default btn-xs">OnBar DC Inputs Table</button>
-					<div class="hidingClass" style="display:none">
+					<div class="hidingClass table-resonsive" style="display:none">
 						<table id="genDCInputTable" class="table table-bordered table-hover">
 							<tr>
 								<td style="width:50px">
@@ -164,7 +164,7 @@
 				<div class="col-md-3"></div>
 				<div class="col-md-6">
 					<button onclick="showhide(this)" class="btn btn-default btn-xs">Max Ramp Inputs Table</button>
-					<div class="hidingClass" style="display:none">
+					<div class="hidingClass table-responsive" style="display:none">
 						<table id="genMaxRampInputTable" class="table table-bordered table-hover">
 							<tr>
 								<td>
@@ -207,10 +207,12 @@
 				</div>
 			</div>
 			<div class="row">
-				<div class="col-md-12">
+				<div class="col-md-10">
 					<button onclick="showhide(this)" class="btn btn-default btn-xs">RevisionTags Of Cells</button>
-					<table id="revMarkTable" class="hidingClass table table-bordered table-hover">
-					</table>
+					<div class="table-responsive">
+						<table id="revMarkTable" class="hidingClass table table-bordered table-hover">
+						</table>
+					</div>
 				</div>
 			</div>
 			<div class="row">
