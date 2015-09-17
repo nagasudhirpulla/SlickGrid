@@ -409,12 +409,13 @@ function deleteRow(tableID) {
 
 function createSumm(overridePermissionRequired) { //by pressing modify revision by input tables button
   //tieing all the tables to one button
-  var x1 = modifyReq(false);
-  var x2 = modifyDC(false);
-  var x3 = modifyDec(false);
-  var x4 = modifyRamp(false);
+  var askforoverride = true;
+  var x1 = modifyReq(askforoverride);
+  var x2 = modifyDC(!x1);
+  var x3 = modifyDec(!(x1||x2));
+  var x4 = modifyRamp(!(x1||x2||x3));
   //URS version
-  var x5 = modifyRSD(false);
+  var x5 = modifyRSD(!(x1||x2||x3||x4));
   //URS version
   if (x1 || x2 || x3 || x4 || x5) {
     calulateFormulaColumns();
