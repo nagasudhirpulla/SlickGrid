@@ -38,7 +38,7 @@
 				<div id="summTabDiv">
 					<button id="reqFeedByGridButton" onclick="updateFromGrid()" class="btn btn-primary btn-xs">Modify Revision from Grid</button>
 					<h3 id='tiedInfo'>Requisition Summary Table, tied to grid</h3>
-					<table id="summTab" class="table table-bordered table-hover table-striped"></table>
+					<table id="summTab" class="table table-bordered table-hover"></table>
 					<button id="buttonUpdateRevSummTab" onclick="saveToDatabase()" class="btn btn-primary btn-xs">Save Rev According to this Table</button>
 					<button id="revSolButton" onclick="markCellsWithRevs()" class="btn btn-primary btn-xs">GetFeasibleSchedule</button>
 				</div>
@@ -202,12 +202,12 @@
 					<ul>
 						<li>Use buttons to undo/redo copy/paste</li>
 					</ul>
-					<button onclick="undoRedoBuffer.undo()"><img src="../images/arrow_undo.png" align="absmiddle"> Undo</button>
-					<button onclick="undoRedoBuffer.redo()"><img src="../images/arrow_redo.png" align="absmiddle"> Redo</button>
+					<button class="btn btn-default btn-xs" onclick="undoRedoBuffer.undo()"><img src="../images/arrow_undo.png" align="absmiddle"> Undo</button>
+					<button class="btn btn-default btn-xs" onclick="undoRedoBuffer.redo()"><img src="../images/arrow_redo.png" align="absmiddle"> Redo</button>
 				</div>
 			</div>
 			<div class="row">
-				<div class="col-md-10">
+				<div class="col-md-10 col-xs-11">
 					<button onclick="showhide(this)" class="btn btn-default btn-xs">RevisionTags Of Cells</button>
 					<div class="table-responsive">
 						<table id="revMarkTable" class="hidingClass table table-bordered table-hover">
@@ -216,13 +216,13 @@
 				</div>
 			</div>
 			<div class="row">
-				<div class="col-md-10">
+				<div class="col-md-10 col-xs-11">
 					<button onclick="showhide(this)" class="btn btn-default btn-xs">Desired Numeric Requisions</button>
 					<div id="myGridDes" style="height:300px" class="hidingClass"> </div>
 				</div>
 			</div>
 			<div class="row">
-				<div class="col-md-10">
+				<div class="col-md-10 col-xs-11">
 					<button onclick="showhide(this)" class="btn btn-default btn-xs">Feasible Requisions of Constituents</button>
 					<div id="myGridFeasible" style="height:300px" class="hidingClass"> </div>
 				</div>
