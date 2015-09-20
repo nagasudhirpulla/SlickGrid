@@ -1,5 +1,5 @@
 // Some global variables (database, references to key UI elements)
-var db;
+var db,count;
 
 function databaseOpen(callback) {
     // Open a database, specify the name and version
@@ -38,34 +38,28 @@ function databaseRevsAdd(revVal, revDataObj, callback) {
         revNo: revVal,
         revData: revDataObj
     });
-    getTableCells();
 
     transaction.oncomplete = function(e) {
         callback();
     };
-    request.onerror = databaseError;
+    request.onerror = databaseErrorOutput;
 }
 
-function databaseRevsGetAbove(revVal, callback) {
+function databaseModifyRevsAbove(revVal, callback) {
     var transaction = db.transaction(['revisions'], 'readonly');
     var store = transaction.objectStore('revisions');
     var index = store.index("revNo");
     // Get everything in the store
     var keyRange = IDBKeyRange.lowerBound(revVal);
     var cursorRequest = index.openCursor(keyRange);
-    // This fires once per row in the store, so for simplicity
-    // collect the data in an array (data) and send it pass it
-    // in the callback in one go
-    var data = [];
+    // This fires once per row in the store
     cursorRequest.onsuccess = function(e) {
         var result = e.target.result;
         // If there's data, add it to array
         if (result) {
-            data.push(result);
+            callback(result);
             result.continue();
             // Reach the end of the data
-        } else {
-            callback(data);
         }
     };
 }
@@ -104,6 +98,18 @@ function databaseRevsUpdate(id, callback) {
     };
 }
 
+function databaseRevsCount(callback){
+    var transaction = db.transaction(['revisions'], 'readonly');
+    var store = transaction.objectStore('revisions');
+    var req = store.count();    
+    req.onsuccess = function(evt) {
+      count = req.result;
+    };
+    req.onerror = function(evt) {
+      
+    };
+}
+
 function databaseRevsDelete(id, callback) {
     var transaction = db.transaction(['revisions'], 'readwrite');
     var store = transaction.objectStore('revisions');
@@ -111,5 +117,64 @@ function databaseRevsDelete(id, callback) {
     transaction.oncomplete = function(e) {
         callback();
     };
-    request.onerror = databaseError;
+    request.onerror = databaseErrorOutput;
 }
+
+function loadRevision(val,callback){
+    var numrevs = count;//todo if add a new revision in empty database
+    if(val==numrevs+1){
+        if(confirm("Create revision number "+val+"..."))
+        {
+            loadRevision(val-1,function(dataObj){
+                databaseRevsAdd(val,dataObj.revData,function(){
+                count = count + 1;
+                alert("Revision "+val+"created with the saved revision data of Revision "+(val-1)+"...");
+                });
+            });
+        }
+    }
+    else if(val>numrevs){
+        alert("Invalid Revision Number...");
+    }
+    else{
+        databaseRevsGetOne(val,callback);  
+    }
+}
+ 
+ function addNewRevision(){
+    return loadRevision(count+1);
+ }
+
+ function updateRev(revNum,updatedRevDataObj){
+    var numrevs = count;
+    if(revNum<=numrevs){
+        var id = databaseRevsGetOne(val,function(dataObj){
+            return dataObj.id;
+        });
+        databaseRevsUpdate(id,function(data){
+            data.revData = updatedRevDataObj;
+            return data;
+        });
+    }
+ }
+
+ function deleteRev(val){
+    var numrevs = count;
+    if(val<=numrevs){
+        var id = databaseRevsGetOne(val,function(dataObj){
+            return dataObj.id;
+        });
+        databaseRevsDelete(id,function(){
+            count = count - 1;
+            alert("Deleted the revision "+val+"...");
+            databaseModifyRevsAbove(val,function(dataObj){
+                dataObj.revNo = dataObj.revNo + 1;
+                databaseRevsUpdate(dataObj.id, function(dataObj1){
+                    dataObj1 = dataObj;
+                    return dataObj1;
+                }); 
+            });
+        });
+        alert("Updated revision numbers accordingly...");
+    }
+ }
