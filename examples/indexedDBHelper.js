@@ -125,7 +125,7 @@ function databaseRevsDelete(id, callback) { //do something like echoing, no argu
 
 function loadRevision(val, callback, dataObj) { //do something with read record or inserted recordObject
 	var numrevs = count; //todo if add a new revision in empty database
-	if (val == numrevs + 1) {
+	if (val == numrevs) {
 		if (confirm("Create revision number " + val + "...")) {
 			databaseRevsAdd(val, dataObj, callback);
 		}
@@ -137,7 +137,7 @@ function loadRevision(val, callback, dataObj) { //do something with read record 
 }
 
 function addNewRevision(callback, dataObj) {
-	return loadRevision(count + 1, callback, dataObj);
+	return loadRevision(count, callback, dataObj);
 }
 
 function updateRev(revNum, modifyFunction, onCompleteFunction) {
