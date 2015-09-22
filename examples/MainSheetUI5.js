@@ -942,7 +942,7 @@ function saveToDatabase() //Update Operations of the database.
   }
 }
 
-function loadRevision() //Read Operation of the database.
+function loadRevision1() //Read Operation of the database.
 {
   //Get the rev number from the revInput TextBox element.Validate it first
   var loadRev = +document.getElementById("revInput").value; //+ tries to converts string to a number
@@ -976,6 +976,38 @@ function loadRevision() //Read Operation of the database.
   getSummRampToManual();
   //now press the button reqFeedByTableButton virtually to recreate the summary table and modify the grid
   createSumm(false);
+}
+
+function loadRevision() //Read Operation of the database.
+{
+  //Get the rev number from the revInput TextBox element.Validate it first
+  var loadRev = +document.getElementById("revInput").value; //+ tries to converts string to a number
+  if (isNaN(loadRev)) {
+    alert('Invalid Input in the revision field. So cannot load...');
+    return false;
+  }
+  
+  //Then ask to save changes if not saved
+  if (!confirm("Load the Revision " + loadRev + " ?" + "\n" + "If changes not saved, press cancel button and save, otherwise changes will be lost...")) {
+    return false;
+  }
+  //Now the revision can be loaded...
+  //So if wanted change the table data accordingly and update the curRev variable
+  var afterLoad = function(record) {
+		console.log("Loading revision " + curRev + "...");
+		console.log(record.revData);
+		sectionsArray = record.revData;
+		setCurrRevDisplay(loadRev);
+		createSectionSummaryTable();
+		//press the button getfromsummarytable virtually and modify the grid
+    getSummSecsToManual();
+    getSummDCToManual();
+    getSummDecToManual();
+    getSummRampToManual();
+    //now press the button reqFeedByTableButton virtually to recreate the summary table and modify the grid
+    createSumm(false);
+	};
+	loadRevision(curRev, afterLoad, sectionsArray);
 }
 
 function checkForRevInDb(loadRev) {
