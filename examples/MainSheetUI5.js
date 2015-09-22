@@ -246,6 +246,10 @@ $(function() {
     grid.updateRowCount();
     grid.render();
   });
+  //IndexedDB addition - opened the database
+  databaseOpen(function() {
+    databaseRevsCount();
+  });
 })
 
 /*
@@ -911,10 +915,17 @@ function saveToDatabase() //Update Operations of the database.
   //Take the sections array and save it to the database
   if (!confirm("Save the changes to database in Revision " + curRev + "...?" + "\n" + "The data will be saved based on the Summary table"))
     return false;
-  if (revDataArray.length == curRev)
+  if (revDataArray.length == curRev) {
     revDataArray.push(sectionsArray);
-  else
+    //IndexedDB addition - adding to database
+    var afterAdd = function(revdata) {
+      console.log("Revision " + count + " created...");
+      console.log(revdata); //logically revData = dataObj
+    };
+    addNewRevision(afterAdd, sectionsArray);
+  } else {
     revDataArray[curRev] = sectionsArray;
+  }
 }
 
 function loadRevision() //Read Operation of the database.
