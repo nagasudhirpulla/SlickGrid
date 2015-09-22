@@ -247,9 +247,6 @@ $(function() {
     grid.render();
   });
   //IndexedDB addition - opened the database
-  databaseOpen(function() {
-    databaseRevsCount();
-  });
   var afterLoad = function(record) {
 		console.log("Loading revision " + (count-1) + "...");
 		console.log(record.revData);
@@ -264,7 +261,10 @@ $(function() {
 	//now press the button reqFeedByTableButton virtually to recreate the summary table and modify the grid
 	createSumm(false);
     };
+  databaseOpen(function() {
+    databaseRevsCount();
     loadRevision(count-1, afterLoad, sectionsArray);
+  });
 })
 
 /*
