@@ -250,6 +250,21 @@ $(function() {
   databaseOpen(function() {
     databaseRevsCount();
   });
+  var afterLoad = function(record) {
+		console.log("Loading revision " + (count-1) + "...");
+		console.log(record.revData);
+		sectionsArray = record.revData;
+		setCurrRevDisplay(count-1);
+		createSectionSummaryTable();
+		//press the button getfromsummarytable virtually and modify the grid
+	getSummSecsToManual();
+	getSummDCToManual();
+	getSummDecToManual();
+	getSummRampToManual();
+	//now press the button reqFeedByTableButton virtually to recreate the summary table and modify the grid
+	createSumm(false);
+    };
+    loadRevision(count-1, afterLoad, sectionsArray);
 })
 
 /*
