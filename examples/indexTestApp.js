@@ -1,34 +1,45 @@
-databaseOpen(function(){
+databaseOpen(function() {
 	databaseRevsCount();
 });
 
 
-function createnew()
-{
-	dataObj = {str:document.getElementById("textinput").value};
-	addNewRevision(function(revdata){
-			console.log("Revision "+count+" created...");
-			console.log(revdata);//logically revData = dataObj
-            },dataObj);
-}
-function loadrev()
-{
-	loadRevision(+document.getElementById("textinput").value, function(record){
-		console.log(record.revData);
-	},+document.getElementById("textinput").value);
+function createnew() {
+	dataObj = {
+		str: document.getElementById("textinput").value
+	};
+	var afterAdd = function(revdata) {
+		console.log("Revision " + count + " created...");
+		console.log(revdata); //logically revData = dataObj
+	};
+	addNewRevision(afterAdd, dataObj);
 }
 
-function updaterev(){
-	var modifyFunction = function(oldRec){
+function loadrev() {
+	val = +document.getElementById("textinput").value;
+	var afterLoad = function(record) {
+		console.log("Loading revision " + val + "...");
+		console.log(record.revData);
+	};
+	loadRevision(val, afterLoad, +document.getElementById("textinput").value);
+}
+
+function updaterev() {
+	var modifyFunction = function(oldRec) {
 		oldRec.revData = Date.now();
 		return oldRec;
 	};
-	var onCompleteFunction = function(updatedRec){
+	val = +document.getElementById("textinput").value;
+	var afterUpdate = function(updatedRec) {
+		console.log("Updated revision " + val + "...");
 		console.log(updatedRec);
 	};
-	updateRev(+document.getElementById("textinput").value,modifyFunction,onCompleteFunction);
+	updateRev(val, modifyFunction, afterUpdate);
 }
 
-function deleterev(){
-	deleteRev(+document.getElementById("textinput").value);
+function deleterev() {
+	var val = +document.getElementById("textinput").value;
+	var afterDelete = function() {
+		console.log("Deleted the revision " + val + "...");
+	}
+	deleteRev(val, afterDelete);
 }
