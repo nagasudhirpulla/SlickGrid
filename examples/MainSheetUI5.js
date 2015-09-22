@@ -994,7 +994,7 @@ function loadRevisionFromDB() //Read Operation of the database.
   //Now the revision can be loaded...
   //So if wanted change the table data accordingly and update the curRev variable
   var afterLoad = function(record) {
-		console.log("Loading revision " + curRev + "...");
+		console.log("Loading revision " + loadRev + "...");
 		console.log(record.revData);
 		sectionsArray = record.revData;
 		setCurrRevDisplay(loadRev);
@@ -1007,7 +1007,7 @@ function loadRevisionFromDB() //Read Operation of the database.
     //now press the button reqFeedByTableButton virtually to recreate the summary table and modify the grid
     createSumm(false);
 	};
-	loadRevision(curRev, afterLoad, sectionsArray);
+	loadRevision(loadRev, afterLoad, sectionsArray);
 }
 
 function checkForRevInDb(loadRev) {
