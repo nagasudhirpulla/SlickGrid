@@ -934,9 +934,8 @@ function saveToDatabase() //Update Operations of the database.
   		oldRec.revData = sectionsArray;
   		return oldRec;
   	};
-  	val = +document.getElementById("textinput").value;
   	var afterUpdate = function(updatedRec) {
-  		console.log("Updated revision " + val + "...");
+  		console.log("Updated revision " + curRev + "...");
   		console.log(updatedRec);
   	};
   	updateRev(curRev, modifyFunction, afterUpdate);
