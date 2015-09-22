@@ -978,7 +978,7 @@ function loadRevision1() //Read Operation of the database.
   createSumm(false);
 }
 
-function loadRevision() //Read Operation of the database.
+function loadRevisionFromDB() //Read Operation of the database.
 {
   //Get the rev number from the revInput TextBox element.Validate it first
   var loadRev = +document.getElementById("revInput").value; //+ tries to converts string to a number
