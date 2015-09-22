@@ -993,7 +993,7 @@ function loadRevisionFromDB() //Read Operation of the database.
   }
   //Now the revision can be loaded...
   //So if wanted change the table data accordingly and update the curRev variable
-  function afterLoad(record) {
+  var afterLoad = function(record) {
 		console.log("Loading revision " + loadRev + "...");
 		console.log(record.revData);
 		sectionsArray = record.revData;
