@@ -919,12 +919,23 @@ function saveToDatabase() //Update Operations of the database.
     revDataArray.push(sectionsArray);
     //IndexedDB addition - adding to database
     var afterAdd = function(revdata) {
-      console.log("Revision " + count + " created...");
+      console.log("Revision " + (count-1) + " created...");
       console.log(revdata); //logically revData = dataObj
     };
     addNewRevision(afterAdd, sectionsArray);
   } else {
     revDataArray[curRev] = sectionsArray;
+    //IndexedDB addition - updating database
+    var modifyFunction = function(oldRec) {
+  		oldRec.revData = sectionsArray;
+  		return oldRec;
+  	};
+  	val = +document.getElementById("textinput").value;
+  	var afterUpdate = function(updatedRec) {
+  		console.log("Updated revision " + val + "...");
+  		console.log(updatedRec);
+  	};
+  	updateRev(curRev, modifyFunction, afterUpdate);
   }
 }
 
