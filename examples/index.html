@@ -34,12 +34,14 @@
 			<div class="col-md-9 col-xs-11">
 				<div id="myGrid" style="height:400px;"></div>
 			</div>
-			<div class="col-md-3">
+			<div class="col-md-3 col-xs-12">
 				<div id="summTabDiv">
-					<button id="reqFeedByGridButton" onclick="updateFromGrid()" class="btn btn-primary btn-xs">Modify Revision from Grid</button><br>
+					<button id="reqFeedByGridButton" onclick="updateFromGrid()" class="btn btn-primary btn-xs">Modify Revision from Grid</button>
+					<br>
 					<h3 id='tiedInfo'>Requisition Summary Table, tied to grid</h3>
 					<table id="summTab" class="table table-bordered table-hover"></table>
 					<button id="buttonUpdateRevSummTab" onclick="saveToDatabase()" class="btn btn-primary btn-xs">Save Rev According to this Table</button>
+					<br>
 					<button id="revSolButton" onclick="markCellsWithRevs()" class="btn btn-primary btn-xs">GetFeasibleSchedule</button>
 				</div>
 			</div>
