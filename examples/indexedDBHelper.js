@@ -146,7 +146,7 @@ function updateRev(revNum, modifyFunction, onCompleteFunction) {
 	});
 }
 
-function deleteRev(val) {
+function deleteRev(val, callback) {
 	var numrevs = count;
 	if (val <= numrevs) {
 		databaseRevsGetOne(val, function(record) {
@@ -156,7 +156,7 @@ function deleteRev(val) {
 				return oldRecord;
 			}
 			databaseRevsDelete(id, function() {
-				alert("Deleted the revision " + val + "...");
+				callback();
 				databaseModifyRevsAbove(val, function(oldrecord) {
 					databaseRevsUpdate(oldrecord.id, modifyFunction, function(data) {});
 				});
