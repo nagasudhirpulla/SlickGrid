@@ -1021,12 +1021,21 @@ function getLastRevOfDb() {
   return revDataArray.length - 1;
 }
 
-function createNewRev() //Create Operation of the database.
+function createNewRev1() //Create Operation of the database.
 {
   if (!confirm("Revision not present." + "\n" + "Create a new Revision " + (getLastRevOfDb() + 1) + "?")) {
     return false;
   }
   setCurrRevDisplay(getLastRevOfDb() + 1);
+  return true;
+}
+
+function createNewRev() //Create Operation of the database.
+{
+  if (!confirm("Create a new Revision " + count + " ?")) {
+    return false;
+  }
+  setCurrRevDisplay(count);
   return true;
 }
 
