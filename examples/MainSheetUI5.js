@@ -917,14 +917,18 @@ function saveToDatabase() //Update Operations of the database.
     return false;
   if (revDataArray.length == curRev) {
     revDataArray.push(sectionsArray);
+  } else {
+    revDataArray[curRev] = sectionsArray;
+  }
+  if(count == curRev){
     //IndexedDB addition - adding to database
     var afterAdd = function(revdata) {
       console.log("Revision " + (count-1) + " created...");
       console.log(revdata); //logically revData = dataObj
     };
     addNewRevision(afterAdd, sectionsArray);
-  } else {
-    revDataArray[curRev] = sectionsArray;
+  }
+  else{
     //IndexedDB addition - updating database
     var modifyFunction = function(oldRec) {
   		oldRec.revData = sectionsArray;
