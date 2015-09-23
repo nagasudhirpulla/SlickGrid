@@ -263,7 +263,9 @@ $(function() {
     };
   databaseOpen(function() {
     databaseRevsCount();
+    if(count>0){
     loadRevision(count-1, afterLoad, sectionsArray);
+    }
   });
 })
 
