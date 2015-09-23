@@ -262,10 +262,12 @@ $(function() {
 	createSumm(false);
     };
   databaseOpen(function() {
-    databaseRevsCount();
-    if(count>0){
-    loadRevision(count-1, afterLoad, sectionsArray);
-    }
+  	var afterCount = function(){
+	  	if(count>0){
+	    	 loadRevision(count-1, afterLoad, sectionsArray);
+	    	}
+  	};
+    databaseRevsCount(afterCount);
   });
 })
 
