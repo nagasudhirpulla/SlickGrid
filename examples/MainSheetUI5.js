@@ -1116,7 +1116,7 @@ function markCellsWithRevs() {
       var afterLoad1 = function(record1) {
           var sectionsArrayPrev = sectionsArray;
           //sectionsArray = revDataArray[rev];
-          var rev = record.revNo;
+          var rev = record1.revNo;
           console.log("Marking from revision " + rev + "...");
           sectionsArray = record1.revData;
           console.log(record1.revData);
