@@ -1111,11 +1111,12 @@ function markCellsWithRevs() {
     console.log(record.revData);
     sectionsArray = record.revData;
     //Iterate from 1st to current revision 
-    for (var rev = 1; rev <= curRev; rev++) {
+    for (var rev1 = 1; rev1 <= curRev; rev1++) {
       //Get the revision data of the present ad prev revisons
-      var sectionsArrayPrev = sectionsArray;
-      //sectionsArray = revDataArray[rev];
       var afterLoad1 = function(record1) {
+          var sectionsArrayPrev = sectionsArray;
+          //sectionsArray = revDataArray[rev];
+          var rev = record.revNo;
           console.log("Marking from revision " + rev + "...");
           sectionsArray = record1.revData;
           console.log(record1.revData);
@@ -1211,7 +1212,7 @@ function markCellsWithRevs() {
           }
 
         };
-      loadRevision(rev, afterLoad1, sectionsArray);
+      loadRevision(rev1, afterLoad1, sectionsArray);//sectionsArray of iteration being shared among all requests so may have a problem of concurrency...//todo 24/09/2015
     }
   //Now cells are marked with the latest rev change tags.
   //Lets output them to the revMarkTable
@@ -1531,8 +1532,9 @@ function performAlgo() {
   }
   //First get all cells with desired numeric cell values into a  table dataDes from the revision summary array of the current revision
   //constraint - this  has to be saved.
-  var sectionsArray = revDataArray[curRev];
-  for (var constcol1 = -3; constcol1 < constituentNames.length; constcol1++) { //last two for onBarDC and MaxRamp and DC respectively
+  var afterLoad = function(record){
+    var sectionsArray = record.revData;
+    for (var constcol1 = -3; constcol1 < constituentNames.length; constcol1++) { //last two for onBarDC and MaxRamp and DC respectively
     switch (constcol1) {
       case -3:
         constcol = "onBar";
@@ -1658,6 +1660,8 @@ function performAlgo() {
   //enabling the excel style functionality by the plugin
   grid2.registerPlugin(new Slick.CellExternalCopyManager(pluginOptions));
   calculateFormulaColumnsSolution(grid2, data2);
+  }
+  loadRevision(curRev,afterLoad,sectionsArray);
 }
 
 /*
