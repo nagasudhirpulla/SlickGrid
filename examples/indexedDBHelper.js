@@ -106,6 +106,7 @@ function databaseRevsCount(callback) {
 	var req = store.count();
 	req.onsuccess = function(evt) {
 		count = req.result;
+		callback();
 	};
 	req.onerror = function(evt) {
 
