@@ -1110,10 +1110,12 @@ function markCellsWithRevs() {
     console.log("Marking from revision " + 0 + "...");
     console.log(record.revData);
     sectionsArray = record.revData;
-    //Iterate from 1st to current revision 
+    //Iterate from 1st to current revision
+    var canProceed = {val:false};
     for (var rev1 = 1; rev1 <= curRev; rev1++) {
       //Get the revision data of the present ad prev revisons
       var afterLoad1 = function(record1) {
+          canProceed.val = true;
           var sectionsArrayPrev = sectionsArray;
           //sectionsArray = revDataArray[rev];
           var rev = record1.revNo;
@@ -1213,6 +1215,10 @@ function markCellsWithRevs() {
 
         };
       loadRevision(rev1, afterLoad1, sectionsArray);//sectionsArray of iteration being shared among all requests so may have a problem of concurrency...//todo 24/09/2015
+      while(!canProceed.val){
+        
+      }
+      canProceed.val = false;
     }
   //Now cells are marked with the latest rev change tags.
   //Lets output them to the revMarkTable
