@@ -1106,11 +1106,23 @@ function markCellsWithRevs() {
   }
   //Iterate from 1st to current revision 
   //works only for saved revisions now, if rev not saved or a new revision, then doesnot work
-  var sectionsArray = revDataArray[0];
+  var sectionsArray = [];
+  var completedReadRev = false;
+  var afterLoad = function(record) {
+		console.log("Marking from revision " + loadRev + "...");
+		console.log(record.revData);
+		sectionsArray = record.revData;
+		completedReadRev = true;
+	};
+  loadRevision(0, afterLoad, sectionsArray);
+  while(!completedReadRev){  }
   for (var rev = 1; rev <= curRev; rev++) {
     //Get the revision data of the present ad prev revisons
     var sectionsArrayPrev = sectionsArray;
-    sectionsArray = revDataArray[rev];
+    //sectionsArray = revDataArray[rev];
+    completedReadRev = false;
+    loadRevision(rev, afterLoad, sectionsArray);
+    while(!completedReadRev){  }
     //iterate through each column of this revision to find the min blk num affected by this rev in this column
     for (var constcol = 0; constcol < constituentNames.length; constcol++) {
       //Column data of prev and present revisions
@@ -1201,8 +1213,7 @@ function markCellsWithRevs() {
       //URS Version
 
     }
-
-
+  
   }
   //Now cells are marked with the latest rev change tags.
   //Lets output them to the revMarkTable
