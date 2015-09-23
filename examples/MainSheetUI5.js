@@ -1103,22 +1103,22 @@ function markCellsWithRevs() {
       m["URS" + j] = 2000;
     }
   }
-  //Iterate from 1st to current revision 
-  //works only for saved revisions now, if rev not saved or a new revision, then doesnot work
+  //Works only for saved revisions now, if rev not saved or a new revision, then doesnot work
   var sectionsArray = [];
-  var completedReadRev = false;
+  
   var afterLoad = function(record) {
     console.log("Marking from revision " + 0 + "...");
     console.log(record.revData);
     sectionsArray = record.revData;
+    //Iterate from 1st to current revision 
     for (var rev = 1; rev <= curRev; rev++) {
       //Get the revision data of the present ad prev revisons
       var sectionsArrayPrev = sectionsArray;
       //sectionsArray = revDataArray[rev];
       var afterLoad1 = function(record1) {
           console.log("Marking from revision " + rev + "...");
-          sectionsArray = record.revData;
-          console.log(record.revData);
+          sectionsArray = record1.revData;
+          console.log(record1.revData);
           //iterate through each column of this revision to find the min blk num affected by this rev in this column
           for (var constcol = 0; constcol < constituentNames.length; constcol++) {
             //Column data of prev and present revisions
@@ -1210,101 +1210,98 @@ function markCellsWithRevs() {
 
           }
 
-        }
-        //Now cells are marked with the latest rev change tags.
-        //Lets output them to the revMarkTable
-      var tab = document.getElementById("revMarkTable");
-      tab.innerHTML = '';
-      //Add a row
-      var tr = document.createElement('tr');
-      for (var constcol = -4; constcol < constituentNames.length; constcol++) {
-        //Add cells to the table
-        var td0 = document.createElement('td');
-        switch (constcol) {
-          case -4:
-            td0.appendChild(document.createTextNode("BlockNumber"));
-            break;
-          case -3:
-            td0.appendChild(document.createTextNode("DC"));
-            break;
-          case -2:
-            td0.appendChild(document.createTextNode("OnBarDC"));
-            break;
-          case -1:
-            td0.appendChild(document.createTextNode("MaxRamp"));
-            break;
-          default:
-            td0.appendChild(document.createTextNode(constituentNames[constcol]));
-            break;
-        }
-        tr.appendChild(td0);
-      }
-      for (var constcol = 0; constcol < constituentNames.length; constcol++) {
-        //Add cells to the table
-        var td0 = document.createElement('td');
-        td0.appendChild(document.createTextNode("RSD" + constituentNames[constcol]));
-        tr.appendChild(td0);
-      }
-      for (var constcol = 0; constcol < constituentNames.length; constcol++) {
-        //Add cells to the table
-        var td0 = document.createElement('td');
-        td0.appendChild(document.createTextNode("URS" + constituentNames[constcol]));
-        tr.appendChild(td0);
-      }
-      tab.appendChild(tr);
-      for (var i = 0; i < 96; i++) {
-        //Add a row
-        tr = document.createElement('tr');
-        for (var constcol = 0; constcol < 4; constcol++) {
-          //Add cells to the table
-          td0 = document.createElement('td');
-          switch (constcol) {
-            case 0:
-              td0.appendChild(document.createTextNode(i + 1));
-              break;
-            case 1:
-              td0.appendChild(document.createTextNode("DC"));
-              break;
-            case 2:
-              td0.appendChild(document.createTextNode("OnBarDC"));
-              break;
-            case 3:
-              td0.appendChild(document.createTextNode("MaxRamp"));
-              break;
-          }
-          tr.appendChild(td0);
-        }
-        for (var constcol = 0; constcol < constituentNames.length; constcol++) {
-          //Add cells to the table
-          td0 = document.createElement('td');
-          td0.appendChild(document.createTextNode((markRev[i])[constcol]));
-          tr.appendChild(td0);
-        }
-        for (var constcol = 0; constcol < constituentNames.length; constcol++) {
-          //Add cells to the table
-          td0 = document.createElement('td');
-          td0.appendChild(document.createTextNode((markRev[i])["RSD" + constcol]));
-          tr.appendChild(td0);
-        }
-        for (var constcol = 0; constcol < constituentNames.length; constcol++) {
-          //Add cells to the table
-          td0 = document.createElement('td');
-          td0.appendChild(document.createTextNode((markRev[i])["URS" + constcol]));
-          tr.appendChild(td0);
-        }
-        tab.appendChild(tr);
-      }
-      tab.border = '1';
-      //tab.width = '100px';
-      performAlgo();
+        };
+      loadRevision(rev, afterLoad1, sectionsArray);
     }
-    loadRevision(rev, afterLoad, sectionsArray); ///todo 23092015
-
+  //Now cells are marked with the latest rev change tags.
+  //Lets output them to the revMarkTable
+  var tab = document.getElementById("revMarkTable");
+  tab.innerHTML = '';
+  //Add a row
+  var tr = document.createElement('tr');
+  for (var constcol = -4; constcol < constituentNames.length; constcol++) {
+    //Add cells to the table
+    var td0 = document.createElement('td');
+    switch (constcol) {
+      case -4:
+        td0.appendChild(document.createTextNode("BlockNumber"));
+        break;
+      case -3:
+        td0.appendChild(document.createTextNode("DC"));
+        break;
+      case -2:
+        td0.appendChild(document.createTextNode("OnBarDC"));
+        break;
+      case -1:
+        td0.appendChild(document.createTextNode("MaxRamp"));
+        break;
+      default:
+        td0.appendChild(document.createTextNode(constituentNames[constcol]));
+        break;
+    }
+    tr.appendChild(td0);
+  }
+  for (var constcol = 0; constcol < constituentNames.length; constcol++) {
+    //Add cells to the table
+    var td0 = document.createElement('td');
+    td0.appendChild(document.createTextNode("RSD" + constituentNames[constcol]));
+    tr.appendChild(td0);
+  }
+  for (var constcol = 0; constcol < constituentNames.length; constcol++) {
+    //Add cells to the table
+    var td0 = document.createElement('td');
+    td0.appendChild(document.createTextNode("URS" + constituentNames[constcol]));
+    tr.appendChild(td0);
+  }
+  tab.appendChild(tr);
+  for (var i = 0; i < 96; i++) {
+    //Add a row
+    tr = document.createElement('tr');
+    for (var constcol = 0; constcol < 4; constcol++) {
+      //Add cells to the table
+      td0 = document.createElement('td');
+      switch (constcol) {
+        case 0:
+          td0.appendChild(document.createTextNode(i + 1));
+          break;
+        case 1:
+          td0.appendChild(document.createTextNode("DC"));
+          break;
+        case 2:
+          td0.appendChild(document.createTextNode("OnBarDC"));
+          break;
+        case 3:
+          td0.appendChild(document.createTextNode("MaxRamp"));
+          break;
+      }
+      tr.appendChild(td0);
+    }
+    for (var constcol = 0; constcol < constituentNames.length; constcol++) {
+      //Add cells to the table
+      td0 = document.createElement('td');
+      td0.appendChild(document.createTextNode((markRev[i])[constcol]));
+      tr.appendChild(td0);
+    }
+    for (var constcol = 0; constcol < constituentNames.length; constcol++) {
+      //Add cells to the table
+      td0 = document.createElement('td');
+      td0.appendChild(document.createTextNode((markRev[i])["RSD" + constcol]));
+      tr.appendChild(td0);
+    }
+    for (var constcol = 0; constcol < constituentNames.length; constcol++) {
+      //Add cells to the table
+      td0 = document.createElement('td');
+      td0.appendChild(document.createTextNode((markRev[i])["URS" + constcol]));
+      tr.appendChild(td0);
+    }
+    tab.appendChild(tr);
+  }
+  tab.border = '1';
+  //tab.width = '100px';
+  performAlgo();
   };
   loadRevision(0, afterLoad, sectionsArray);
-  while (!completedReadRev) {}
 }
-
 
 function modifyDC(overridePermissionRequired) {
   var table = document.getElementById("genDCInputTable");
