@@ -252,6 +252,8 @@ $(function() {
     console.log(record.revData);
     sectionsArray = record.revData;
     setCurrRevDisplay(count - 1);
+    //set the comment
+    document.getElementById('commentInput').value = sectionsArray['comment'];
     createSectionSummaryTable();
     //press the button getfromsummarytable virtually and modify the grid
     getSummSecsToManual();
