@@ -632,6 +632,7 @@ function createSections() {
   //URS Version
   //Saving the generator name also
   sectionsArray['genName'] = genName;
+  sectionsArray['comment'] = document.getElementById('commentInput').value;
   //sections of the columns found
 }
 
@@ -1017,6 +1018,8 @@ function loadRevisionFromDB() //Read Operation of the database.
     console.log(record.revData);
     sectionsArray = record.revData;
     setCurrRevDisplay(loadRev);
+    //set the comment
+    document.getElementById('commentInput').value = sectionsArray['comment'];
     createSectionSummaryTable();
     //press the button getfromsummarytable virtually and modify the grid
     getSummSecsToManual();
