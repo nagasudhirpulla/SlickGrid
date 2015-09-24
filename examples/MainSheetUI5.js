@@ -7,9 +7,9 @@ var genRamp = 30;
 var genOnBar = 100;
 var genDecCap = 110;
 //The constituent configuration settings for this particular generator.These are same throughout all revisions.
-var constituentNames = ['MSEB', 'GUVNL', 'MPSEB', 'CSEB', 'DD', 'DNH'];
+var constituentNames = ['MSEB', 'GUVNL', 'MPSEB', 'CSEB', 'DD', 'DNH'];//'BPDB-ER','CSEB-NVVN','DD','DNH','GUVNL','GOA','HVDC-BHD','HVDC-VIN','JNK-NR','MPSEB,'MSEB','MS-NVVN','RAJ-SOLAR' 
 constituentNames['generator'] = genName;
-var consReqPercentages = [0.2, 0.3, 0.2, 0.1, 0.1, 0.1];
+var consReqPercentages = [0.2, 0.3, 0.2, 0.1, 0.1, 0.1];//6.071805	1.77786	8.68122	25.126425	139.6431	23.61555	1.53	0.461295	5.88438	268.904385	278.25498	1.49328	3.55572
 //Temporary Instance Data
 var curRev = 0; //can be modified only by loadRevision() function
 var markRev = [];
