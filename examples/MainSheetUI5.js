@@ -630,6 +630,8 @@ function createSections() {
     sectionsArray['URS' + constcol] = sections;
   }
   //URS Version
+  //Saving the generator name also
+  sectionsArray['genName'] = genName;
   //sections of the columns found
 }
 
