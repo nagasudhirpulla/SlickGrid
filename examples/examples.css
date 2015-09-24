@@ -210,8 +210,12 @@ input.editor-checkbox {
 }
 
 /*editing extra*/
-.slick-header-column
+.slick-header-column.ui-state-default
 {
   height: auto;
   line-height: normal;
+}
+
+.slick-cell{
+  font-size:1em;
 }
