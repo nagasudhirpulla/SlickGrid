@@ -1622,6 +1622,8 @@ function performAlgo() {
     (data2[0])["URS" + i] = 0; //ToDo Temporary setting for 1st URS row 
     //URS Version
   }
+  (data2[0])["SNo"] = 1;
+  (data1[0])["SNo"] = (data2[0])["SNo"];
   var maxCellVals = new Array(3 * consReqPercentages.length);
   //initialize the array maxcellvals array with 0
   for (var j = 0; j < maxCellVals.length; j++) {
