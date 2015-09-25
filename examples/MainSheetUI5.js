@@ -1594,9 +1594,9 @@ function performAlgo() {
   //Use these values to be used in revision tag table
   var revtagtab = document.getElementById("revMarkTable");
   for(var i=0;i<96;i++){
-    revtagtab.rows[i+1].cells[1].innerHTML = (data1[i+1])["DC"];
-    revtagtab.rows[i+1].cells[2].innerHTML = (data1[i+1])["onBar"];
-    revtagtab.rows[i+1].cells[3].innerHTML = (data1[i+1])["rampNum"];
+    revtagtab.rows[i+1].cells[1].innerHTML = (data1[i])["DC"];
+    revtagtab.rows[i+1].cells[2].innerHTML = (data1[i])["onBar"];
+    revtagtab.rows[i+1].cells[3].innerHTML = (data1[i])["rampNum"];
   }
   //Building the grid and configuring the grid
   grid1 = new Slick.Grid("#myGridDes", data1, columns, options);
