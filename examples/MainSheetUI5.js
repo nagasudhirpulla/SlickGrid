@@ -1,15 +1,22 @@
 var grid; //The cell grid object.
 var data = []; //The data used by the cell grid
 //The Generator  default Parameters or the generator cofiguration
-var genName = 'CGPL';
+var genName = 'VSTPS1';
 //Below are default values for initialisation, can change if wanted through grid or input tables.
-var genRamp = 30;
-var genOnBar = 100;
-var genDecCap = 110;
-//The constituent configuration settings for this particular generator.These are same throughout all revisions.
-var constituentNames = ['MSEB', 'GUVNL', 'MPSEB', 'CSEB', 'DD', 'DNH'];//'BPDB-ER','CSEB-NVVN','DD','DNH','GUVNL','GOA','HVDC-BHD','HVDC-VIN','JNK-NR','MPSEB,'MSEB','MS-NVVN','RAJ-SOLAR' 
+var genRamp = 75;
+var genOnBar = 765;
+var genDecCap = 965;
+/*
+var constituentNames = ['MSEB', 'GUVNL', 'MPSEB', 'CSEB', 'DD', 'DNH'];
 constituentNames['generator'] = genName;
-var consReqPercentages = [0.2, 0.3, 0.2, 0.1, 0.1, 0.1];//6.071805	1.77786	8.68122	25.126425	139.6431	23.61555	1.53	0.461295	5.88438	268.904385	278.25498	1.49328	3.55572
+var consReqPercentages = [0.2, 0.3, 0.2, 0.1, 0.1, 0.1];
+*/
+
+//The constituent configuration settings for this particular generator.These are same throughout all revisions.
+var constituentNames = ['BPDB-ER','CSEB-NVVN','DD','DNH','GUVNL','GOA','HVDC-BHD','HVDC-VIN','JNK-NR','MPSEB','MSEB','MS-NVVN','RAJ-SOLAR'];
+constituentNames['generator'] = genName;
+var consReqPercentages = [0.007937, 0.002324, 0.011348, 0.032845, 0.18254, 0.030869999999999998, 0.002, 0.000603, 0.007692, 0.35150899999999996, 0.363732, 0.001952, 0.004648];
+
 //Temporary Instance Data
 var curRev = 0; //can be modified only by loadRevision() function
 var markRev = [];
