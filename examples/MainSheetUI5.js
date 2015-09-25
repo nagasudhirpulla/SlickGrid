@@ -1544,6 +1544,7 @@ function performAlgo() {
   //Initialize the data1 array
   for (var i = 0; i < data1.length; i++) {
     data1[i] = {};
+    (data1[i])["SNo"] = i+1;
   }
   //First get all cells with desired numeric cell values into a  table dataDes from the revision summary array of the current revision
   //constraint - this  has to be saved.
@@ -1625,7 +1626,6 @@ function performAlgo() {
     //URS Version
   }
   (data2[0])["SNo"] = 1;
-  (data1[0])["SNo"] = (data2[0])["SNo"];
   var maxCellVals = new Array(3 * consReqPercentages.length);
   //initialize the array maxcellvals array with 0
   for (var j = 0; j < maxCellVals.length; j++) {
@@ -1679,7 +1679,6 @@ function performAlgo() {
     //URS Version
     //data2[i] = solveRamping(consReqPercentages, rowRevs, rowRevVals, rowPrevRevVals, maxCellVals, (data1[i])["rampNum"], (data1[i])["onBar"]);
     (data2[i])["SNo"] = i + 1;
-    (data1[i])["SNo"] = (data2[i])["SNo"];
   }
   grid2 = new Slick.Grid("#myGridFeasible", data2, columns, options);
   grid2.setSelectionModel(new Slick.CellSelectionModel());
