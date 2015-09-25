@@ -1595,7 +1595,9 @@ function performAlgo() {
   //Use these values to be used in revision tag table
   var revtagtab = document.getElementById("revMarkTable");
   for(var i=0;i<96;i++){
-    //revtagtab.rows[0].
+    revtagtab.rows[i].cells[1].childNodes[0] = document.createTextNode((data1[i])["DC"]);
+    revtagtab.rows[i].cells[2].childNodes[0] = document.createTextNode((data1[i])["onBar"]);
+    revtagtab.rows[i].cells[3].childNodes[0] = document.createTextNode((data1[i])["rampNum"]);
   }
   
   //Building the grid and configuring the grid
