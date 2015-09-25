@@ -1591,15 +1591,13 @@ function performAlgo() {
     //URS Version
   }
   //Now the desired numeric values fo the grid are known
-  
   //Use these values to be used in revision tag table
   var revtagtab = document.getElementById("revMarkTable");
   for(var i=0;i<96;i++){
-    revtagtab.rows[i].cells[1].childNodes[0] = document.createTextNode((data1[i])["DC"]);
-    revtagtab.rows[i].cells[2].childNodes[0] = document.createTextNode((data1[i])["onBar"]);
-    revtagtab.rows[i].cells[3].childNodes[0] = document.createTextNode((data1[i])["rampNum"]);
+    revtagtab.rows[i+1].cells[1].innerHTML = (data1[i+1])["DC"];
+    revtagtab.rows[i+1].cells[2].innerHTML = (data1[i+1])["onBar"];
+    revtagtab.rows[i+1].cells[3].innerHTML = (data1[i+1])["rampNum"];
   }
-  
   //Building the grid and configuring the grid
   grid1 = new Slick.Grid("#myGridDes", data1, columns, options);
   grid1.setSelectionModel(new Slick.CellSelectionModel());
@@ -1615,6 +1613,7 @@ function performAlgo() {
     data2[i] = {};
     (data2[i])["onBar"] = (data1[i])["onBar"];
     (data2[i])["DC"] = (data1[i])["DC"];
+    (data2[i])["rampNum"] = (data1[i])["rampNum"];
   }
   for (var i = 0; i < consReqPercentages.length; i++) {
     (data2[0])[i] = (data1[0])[i];
@@ -1623,7 +1622,6 @@ function performAlgo() {
     (data2[0])["URS" + i] = 0; //ToDo Temporary setting for 1st URS row 
     //URS Version
   }
-  (data2[0])["SNo"] = 1;
   var maxCellVals = new Array(3 * consReqPercentages.length);
   //initialize the array maxcellvals array with 0
   for (var j = 0; j < maxCellVals.length; j++) {
@@ -1677,6 +1675,7 @@ function performAlgo() {
     //URS Version
     //data2[i] = solveRamping(consReqPercentages, rowRevs, rowRevVals, rowPrevRevVals, maxCellVals, (data1[i])["rampNum"], (data1[i])["onBar"]);
     (data2[i])["SNo"] = i + 1;
+    (data1[i])["SNo"] = (data2[i])["SNo"];
   }
   grid2 = new Slick.Grid("#myGridFeasible", data2, columns, options);
   grid2.setSelectionModel(new Slick.CellSelectionModel());
