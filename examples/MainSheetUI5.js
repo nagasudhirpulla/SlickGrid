@@ -449,7 +449,7 @@ function createSumm(overridePermissionRequired) { //by pressing modify revision 
   var x5 = modifyRSD(!(x1 || x2 || x3 || x4) && overridePermissionRequired);
   //URS version
   if (x1 || x2 || x3 || x4 || x5) {
-    calulateFormulaColumns();
+    calulateFormulaColumns(data,grid);
     //Formulas implemented
     tiedToGrid = true;
     tiedToReq = true;
@@ -720,7 +720,7 @@ function createSectionSummaryTableRow(j) {
 function updateFromGrid() {
   if (!validateGrid())
     return false;
-  calulateFormulaColumns();
+  calulateFormulaColumns(data,grid);
   createSections();
   tiedToGrid = true;
   tiedToReq = false;
@@ -1080,7 +1080,7 @@ function setCurrRevDisplay(loadrev) {
 Calculate the formula columns values
 
 */
-function calulateFormulaColumns() {
+function calulateFormulaColumns(data,grid) {
   for (var i = 0; i < 96; i++) {
     //i is iterator for the row i or block i+1...
     var d = (data[i]);
@@ -1609,7 +1609,7 @@ function performAlgo() {
   grid1.registerPlugin(new Slick.CellExternalCopyManager(pluginOptions));
   //Now the desired numeric values of the grid are displayed in the grid1 cellgrid
   //Calculate Formulas for the desired values grid
-  calculateFormulaColumnsSolution(grid1, data1);
+  calulateFormulaColumns(data1, grid1);
   //Now find the feasible cell values from the data1 array values and store in data2 array
   var data2 = [];
   for (var i = 0; i < data1.length; i++) {
