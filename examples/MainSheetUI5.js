@@ -1599,6 +1599,7 @@ function performAlgo() {
     revtagtab.rows[i+1].cells[3].innerHTML = (data1[i])["rampNum"];
   }
   //Building the grid and configuring the grid
+  
   grid1 = new Slick.Grid("#myGridDes", data1, columns, options);
   grid1.setSelectionModel(new Slick.CellSelectionModel());
   grid1.registerPlugin(new Slick.AutoTooltips());
@@ -1606,7 +1607,8 @@ function performAlgo() {
   //enabling the excel style functionality by the plugin
   grid1.registerPlugin(new Slick.CellExternalCopyManager(pluginOptions));
   //Now the desired numeric values of the grid are displayed in the grid1 cellgrid
-
+  //Calculate Formulas for the desired values grid
+  calculateFormulaColumnsSolution(grid1, data1);
   //Now find the feasible cell values from the data1 array values and store in data2 array
   var data2 = [];
   for (var i = 0; i < data1.length; i++) {
