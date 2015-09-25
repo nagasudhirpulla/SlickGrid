@@ -1549,7 +1549,7 @@ function performAlgo() {
   //constraint - this  has to be saved.
   var afterLoad = function(record){
     var sectionsArray = record.revData;
-    for (var constcol1 = -3; constcol1 < constituentNames.length; constcol1++) { //last two for onBarDC and MaxRamp and DC respectively
+    for (var constcol1 = -3; constcol1 < constituentNames.length; constcol1++) { //last three for onBarDC, MaxRamp and DC respectively
     switch (constcol1) {
       case -3:
         constcol = "onBar";
@@ -1591,6 +1591,13 @@ function performAlgo() {
     //URS Version
   }
   //Now the desired numeric values fo the grid are known
+  
+  //Use these values to be used in revision tag table
+  var revtagtab = document.getElementById("revMarkTable");
+  for(var i=0;i<96;i++){
+    //revtagtab.rows[0].
+  }
+  
   //Building the grid and configuring the grid
   grid1 = new Slick.Grid("#myGridDes", data1, columns, options);
   grid1.setSelectionModel(new Slick.CellSelectionModel());
