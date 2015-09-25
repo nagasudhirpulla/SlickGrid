@@ -16,7 +16,7 @@ var consReqPercentages = [0.2, 0.3, 0.2, 0.1, 0.1, 0.1];
 var constituentNames = ['BPDB-ER','CSEB-NVVN','DD','DNH','GUVNL','GOA','HVDC-BHD','HVDC-VIN','JNK-NR','MPSEB','MSEB','MS-NVVN','RAJ-SOLAR'];
 constituentNames['generator'] = genName;
 var consReqPercentages = [0.007937, 0.002324, 0.011348, 0.032845, 0.18254, 0.030869999999999998, 0.002, 0.000603, 0.007692, 0.35150899999999996, 0.363732, 0.001952, 0.004648];
-
+document.title = genName+" Schedule";
 //Temporary Instance Data
 var curRev = 0; //can be modified only by loadRevision() function
 var markRev = [];
