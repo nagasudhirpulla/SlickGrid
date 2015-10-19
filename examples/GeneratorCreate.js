@@ -42,14 +42,27 @@ function fetchGenNamesAjax() {
 }
 
 function decorateSlave() {
-    var index = document.getElementById("genList").value;
+    var gen = document.getElementById("genList").options[document.getElementById("genList").selectedIndex].text;
     //alert(index);
     //Scroll to the generator detail section:
     $('html, body').animate({
         scrollTop: $('#genDetailSlave').offset().top + 'px'
     }, 'fast');
+    console.log('Fetching the Generator data...');
+    $.ajax({
+        type: 'GET',
+        url: rootURL+'/'+gen,
+        dataType: "json", // data type of response
+        success: function(data) {
+            document.getElementById('disName').innerHTML = data.name;
+            document.getElementById('disRamp').innerHTML = data.ramp;
+            document.getElementById('disDC').innerHTML = data.dc;
+            document.getElementById('disOnBar').innerHTML = data.onbar;
+        }
+    });
 }
 function decorateGenList(select,array) {
+    select.options.length = 0;
     for(var i = 0; i < array.length; i++) {
         var option = new Option(array[i], i);
         select.options[select.options.length] = option;
@@ -71,4 +84,50 @@ $(function(){
 function populateGenList(){
     fetchGenNamesAjax();
     //POPULATE THE LIST WITH THE NAMES
+}
+
+/*
+ Add a generator to the database
+ * */
+function addGen(){
+    if(!confirm("Add a new Generator???")){
+        return false;
+    }
+    console.log('creating a Generator');
+    $.ajax({
+        type: 'POST',
+        url: rootURL,
+        dataType: "json", // data type of response
+        data:JSON.stringify({'name':document.getElementById("name").value.toUpperCase(),'ramp':document.getElementById("ramp").value,'dc':document.getElementById("dc").value,'onbar':document.getElementById("onbar").value}),
+        success: function(data, textStatus, jqXHR){
+            document.getElementById("name").value = '';
+            document.getElementById("ramp").value = '';
+            document.getElementById("dc").value = '';
+            document.getElementById("onbar").value = '';
+            fetchGenNamesAjax();
+        },
+        error: function(jqXHR, textStatus, errorThrown){
+            alert('addGenerator error: ' + textStatus);
+        }
+    });
+}
+
+/*
+ Delete a generator from the database
+ * */
+function deleteGen(){
+    if(!confirm("Delete the selected Generator???")){
+        return false;
+    }
+    console.log('deleting a Generator');
+    $.ajax({
+        type: 'DELETE',
+        url: rootURL + '/' + document.getElementById("genList").options[document.getElementById("genList").selectedIndex].text,
+        success: function(data, textStatus, jqXHR){
+            fetchGenNamesAjax();
+        },
+        error: function(jqXHR, textStatus, errorThrown){
+            alert('deleteName error: '+textStatus);
+        }
+    });
 }

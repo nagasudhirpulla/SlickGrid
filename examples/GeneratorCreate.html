@@ -33,7 +33,7 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="#">WRLDC</a>
+            <a class="navbar-brand" href="http://www.wrldc.com/" target="_blank">WRLDC</a>
         </div>
         <div class="navbar-collapse collapse" style="height: 1px;">
             <ul class="nav navbar-nav navbar-right">
@@ -63,16 +63,16 @@
             <h2>Generator Detail</h2>
             <div class="row">
                 <div class="col-sm-6"><h4>GeneratorName</h4></div>
-                <div class="col-sm-6"><h4>CGPL</h4></div>
+                <div class="col-sm-6"><h4 id="disName">CGPL</h4></div>
                 <div class="col-sm-6"><h4>GeneratorRamp</h4></div>
-                <div class="col-sm-6"><h4>60</h4></div>
+                <div class="col-sm-6"><h4 id="disRamp">60</h4></div>
                 <div class="col-sm-6"><h4>GeneratorDC</h4></div>
-                <div class="col-sm-6"><h4>3260</h4></div>
+                <div class="col-sm-6"><h4 id="disDC">3260</h4></div>
                 <div class="col-sm-6"><h4>GeneratorOnBar</h4></div>
-                <div class="col-sm-6"><h4>3260</h4></div>
+                <div class="col-sm-6"><h4 id="disOnBar">3260</h4></div>
                 <div class="col-sm-6"><h4>Constituents</h4></div>
                 <div class="col-sm-6">
-                    <ol style="padding-left: 0">
+                    <ol style="padding-left: 0" id="disCons">
                         <li class="h4">GUVNL (20%)</li>
                         <li class="h4">MSEB (20%)</li>
                         <li class="h4">CSEB (20%)</li>
@@ -81,7 +81,7 @@
                         <li class="h4">MPSEB (20%)</li>
                     </ol></div>
             </div>
-            <button class="btn-sm btn-danger">Delete This Generator</button>
+            <button class="btn-sm btn-danger" onclick="deleteGen()">Delete This Generator</button>
         </div>
     </div>
     <div class="row">
@@ -120,7 +120,7 @@
                 </div>
             </form>
             <div class="col-sm-offset-5 col-sm-7">
-                <button class="btn-sm btn-success">AddGenerator</button>
+                <button class="btn-sm btn-success" onclick="addGen()">AddGenerator</button>
             </div>
         </div>
     </div>
