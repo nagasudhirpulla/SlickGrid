@@ -44,6 +44,7 @@ function fetchConsNamesAjax(){
 }
 
 function decorateConsList(select,array) {
+    select.options.length = 0;
     for(var i = 0; i < array.length; i++) {
         var option = new Option(array[i], i);
         select.options[select.options.length] = option;
@@ -64,4 +65,73 @@ function populateConsList(){
     //POPULATE THE LIST WITH THE NAMES
     decorateConsList(list,ConsNamesArray);*/
     fetchConsNamesAjax();
+}
+
+/*
+Add a Constituent to the  database
+* */
+function addCons(){
+    if(!confirm("Add a new Constituent???")){
+        return false;
+    }
+    console.log('creating a Constituent');
+    $.ajax({
+        type: 'POST',
+        url: rootURL,
+        dataType: "json", // data type of response
+        data:JSON.stringify({'name':document.getElementById("newConsInput").value.toUpperCase()}),
+        success: function(data, textStatus, jqXHR){
+            document.getElementById("newConsInput").value = '';
+            fetchConsNamesAjax();
+        },
+        error: function(jqXHR, textStatus, errorThrown){
+            alert('addName error: ' + textStatus);
+        }
+    });
+}
+
+/*
+ Delete a Constituent to the  database
+ * */
+function deleteCons()
+{
+    if(!confirm("Delete the selected Constituent???")){
+        return false;
+    }
+    console.log('deleting the Constituent');
+    $.ajax({
+        type: 'DELETE',
+        url: rootURL + '/' + document.getElementById("consList").options[document.getElementById("consList").selectedIndex].text,
+        success: function(data, textStatus, jqXHR){
+            fetchConsNamesAjax();
+        },
+        error: function(jqXHR, textStatus, errorThrown){
+            alert('deleteName error');
+        }
+    });
+}
+
+/*
+ Update a Constituent to the database
+ * */
+function updateCons()
+{
+    if(!confirm("Update the selected Constituent???")){
+        return false;
+    }
+    console.log('updating the Constituent');
+    $.ajax({
+        type: 'PUT',
+        contentType: 'application/json',
+        url: rootURL,
+        dataType: "json",
+        data : JSON.stringify({'name':document.getElementById("consList").options[document.getElementById("consList").selectedIndex].text,'updatename':document.getElementById("newConsInput").value.toUpperCase()}),
+        success: function(data, textStatus, jqXHR){
+            fetchConsNamesAjax();
+            document.getElementById("newConsInput").value = '';
+        },
+        error: function(jqXHR, textStatus, errorThrown){
+            alert('updateName error: ' + textStatus);
+        }
+    });
 }
