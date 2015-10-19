@@ -1,3 +1,4 @@
+var rootURL = "http://localhost/api/names";
 function  Skelitise(){
     var elems = document.body.getElementsByTagName("*");
     if(window.getComputedStyle(document.body).borderLeftWidth == "1px"){
@@ -17,6 +18,27 @@ function fetchGenNames() {
     var genNames;
     genNames = ["CGPL", "GANDHAR", "KAWAS", "KSTPS1", "KSTPS3", "SASAN", "SIPAT", "SSP", "VSTPS1", "VSTPS2", "VSTPS3", "VSTPS4"];
     return genNames;
+}
+
+function fetchGenNamesAjax() {
+    console.log('Fetching the generators names...');
+    $.ajax({
+        type: 'GET',
+        url: rootURL,
+        dataType: "json", // data type of response
+        success: function(data) {
+            // JAX-RS serializes an empty list as null, and a 'collection of one' as an object (not an 'array of one')
+            var list = data == null ? [] : (data.names instanceof Array ? data.names : [data.names]);
+            console.log(JSON.stringify(list));
+            var namesListArray = [];
+            for(var i=0;i<list.length;i++){
+                namesListArray.push(list[i].name);
+
+            }
+            var selList = document.getElementById("genList");
+            decorateGenList(selList,namesListArray);
+        }
+    });
 }
 
 function decorateSlave() {
@@ -47,8 +69,6 @@ $(function(){
 });
 
 function populateGenList(){
-    var genListNamesArray = fetchGenNames();
-    var list = document.getElementById("genList");
+    fetchGenNamesAjax();
     //POPULATE THE LIST WITH THE NAMES
-    decorateGenList(list,genListNamesArray);
 }
