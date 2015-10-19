@@ -41,9 +41,9 @@
 		<div id="revInputDiv" class="col-md-3">
 			<span>Revision Number</span>
 			<input type="number" min="0" max="500" value="0" id="revInput"><br>
-			<button id="loadRevButton" onclick ="loadRevisionFromDB()" class="btn btn-primary btn-xs">LoadRevision</button>
-			<button id="deleteRevButton" class="btn btn-primary btn-xs">DeleteRevision</button>
-			<button id="createRevButton" onclick="createNewRev()" class="btn btn-primary btn-xs">CreateNewRevision</button>
+			<button id="loadRevButton" onclick ="loadRevisionFromDB()" class="btn btn-primary btn-sm">LoadRevision</button>
+			<button id="deleteRevButton" class="btn btn-primary btn-sm">DeleteRevision</button>
+			<button id="createRevButton" onclick="createNewRev()" class="btn btn-primary btn-sm">CreateNewRevision</button>
 		</div>
 		<div id="revDisplayDiv" class="col-md-3">
 			<h3 style="margin-top:5px">current revision</h3>
@@ -66,13 +66,13 @@
 		</div>
 		<div class="col-md-3 col-xs-12">
 			<div id="summTabDiv">
-				<button id="reqFeedByGridButton" onclick="updateFromGrid()" class="btn btn-primary btn-xs">Modify Revision from Grid</button>
+				<button id="reqFeedByGridButton" onclick="updateFromGrid()" class="btn btn-primary btn-sm">Modify Revision from Grid</button>
 				<br>
 				<h3 id='tiedInfo'>Requisition Summary Table, tied to grid</h3>
 				<table id="summTab" class="table table-bordered table-hover"></table>
-				<button id="buttonUpdateRevSummTab" onclick="saveToDatabase()" class="btn btn-primary btn-xs">Save Rev According to this Table</button>
+				<button id="buttonUpdateRevSummTab" onclick="saveToDatabase()" class="btn btn-primary btn-sm">Save Rev According to this Table</button>
 				<br>
-				<button id="revSolButton" onclick="markCellsWithRevs()" class="btn btn-primary btn-xs">GetFeasibleSchedule</button>
+				<button id="revSolButton" onclick="markCellsWithRevs()" class="btn btn-primary btn-sm">GetFeasibleSchedule</button>
 			</div>
 		</div>
 	</div>
