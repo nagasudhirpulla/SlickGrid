@@ -41,6 +41,15 @@ var indexOf = function(needle) {
     return indexOf.call(this, needle);
 };
 
+function indexMatchingText(ele, text) {
+    for (var i=0; i<ele.length;i++) {
+        if (ele[i].childNodes[0].nodeValue === text){
+            return i;
+        }
+    }
+    return -1;
+}
+
 function fetchGenNamesAjax() {
     console.log('Fetching the generators names...');
     $.ajax({
@@ -220,12 +229,15 @@ function addGeneratorShares(data,conIDs,percentages){
         dataType: "json", // data type of response
         data: JSON.stringify(shareJSON),
         success: function (data, textStatus, jqXHR) {
+            alert(JSON.stringify(data));
+            //Select the added generator
+            document.getElementById("genList").selectedIndex = indexMatchingText(document.getElementById('genList').getElementsByTagName("option"), document.getElementById("name").value.toUpperCase());
+            document.getElementById("genList").onchange();
             document.getElementById("name").value = '';
             document.getElementById("ramp").value = '';
             document.getElementById("dc").value = '';
             document.getElementById("onbar").value = '';
             document.getElementById("percentageParseInput").value = '';
-            //Select the added generator
         },
         error: function (jqXHR, textStatus, errorThrown) {
             alert('addGeneratorShares error: ' + textStatus);
