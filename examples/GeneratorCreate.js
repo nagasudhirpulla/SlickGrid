@@ -88,9 +88,12 @@ function decorateSlave() {
             document.getElementById('disRamp').innerHTML = data.ramp;
             document.getElementById('disDC').innerHTML = data.dc;
             document.getElementById('disOnBar').innerHTML = data.onbar;
+            //update share details
         }
     });
 }
+
+
 function decorateGenList(select,array) {
     select.options.length = 0;
     for(var i = 0; i < array.length; i++) {
@@ -238,6 +241,7 @@ function addGeneratorShares(data,conIDs,percentages){
             document.getElementById("dc").value = '';
             document.getElementById("onbar").value = '';
             document.getElementById("percentageParseInput").value = '';
+
         },
         error: function (jqXHR, textStatus, errorThrown) {
             alert('addGeneratorShares error: ' + textStatus);
