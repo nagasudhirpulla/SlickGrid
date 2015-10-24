@@ -124,6 +124,10 @@ $(function() {
         grid.updateRowCount();
         grid.render();
     });
+    //Virtually press shareFeedByGrid Button and shareGetFromSummButton Buttton
+    updateFromGrid();
+    getSummSecsToManual();
+    fetchGenNamesAjax();
 });
 
 function updateFromGrid() {
@@ -209,6 +213,159 @@ function createSectionSummaryTableRow(summTab,sectionsArray,j) {
 function createSummTableTiedInfo(atrr, val) {
     var gridTied, reqTableTied, DCTableTied, RampTableTied;
     gridTied = tiedToGrid ? 'grid' : '';
-    manualTableTied = tiedToReq ? ', Manual Entry' : '';
-    document.getElementById('tiedInfo').innerHTML = 'Revision Summary, tied to ' + gridTied + manualTableTied + '.';
+    manualTableTied = tiedToReq ? 'and Manual Entry' : '';
+    document.getElementById('tiedInfo').innerHTML = 'Shares Summary Table, tied to ' + gridTied + manualTableTied + '.';
+}
+
+function getSummSecsToManual() //sections version of summtomanual
+{
+    var table = document.getElementById("shareInputTable");
+    var sections;
+    table.innerHTML = "<tbody><tr><td>Constituent Name</td><td>From Block</td><td>To Block</td><td>ShareValue</td><td><input type=\"checkbox\" name=\"chk\" onclick=\"SelectAll(this,'reqInputTable')\"></input></td></tr></tbody>";
+    for (var j = 0; j < sectionsArray.length; j++) {
+        sections = sectionsArray[j];
+        for (var k = 0; k < sections.length; k++) {
+            addRowOfInput(table, constituentNames[j], sections[k].secStart + 1, sections[k].secEnd + 1, sections[k].val);
+        }
+    }
+}
+
+//Adds a row of edittext inputs with values specified already, used in getsummtomanual
+function addRowOfInput(table, colName, fromb, tob, val, chosenval) {
+    var rowCount = table.rows.length;
+    var row = table.insertRow(rowCount);
+    var colCount = table.rows[0].cells.length;
+    var newcell = row.insertCell(0);
+    var t = document.createTextNode(colName);
+    var s = document.createElement("span");
+    s.appendChild(t);
+    newcell.appendChild(s);
+    for (var i = 1; i < 4; i++) {
+        newcell = row.insertCell(i);
+        var t = document.createElement("input");
+        if (i == 1) {
+            t.min = '1';
+            t.max = '100';
+            t.type = 'number';
+            t.onkeypress = isNumberKey;
+            t.value = fromb;
+        } else if (i == 2) {
+            t.min = '1';
+            t.max = '100';
+            t.type = 'number';
+            t.onkeypress = isNumberKey;
+            t.value = tob;
+        } else {
+            t.min = '1';
+            t.maxLength = 5;
+            t.type = 'number';
+            t.onkeypress = isNumberKey;
+            t.value = val;
+        }
+        newcell.appendChild(t);
+    }
+    newcell = row.insertCell(colCount - 1);
+    var cb = document.createElement("input");
+    cb.type = 'checkbox';
+    newcell.appendChild(cb);
+}
+
+function createSumm(overridePermissionRequired) { //by pressing modify revision by input tables button
+    //tieing all the tables to one button
+    modifyShares(overridePermissionRequired);
+    grid.invalidateAllRows();
+    grid.render();
+    tiedToGrid = true;
+    tiedToReq = true;
+    //Now to find the revision tag to be attached, find the smallest row index of this requested revision column which differs from the previous revision cell and from that cell all below cells are of the requested revision
+    sectionsArray = createSections();
+    createSectionSummaryTable(sectionsArray);
+
+}
+
+function modifyShares(overridePermissionRequired) {
+    var table = document.getElementById("shareInputTable");
+    var rowCount = table.rows.length;
+    if (rowCount < 2)
+        return false;
+    //Fisrt validate the input semantics.Allowable values are 1 to 96 in case of block numbers and possitive integers along with null, full, nochange, percentage loads.
+    for (var i = 1; i < rowCount; i++) {
+        var cellval = table.rows[i].cells[3].childNodes[0].value;
+        //For null cell value validation
+        if (!cellval) {
+            alert('Null values at row ' + i + ' of SharesInput Table. Null values not allowed');
+            return false;
+        }
+        //For cell value validation
+        var isValid = cellval.match(/^[+]?\d+(\.\d+)?$/i);
+        if (!isValid) {
+            alert('Invalid values at block ' + (i + 1) + ' of SharesInput Table. Invalid values not allowed');
+            return false;
+        }
+        //from block <  to block
+        if (Number(table.rows[i].cells[1].childNodes[0].value) > Number(table.rows[i].cells[2].childNodes[0].value)) {
+            alert('From value > TO value at row ' + i);
+            return false;
+        }
+        //from block &  to block belong to [1,96]
+        if ((Number(table.rows[i].cells[1].childNodes[0].value) < 1) || (Number(table.rows[i].cells[1].childNodes[0].value) > 96) || (Number(table.rows[i].cells[2].childNodes[0].value) < 1) || (Number(table.rows[i].cells[2].childNodes[0].value) > 96)) {
+            alert('From value or TO value not in limits at row ' + i + ' of SharesInput Table');
+            return false;
+        }
+    }
+    //Requisition Table Validation over...
+    if (overridePermissionRequired) {
+        if (!confirm("Override the grid Data...?"))
+            return false;
+    }
+    //Resetting the table  to a value called 0
+    resetGrid(data, constituentNames, 0);
+    //changing the table data depending on the share input table
+    //formulas not implemented
+    for (var i = 1; i < rowCount; i++) { //iterator leaving the the table header
+        for (var blkNum = Number(table.rows[i].cells[1].childNodes[0].value) - 1; blkNum <= Number(table.rows[i].cells[2].childNodes[0].value) - 1; blkNum++) {
+            var constcol = table.rows[i].cells[0].childNodes[0].innerHTML.toString();
+            //alert(constcol);
+            constcol = constituentNames.indexOf(constcol);
+            //table.rows[i].cells[3].childNodes[0].value = number in the form of string and no need to convert to number since javascript takes care of it
+            var cellvalue = table.rows[i].cells[3].childNodes[0].value;
+            if (isNaN(cellvalue)) {
+                cellvalue = cellvalue.toUpperCase();
+            }
+            (data[blkNum])[constcol] = cellvalue;
+        }
+    }
+    return true;
+}
+
+function fetchGenNamesAjax() {
+    console.log('Fetching the generators names...');
+    $.ajax({
+        type: 'GET',
+        url: "http://localhost/api/generators",
+        dataType: "json", // data type of response
+        success: function(data) {
+            // JAX-RS serializes an empty list as null, and a 'collection of one' as an object (not an 'array of one')
+            var list = data == null ? [] : (data.names instanceof Array ? data.names : [data.names]);
+            console.log(JSON.stringify(list));
+            var namesListArray = [];
+            for(var i=0;i<list.length;i++){
+                namesListArray.push(list[i].name);
+
+            }
+            var selList = document.getElementById("genList");
+            decorateGenList(selList,namesListArray);
+        }
+    });
+}
+
+function decorateGenList(select,array) {
+    select.options.length = 0;
+    for(var i = 0; i < array.length; i++) {
+        select.options[select.options.length] = new Option(array[i], i);
+    }
+}
+
+function decorateGrid() {
+    //Load grid with ajax loaded sections of the generator
 }

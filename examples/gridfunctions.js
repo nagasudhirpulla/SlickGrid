@@ -30,3 +30,16 @@ function validateGrid() {
     }
     return true;
 }
+
+function resetGrid(data, constituentNames, val) {
+    //ToDo validate grid dynamically using on cellchange listener
+    for (var i = 0; i < 96; i++) {
+        //i is iterator for the row i ...
+        var d = (data[i]);
+        for (var j = 0; j < constituentNames.length; j++) {
+            //j is iterator the column j ...
+            //Resetting the data values of the cell i,j(row,column) to val
+            d[j] = val;
+        }
+    }
+}
