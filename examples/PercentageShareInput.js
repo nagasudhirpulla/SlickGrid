@@ -1,6 +1,7 @@
 /**
  * Created by PSSE on 10/23/2015.
  */
+//Table Parameters
 var grid; //The cell grid object.
 var data = []; //The data used by the cell grid
 //The constituent configuration settings for this particular generator.These are same throughout all revisions.
@@ -88,6 +89,13 @@ for (var i = 0; i < constituentNames.length; i++) {
         editor: Slick.Editors.Text
     });
 }
+//Table Parameters End
+
+//Global Parameters of the app
+var genName = "CGPL";
+var sectionsArray = [];
+var tiedToGrid = true;
+var tiedToReq = false;
 
 $(function() {
     for (var i = 0; i < 96; i++) {
@@ -118,4 +126,89 @@ $(function() {
     });
 });
 
-//TODO Column reorder after load
+function updateFromGrid() {
+    if (!validateGrid())
+        return false;
+    sectionsArray = createSections();
+    tiedToGrid = true;
+    tiedToReq = false;
+    createSectionSummaryTable(sectionsArray);
+}
+
+function createSections() {
+    //Find the sections of the columns
+    var sectionsArray = [];
+    for (var constcol = 0; constcol < constituentNames.length; constcol++) {
+        var sections = [];
+        var sectionStart = 0;
+        for (var blkNum = 1; blkNum < 96; blkNum++) {
+            if ((data[blkNum])[constcol] != (data[blkNum - 1])[constcol]) {
+                sections.push({
+                    'secStart': sectionStart,
+                    'secEnd': blkNum - 1,
+                    'val': (data[blkNum - 1])[constcol]
+                });
+                sectionStart = blkNum;
+            }
+        }
+        sections.push({
+            'secStart': sectionStart,
+            'secEnd': 95,
+            'val': (data[95])[constcol]
+        });
+        //sectionsArray.push(sections);
+        sectionsArray[constcol] = sections;
+    }
+    //Saving the generator name also
+    sectionsArray['genName'] = genName;
+    //sections of the columns found
+    return sectionsArray;
+}
+
+function createSectionSummaryTable(sectionsArray) {
+    var summTab = document.getElementById('summTab');
+    summTab.innerHTML = '';
+    for (var j = 0; j < sectionsArray.length; j++) {
+        createSectionSummaryTableRow(summTab,sectionsArray,j);
+    }
+    summTab.border = '1';
+    summTab.width = '200px';
+    //created the section summary table
+    createSummTableTiedInfo();
+}
+
+function createSectionSummaryTableRow(summTab,sectionsArray,j) {
+    var sections = sectionsArray[j];
+    var textStr;
+    if (isNaN(j))
+        textStr = j;
+    else
+        textStr = constituentNames[j];
+    for (var i = 0; i < sections.length; i++) {
+        var tr = document.createElement('tr');
+        var td0 = document.createElement('td');
+        var td1 = document.createElement('td');
+        var td2 = document.createElement('td');
+        var td3 = document.createElement('td');
+        td0.appendChild(document.createTextNode(textStr));
+        td1.appendChild(document.createTextNode((sections[i])['secStart'] + 1));
+        td2.appendChild(document.createTextNode((sections[i])['secEnd'] + 1));
+        td3.appendChild(document.createTextNode((sections[i])['val']));
+        td0.style.padding = "4px";
+        td1.style.padding = "4px";
+        td2.style.padding = "4px";
+        td3.style.padding = "4px";
+        tr.appendChild(td0);
+        tr.appendChild(td1);
+        tr.appendChild(td2);
+        tr.appendChild(td3);
+        summTab.appendChild(tr);
+    }
+}
+
+function createSummTableTiedInfo(atrr, val) {
+    var gridTied, reqTableTied, DCTableTied, RampTableTied;
+    gridTied = tiedToGrid ? 'grid' : '';
+    manualTableTied = tiedToReq ? ', Manual Entry' : '';
+    document.getElementById('tiedInfo').innerHTML = 'Revision Summary, tied to ' + gridTied + manualTableTied + '.';
+}

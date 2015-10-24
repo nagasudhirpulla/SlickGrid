@@ -118,4 +118,3 @@ $(function() {
     });
 });
 
-//TODO Column reorder after load
