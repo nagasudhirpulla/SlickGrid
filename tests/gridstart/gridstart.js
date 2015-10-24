@@ -94,7 +94,6 @@ $(function() {
         //Setting the data values of the grid here...
         //i is iterator for the row i or block i+1...
         var d = (data[i] = {});
-
         d["SNo"] = i + 1;
         for (var j = 0; j < constituentNames.length; j++) {
             d[j] = 0;

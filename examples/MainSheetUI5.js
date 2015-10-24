@@ -121,9 +121,9 @@ var columns = [{
   editor: Slick.Editors.Text
 }, {
   id: "selector",
-  name: "BlockNo",
+  name: "Block",
   field: "SNo",
-  width: 40,
+  width: 50,
   toolTip: "Block Number"
 }, {
   id: "ramp",
