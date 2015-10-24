@@ -97,39 +97,46 @@ var columns = [{
   name: 'MaxRamp',
   field: 'rampNum',
   width: 30,
+  toolTip: "Maximum Ramp",
   editor: Slick.Editors.Text
 }, {
   id: 'DC',
   name: 'DC',
   field: 'DC',
   width: 40,
+  toolTip: "Declared Capacity",
   editor: Slick.Editors.Text
 }, {
   id: "offBarDC",
   name: "OffBarDC",
   field: "offBar",
+  toolTip: "Offbar DC",
   width: 40
 }, {
   id: 'onBarDC',
   name: 'OnBarDC',
   field: 'onBar',
   width: 40,
+  toolTip: "On Bar DC",
   editor: Slick.Editors.Text
 }, {
   id: "selector",
   name: "BlockNo",
   field: "SNo",
-  width: 40
+  width: 40,
+  toolTip: "Block Number"
 }, {
   id: "ramp",
   name: "Ramp",
   field: "rampedVal",
-  width: 40
+  width: 40,
+  toolTip: "Ramp"
 }, {
   id: "availGen",
   name: "AvailableGeneration",
   field: "avail",
-  width: 40
+  width: 40,
+  toolTip: "Available Generation"
 }];
 //Adding Constituent Requisition columns iteratively
 for (var i = 0; i < constituentNames.length; i++) {
@@ -140,6 +147,7 @@ for (var i = 0; i < constituentNames.length; i++) {
     //"field" is the field used by the program a particular cell in row
     field: i,
     width: 50,
+    toolTip: constituentNames[i],
     editor: Slick.Editors.Text
   });
 }
@@ -152,6 +160,7 @@ for (var i = 0; i < constituentNames.length; i++) {
     //"field" is the field used by the program a particular cell in row
     field: 'RSD' + i,
     width: 65,
+    toolTip: constituentNames[i] + 'RSD',
     editor: Slick.Editors.Text
   });
 }
@@ -164,6 +173,7 @@ for (var i = 0; i < constituentNames.length; i++) {
     //"field" is the field used by the program a particular cell in row
     field: 'URS' + i,
     width: 65,
+    toolTip: constituentNames[i] + 'URS',
     editor: Slick.Editors.Text
   });
 }

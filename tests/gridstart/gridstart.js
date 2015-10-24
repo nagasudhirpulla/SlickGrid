@@ -73,7 +73,8 @@ columns.push({
     name: "Block",
     //"field" is the field used by the program a particular cell in row
     field: "SNo",
-    width: 25
+    width: 50,
+    toolTip: "Block Number"
 });
 for (var i = 0; i < constituentNames.length; i++) {
     columns.push({
@@ -83,6 +84,7 @@ for (var i = 0; i < constituentNames.length; i++) {
         //"field" is the field used by the program a particular cell in row
         field: i,
         width: 50,
+        toolTip: constituentNames[i],
         editor: Slick.Editors.Text
     });
 }
