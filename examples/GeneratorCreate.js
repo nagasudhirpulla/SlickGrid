@@ -88,7 +88,7 @@ function decorateSlave() {
             document.getElementById('disRamp').innerHTML = data.ramp;
             document.getElementById('disDC').innerHTML = data.dc;
             document.getElementById('disOnBar').innerHTML = data.onbar;
-            //update share details
+            //TODO update share details
         }
     });
 }

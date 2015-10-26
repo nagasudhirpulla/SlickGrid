@@ -67,27 +67,31 @@ var pluginOptions = {
 
 //Setting the Column names of the grid
 var columns = [];
-//Adding Constituent Requisition columns iteratively
-columns.push({
-    id: "SNo",
-    //name field is just for display
-    name: "Block",
-    //"field" is the field used by the program a particular cell in row
-    field: "SNo",
-    width: 50,
-    toolTip: "Block Number"
-});
-for (var i = 0; i < constituentNames.length; i++) {
+setTableColumns();
+function setTableColumns() {
+    columns = [];
+    //Adding Constituent Requisition columns iteratively
     columns.push({
-        id: i,
+        id: "SNo",
         //name field is just for display
-        name: constituentNames[i],
+        name: "Block",
         //"field" is the field used by the program a particular cell in row
-        field: i,
+        field: "SNo",
         width: 50,
-        toolTip: constituentNames[i],
-        editor: Slick.Editors.Text
+        toolTip: "Block Number"
     });
+    for (var i = 0; i < constituentNames.length; i++) {
+        columns.push({
+            id: i,
+            //name field is just for display
+            name: constituentNames[i],
+            //"field" is the field used by the program a particular cell in row
+            field: i,
+            width: 50,
+            toolTip: constituentNames[i],
+            editor: Slick.Editors.Text
+        });
+    }
 }
 //Table Parameters End
 
@@ -98,6 +102,17 @@ var tiedToGrid = true;
 var tiedToReq = false;
 
 $(function() {
+    //fetch the share data of the generator
+    fetchSharesOfGenerator();
+    //fetch the constituent names
+    fetchConsNamesAjax();
+    //fetch the generator names
+    fetchGenNamesAjax();
+
+});
+
+function afterInitialFetch(){
+    setTableColumns();
     for (var i = 0; i < 96; i++) {
         //Setting the data values of the grid here...
         //i is iterator for the row i or block i+1...
@@ -127,8 +142,7 @@ $(function() {
     //Virtually press shareFeedByGrid Button and shareGetFromSummButton Buttton
     updateFromGrid();
     getSummSecsToManual();
-    fetchGenNamesAjax();
-});
+}
 
 function updateFromGrid() {
     if (!validateGrid())
@@ -221,7 +235,7 @@ function getSummSecsToManual() //sections version of summtomanual
 {
     var table = document.getElementById("shareInputTable");
     var sections;
-    table.innerHTML = "<tbody><tr><td>Constituent Name</td><td>From Block</td><td>To Block</td><td>ShareValue</td><td><input type=\"checkbox\" name=\"chk\" onclick=\"SelectAll(this,'reqInputTable')\"></input></td></tr></tbody>";
+    table.innerHTML = "<tbody><tr><td>Constituent Name</td><td>From Block</td><td>To Block</td><td>ShareValue</td><td><input type=\"checkbox\" name=\"chk\" onclick=\"SelectAll(this,'reqInputTable')\"/></td></tr></tbody>";
     for (var j = 0; j < sectionsArray.length; j++) {
         sections = sectionsArray[j];
         for (var k = 0; k < sections.length; k++) {
@@ -368,4 +382,27 @@ function decorateGenList(select,array) {
 
 function decorateGrid() {
     //Load grid with ajax loaded sections of the generator
+}
+
+function fetchConsNamesAjax(){
+    console.log('Fetching the Constituents names...');
+    $.ajax({
+        type: 'GET',
+        url: "http://localhost/api/names",
+        dataType: "json", // data type of response
+        success: function(data) {
+            // JAX-RS serializes an empty list as null, and a 'collection of one' as an object (not an 'array of one')
+            var list = data == null ? [] : (data.names instanceof Array ? data.names : [data.names]);
+            console.log(JSON.stringify(list));
+            constituentNames = [];
+            for(var i=0;i<list.length;i++){
+                constituentNames.push(list[i].name);
+            }
+            afterInitialFetch();
+        }
+    });
+}
+
+function fetchSharesOfGenerator(){
+
 }
