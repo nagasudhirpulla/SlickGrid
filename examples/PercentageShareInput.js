@@ -6,6 +6,9 @@ var grid; //The cell grid object.
 var data = []; //The data used by the cell grid
 //The constituent configuration settings for this particular generator.These are same throughout all revisions.
 var constituentNames = ['BPDB-ER','CSEB-NVVN','DD','DNH','GUVNL','GOA','HVDC-BHD','HVDC-VIN','JNK-NR','MPSEB','MSEB','MS-NVVN','RAJ-SOLAR'];
+var constituentIDs = [];
+var genNames = [];
+var genIDs = [];
 
 var options = {
     editable: true,
@@ -102,13 +105,8 @@ var tiedToGrid = true;
 var tiedToReq = false;
 
 $(function() {
-    //fetch the share data of the generator
-    fetchSharesOfGenerator();
     //fetch the constituent names
     fetchConsNamesAjax();
-    //fetch the generator names
-    fetchGenNamesAjax();
-
 });
 
 function afterInitialFetch(){
@@ -227,7 +225,7 @@ function createSectionSummaryTableRow(summTab,sectionsArray,j) {
 function createSummTableTiedInfo(atrr, val) {
     var gridTied, reqTableTied, DCTableTied, RampTableTied;
     gridTied = tiedToGrid ? 'grid' : '';
-    manualTableTied = tiedToReq ? 'and Manual Entry' : '';
+    manualTableTied = tiedToReq ? ' and Manual Entry' : '';
     document.getElementById('tiedInfo').innerHTML = 'Shares Summary Table, tied to ' + gridTied + manualTableTied + '.';
 }
 
@@ -362,13 +360,18 @@ function fetchGenNamesAjax() {
             // JAX-RS serializes an empty list as null, and a 'collection of one' as an object (not an 'array of one')
             var list = data == null ? [] : (data.names instanceof Array ? data.names : [data.names]);
             console.log(JSON.stringify(list));
-            var namesListArray = [];
+            genNames = [];
+            genIDs = [];
             for(var i=0;i<list.length;i++){
-                namesListArray.push(list[i].name);
+                genNames.push(list[i].name);
+                genIDs.push(list[i].id);
 
             }
             var selList = document.getElementById("genList");
-            decorateGenList(selList,namesListArray);
+            decorateGenList(selList,genNames);
+            afterInitialFetch();
+            fetchSharesOfGenerator(genIDs[0]);
+
         }
     });
 }
@@ -382,6 +385,8 @@ function decorateGenList(select,array) {
 
 function decorateGrid() {
     //Load grid with ajax loaded sections of the generator
+    var genID = genIDs[document.getElementById("genList").selectedIndex];
+    fetchSharesOfGenerator(genID);
 }
 
 function fetchConsNamesAjax(){
@@ -395,14 +400,85 @@ function fetchConsNamesAjax(){
             var list = data == null ? [] : (data.names instanceof Array ? data.names : [data.names]);
             console.log(JSON.stringify(list));
             constituentNames = [];
+            constituentIDs = [];
             for(var i=0;i<list.length;i++){
                 constituentNames.push(list[i].name);
+                constituentIDs.push(list[i].id);
             }
-            afterInitialFetch();
+            //fetch the generator names
+            fetchGenNamesAjax();
         }
     });
 }
 
-function fetchSharesOfGenerator(){
+function fetchSharesOfGenerator(genID){
+    console.log('Fetching the Generator shares...');
+    $.ajax({
+        type: 'GET',
+        url: "http://localhost/api/generatorshares/"+genID,
+        dataType: "json", // data type of response
+        success: function(datafetched) {
+            // JAX-RS serializes an empty list as null, and a 'collection of one' as an object (not an 'array of one')
+            var shares = datafetched == null ? [] : (datafetched.shares instanceof Array ? datafetched.shares : [datafetched.shares]);
+            console.log(JSON.stringify(shares));
+            //Resetting the grid  to a value called 0
+            resetGrid(data, constituentNames, 0);
+            //changing the table data depending on the fetched generator shares
+            for (var i = 0; i < shares.length; i++) { //iterator leaving the the table header
+                for (var blkNum = shares[i].from_b - 1; blkNum <= shares[i].to_b - 1; blkNum++) {
+                    var constcol = shares[i].p_id;
+                    //alert(constcol);
+                    constcol = constituentIDs.indexOf(constcol);
+                    //table.rows[i].cells[3].childNodes[0].value = number in the form of string and no need to convert to number since javascript takes care of it
+                    (data[blkNum])[constcol] = shares[i].percentage;
+                }
+            }
+            grid.invalidateAllRows();
+            grid.render();
+            tiedToGrid = true;
+            tiedToReq = true;
+            //Now to find the revision tag to be attached, find the smallest row index of this requested revision column which differs from the previous revision cell and from that cell all below cells are of the requested revision
+            sectionsArray = createSections();
+            createSectionSummaryTable(sectionsArray);
+            getSummSecsToManual();
+        }
+    });
+}
 
+function saveSharesToDatabase(){
+    var genID = genIDs[document.getElementById("genList").selectedIndex];
+    //Preparing data to post
+    var conIDs = [];
+    var frombs = [];
+    var tobs = [];
+    var percentages = [];
+    for (var j = 0; j < sectionsArray.length; j++) {
+        sections = sectionsArray[j];
+        for (var k = 0; k < sections.length; k++) {
+            if(sections[k].val>0){
+                conIDs.push(constituentIDs[j]);
+                frombs.push(sections[k].secStart + 1);
+                tobs.push(sections[k].secEnd + 1);
+                percentages.push(sections[k].val);
+            }
+        }
+    }
+    console.log('saving shares of Generator to the server');
+    $.ajax({
+        type: 'POST',
+        url: "http://localhost/api/generatorshares/"+genID,
+        dataType: "json", // data type of response
+        data: JSON.stringify({
+            'conIDs': conIDs,
+            'frombs': frombs,
+            'tobs': tobs,
+            'percentages': percentages
+        }),
+        success: function (data, textStatus, jqXHR) {
+            //alert(JSON.stringify(data));
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            alert('updateGenerator error: ' + textStatus);
+        }
+    });
 }
