@@ -126,53 +126,7 @@ function addGen(){
     if(!confirm("Add a new Generator???")){
         return false;
     }
-    var str = document.getElementById("percentageParseInput").value;
-    var parsedPercentages = parsePercentages(str.toUpperCase());
-    //Check for parsing errors
-    if(parsedPercentages[0] === false)
-    {
-        alert(parsedPercentages[1]);
-        return false;
-    }
-    var cons = parsedPercentages[0];
-    var conIDs = [];
-    var percentages = parsedPercentages[1];
-    console.log('fetching all Constituents');
-    $.ajax({
-        type: 'GET',
-        url: consRootURL,
-        dataType: "json", // data type of response
-        success: function(data) {
-            // JAX-RS serializes an empty list as null, and a 'collection of one' as an object (not an 'array of one')
-            var list = data == null ? [] : (data.names instanceof Array ? data.names : [data.names]);
-            console.log(JSON.stringify(list));
-            var namesListArray = [];
-            for(var i=0;i<list.length;i++){
-                namesListArray.push(list[i].name);
-            }
-            //Check if constituents specified are present in the database
-            var alertStr = "The Constituents ";
-            for(var i=0;i<cons.length;i++){
-                var notPresentCons = false;
-                var index = indexOf.call(namesListArray, cons[i]);
-                if(index === -1)
-                {
-                    notPresentCons = true;
-                    alertStr += cons[i]+", "
-                }
-                else{
-                    conIDs.push(list[index].id)
-                }
-            }
-            if(notPresentCons){
-                alert(alertStr+"are not present in the constituent database...");
-                return false;
-            }
-            //Now Constituent ids along with percentages are present in conIDs and percentages arrays
-            //Now Proceed to adding the generator name to the database.
-            addGenNameWithPercentages(conIDs,percentages);
-        }
-    });
+    addGenNameWithPercentages();
 }
 
 /*
@@ -195,7 +149,7 @@ function deleteGen(){
     });
 }
 
-function addGenNameWithPercentages(conIDs,percentages) {
+function addGenNameWithPercentages() {
     console.log('creating a Generator');
     $.ajax({
         type: 'POST',
@@ -209,7 +163,7 @@ function addGenNameWithPercentages(conIDs,percentages) {
         }),
         success: function (data, textStatus, jqXHR) {
             fetchGenNamesAjax();
-            addGeneratorShares(data,conIDs,percentages);
+            //addGeneratorShares(data,conIDs,percentages);
         },
         error: function (jqXHR, textStatus, errorThrown) {
             alert('addGenerator error: ' + textStatus);
