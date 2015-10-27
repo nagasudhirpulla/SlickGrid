@@ -453,6 +453,7 @@ function saveSharesToDatabase(){
     var frombs = [];
     var tobs = [];
     var percentages = [];
+    //converting sections to a json format acceptable by the server api
     for (var j = 0; j < sectionsArray.length; j++) {
         sections = sectionsArray[j];
         for (var k = 0; k < sections.length; k++) {
@@ -464,6 +465,7 @@ function saveSharesToDatabase(){
             }
         }
     }
+    //sending the ajax request to the server for saving
     console.log('saving shares of Generator to the server');
     $.ajax({
         type: 'POST',
