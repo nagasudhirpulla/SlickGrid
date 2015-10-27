@@ -110,6 +110,7 @@ $(function() {
 });
 
 function afterInitialFetch(){
+    decorateSelectList(document.getElementById("selectReqConst"),constituentNames);
     setTableColumns();
     for (var i = 0; i < 96; i++) {
         //Setting the data values of the grid here...
@@ -368,7 +369,7 @@ function fetchGenNamesAjax() {
 
             }
             var selList = document.getElementById("genList");
-            decorateGenList(selList,genNames);
+            decorateSelectList(selList,genNames);
             afterInitialFetch();
             fetchSharesOfGenerator(genIDs[0]);
 
@@ -376,7 +377,7 @@ function fetchGenNamesAjax() {
     });
 }
 
-function decorateGenList(select,array) {
+function decorateSelectList(select,array) {
     select.options.length = 0;
     for(var i = 0; i < array.length; i++) {
         select.options[select.options.length] = new Option(array[i], i);
@@ -475,7 +476,7 @@ function saveSharesToDatabase(){
             'percentages': percentages
         }),
         success: function (data, textStatus, jqXHR) {
-            //alert(JSON.stringify(data));
+            alert("Saved the share Percentages successfully...");
         },
         error: function (jqXHR, textStatus, errorThrown) {
             alert('updateGenerator error: ' + textStatus);
