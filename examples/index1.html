@@ -1,0 +1,281 @@
+<!DOCTYPE HTML>
+<meta charset="UTF-8">
+<!...Adding rev summary table and accessing the main desired revision data array...>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CGPL SChedule</title>
+    <link rel="stylesheet" href="../slick.grid.css" type="text/css"/>
+    <link rel="stylesheet" href="../css/smoothness/jquery-ui-1.8.16.custom.css" type="text/css"/>
+    <link rel="stylesheet" href="examples.css" type="text/css"/>
+    <link rel="stylesheet" href="MainSheetUI.css" type="text/css"/>
+    <link rel="stylesheet" href="../bootstrap/css/bootstrap.min.css" type="text/css"/>
+    <script src = "../bootstrap/js/jquery.min.js"></script>
+    <script src = "../bootstrap/js/bootstrap.min.js"></script>
+
+</head>
+<body  style="padding-top: 65px;">
+<!-- Navigation -->
+<div class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="http://www.wrldc.com/" target="_blank">WRLDC</a>
+        </div>
+        <div class="navbar-collapse collapse" style="height: 1px;">
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="GeneratorCreate.html" target="_blank">Manage Generators</a></li>
+                <li><a href="ConstituentCreate.html" target="_blank">Manage Constituents</a></li>
+            </ul>
+        </div><!--/.nav-collapse -->
+    </div>
+</div>
+<!-- Page Content -->
+<div class="container-fluid" style="margin:0px">
+    <div class="row">
+        <div id="revInputDiv" class="col-md-3">
+            <span>Revision Number</span>
+            <input type="number" min="0" max="500" value="0" id="revInput"><br>
+            <button style="margin-top: 5px" id="loadRevButton" onclick ="loadRevisionFromDB()" class="btn btn-primary btn-sm">LoadRevision</button>
+            <button style="margin-top: 5px" id="deleteRevButton" class="btn btn-danger btn-sm">DeleteRevision</button>
+            <button style="margin-top: 5px" id="createRevButton" onclick="createNewRev()" class="btn btn-success btn-sm">CreateNewRevision</button>
+        </div>
+        <div id="revDisplayDiv" class="col-md-3">
+            <h3 style="margin-top:5px;text-align: center">CurrentRevision</h3>
+            <h3 style="margin-top:5px;text-align: center" id="revDisplay">0</h3>
+        </div>
+        <div id="commentDiv" class="col-md-6">
+            <form class="form-horizontal" role="form">
+                <div class="form-group">
+                    <label class="control-label col-sm-3">Comment:</label>
+                    <div class="col-sm-9">
+                        <input type="text" class="form-control" id="commentInput" placeholder="Enter Comment Here">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="row" style="margin-top: 5px">
+        <div class="col-md-9 col-xs-11" >
+            <div id="myGrid" style="height:400px;"></div>
+        </div>
+        <div class="col-md-3 col-xs-12">
+            <div id="summTabDiv">
+                <button id="reqFeedByGridButton" onclick="updateFromGrid()" class="btn btn-warning btn-sm">Modify Revision from Grid</button>
+                <h3 id='tiedInfo'>Requisition Summary Table, tied to grid</h3>
+                <table id="summTab" class="table table-bordered table-hover"></table>
+                <button id="buttonUpdateRevSummTab" onclick="saveToDatabase()" class="btn btn-success btn-sm">Save Rev According to this Table</button>
+                <br>
+                <button id="revSolButton" onclick="markCellsWithRevs()" class="btn btn-info btn-sm" style="margin-top: 5px">GetFeasibleSchedule</button>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div  class="col-md-12">
+            <h3>Enter the desired requisition values and onBarDC</h3>
+            <h2><mark>Note: The order matters!</mark></h2>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <button onclick="showhide(this)" class="btn btn-default btn-xs">Normal Share Inputs Table</button>
+            <div id="reqInputDiv" class="hidingClass table-responsive">
+                <table id="reqInputTable" class="table table-bordered table-hover">
+                    <tr>
+                        <td>
+                            Constituent Name
+                        </td>
+                        <td>
+                            From Block
+                        </td>
+                        <td>
+                            To Block
+                        </td>
+                        <td>
+                            Value
+                        </td>
+                        <td><input type="checkbox" name="chk" onClick="SelectAll(this,'reqInputTable')"/></td>
+                    </tr>
+                </table>
+
+                <select id="selectReqConst"><option>MSEB</option><option>Const2</option><option>Const3</option></select>
+                <button id="reqAddRowButton" onclick="addRow('reqInputTable')" class="btn btn-primary btn-xs">AddRow</button>
+                <button id="reqDeleteRowButton" onclick="deleteRow('reqInputTable')" class="btn btn-primary btn-xs">DeleteRows</button>
+                <p id="addRowConsole"></p><br>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <button onclick="showhide(this)" class="btn btn-default btn-xs">RSD+URS Inputs Table</button>
+            <div class="hidingClass table-responsive" style="display:none">
+                <table id="reqRSDInputTable" class="table table-bordered table-hover">
+                    <tr>
+                        <td>
+                            Constituent Name
+                        </td>
+                        <td>
+                            From Block
+                        </td>
+                        <td>
+                            To Block
+                        </td>
+                        <td>
+                            RSD+URS Value
+                        </td>
+                        <td>
+                            WantURS?
+                        </td>
+                        <td><input type="checkbox" name="chk" onClick="SelectAll(this,'reqRSDInputTable')"/></td>
+                    </tr>
+                </table>
+                <select id="selectRSDInputConst"><option>MSEB</option><option>Const2</option><option>Const3</option></select>
+                <button id="reqRSDInputAddRowButton" onclick="addRowRSDURS('reqRSDInputTable')" class="btn btn-primary btn-xs">AddRow</button>
+                <button id="reqRSDInputDeleteRowButton" onclick="deleteRow('reqRSDInputTable')" class="btn btn-primary btn-xs">DeleteRows</button></div>
+            <br>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <button onclick="showhide(this)" class="btn btn-default btn-xs">DC Inputs Table</button><br>
+            <div class="hidingClass table-responsive" style="display:none">
+                <table id="genDecInputTable" class="table table-bordered table-hover">
+                    <tr>
+                        <td style="width:50px">
+                            Generator Name
+                        </td>
+                        <td>
+                            From Block
+                        </td>
+                        <td>
+                            To Block
+                        </td>
+                        <td>
+                            DC Value
+                        </td>
+                        <td><input type="checkbox" name="chk" onClick="SelectAll(this,'genDecInputTable')"/></td>
+                    </tr>
+                </table>
+
+                <button id="decAddRowButton" onclick="addRow('genDecInputTable')" class="btn btn-primary btn-xs">AddRow</button>
+                <button id="decDeleteRowButton" onclick="deleteRow('genDecInputTable')" class="btn btn-primary btn-xs">DeleteRows</button>
+                <br>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <button onclick="showhide(this)" class="btn btn-default btn-xs">OnBar DC Inputs Table</button>
+            <div class="hidingClass table-resonsive" style="display:none">
+                <table id="genDCInputTable" class="table table-bordered table-hover">
+                    <tr>
+                        <td style="width:50px">
+                            Generator Name
+                        </td>
+                        <td>
+                            From Block
+                        </td>
+                        <td>
+                            To Block
+                        </td>
+                        <td>
+                            OnBarDC Value
+                        </td>
+                        <td><input type="checkbox" name="chk" onClick="SelectAll(this,'genDCInputTable')"/></td>
+                    </tr>
+                </table>
+
+                <button id="dCAddRowButton" onclick="addRow('genDCInputTable')" class="btn btn-primary btn-xs">AddRow</button>
+                <button id="dCDeleteRowButton" onclick="deleteRow('genDCInputTable')" class="btn btn-primary btn-xs">DeleteRows</button>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-3"></div>
+        <div class="col-md-6">
+            <button onclick="showhide(this)" class="btn btn-default btn-xs">Max Ramp Inputs Table</button>
+            <div class="hidingClass table-responsive" style="display:none">
+                <table id="genMaxRampInputTable" class="table table-bordered table-hover">
+                    <tr>
+                        <td>
+                            Generator Name
+                        </td>
+                        <td>
+                            From Block
+                        </td>
+                        <td>
+                            To Block
+                        </td>
+                        <td>
+                            Max Ramp Value
+                        </td>
+                        <td><input type="checkbox" name="chk" onClick="SelectAll(this,'genMaxRampInputTable')"/></td>
+                    </tr>
+                </table>
+
+                <button id="rampAddRowButton" onclick="addRow('genMaxRampInputTable')" class="btn btn-primary btn-xs">AddRow</button>
+                <button id="rampDeleteRowButton" onclick="deleteRow('genMaxRampInputTable')" class="btn btn-primary btn-xs">DeleteRows</button>
+                <br>
+            </div>
+        </div>
+    </div>
+    <div class="row" style="margin-top:10px">
+        <div class="col-md-4" ></div>
+        <div class="col-md-8">
+            <button id="reqGetFromSummButton" onclick="getSummSecsToManual()" class="btn btn-primary btn-sm">Get from revision Summary</button>
+            <button id="reqFeedByTableButton" onclick="createSumm(true)" class="btn btn-primary btn-sm">Modify revision from Input Tables</button>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <h2>Undo/redo support :</h2>
+            <ul>
+                <li>Use buttons to undo/redo copy/paste</li>
+            </ul>
+            <button class="btn btn-default btn-xs" onclick="undoRedoBuffer.undo()"><img src="../images/arrow_undo.png" align="absmiddle"> Undo</button>
+            <button class="btn btn-default btn-xs" onclick="undoRedoBuffer.redo()"><img src="../images/arrow_redo.png" align="absmiddle"> Redo</button>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-10 col-xs-11">
+            <button onclick="showhide(this)" class="btn btn-default btn-xs">RevisionTags Of Cells</button>
+            <div class="table-responsive hidingClass">
+                <table id="revMarkTable" class="table table-bordered table-hover">
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-10 col-xs-11">
+            <button onclick="showhide(this)" class="btn btn-default btn-xs">Desired Numeric Requisions</button>
+            <div id="myGridDes" style="height:300px" class="hidingClass"> </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-10 col-xs-11">
+            <button onclick="showhide(this)" class="btn btn-default btn-xs">Feasible Requisions of Constituents</button>
+            <div id="myGridFeasible" style="height:300px" class="hidingClass"> </div>
+        </div>
+    </div>
+</div>
+<script src="../lib/firebugx.js"></script>
+<script src="../lib/jquery-1.7.min.js"></script>
+<script src="../lib/jquery-ui-1.8.16.custom.min.js"></script>
+<script src="../lib/jquery.event.drag-2.2.js"></script>
+<script src="../slick.core.js"></script>
+<script src="../plugins/slick.autotooltips.js"></script>
+<script src="../plugins/slick.cellrangedecorator.js"></script>
+<script src="../plugins/slick.cellrangeselector.js"></script>
+<script src="../plugins/slick.cellexternalcopymanager.js"></script>
+<script src="../plugins/slick.cellselectionmodel.js"></script>
+<script src="../slick.editors.js"></script>
+<script src="../slick.formatters.js"></script>
+<script src="../slick.grid.js"></script>
+<script src="MainSheetUI5.js"></script>
+<script src="infix.js"></script>
+<script src = 'distributingRamp.js'></script>
+<script src="./indexeddb.shim.min.js"></script>
+<script src="./indexedDBHelper.js"></script>
+</body>
+</html>

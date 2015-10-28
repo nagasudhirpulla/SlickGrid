@@ -245,3 +245,10 @@ input.editor-checkbox {
 .slick-header-column:hover, .slick-header-column-active {
     background: white;
 }
+
+.slick-header-column.ui-state-default{
+    padding-top: 4px;
+    padding-bottom: 4px;
+    padding-left: 1px;
+    padding-right: 0;
+}

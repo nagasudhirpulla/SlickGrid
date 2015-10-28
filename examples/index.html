@@ -41,38 +41,37 @@
 		<div id="revInputDiv" class="col-md-3">
 			<span>Revision Number</span>
 			<input type="number" min="0" max="500" value="0" id="revInput"><br>
-			<button id="loadRevButton" onclick ="loadRevisionFromDB()" class="btn btn-primary btn-sm">LoadRevision</button>
-			<button id="deleteRevButton" class="btn btn-primary btn-sm">DeleteRevision</button>
-			<button id="createRevButton" onclick="createNewRev()" class="btn btn-primary btn-sm">CreateNewRevision</button>
+			<button style="margin-top: 5px" id="loadRevButton" onclick ="loadRevisionFromDB()" class="btn btn-primary btn-sm">LoadRevision</button>
+			<button style="margin-top: 5px" id="deleteRevButton" class="btn btn-danger btn-sm">DeleteRevision</button>
+			<button style="margin-top: 5px" id="createRevButton" onclick="createNewRev()" class="btn btn-success btn-sm">CreateNewRevision</button>
 		</div>
 		<div id="revDisplayDiv" class="col-md-3">
-			<h3 style="margin-top:5px">current revision</h3>
-			<h3 style="margin-top:5px" id="revDisplay">0</h3>
+			<h3 style="margin-top:5px;text-align: center">CurrentRevision</h3>
+			<h3 style="margin-top:5px;text-align: center" id="revDisplay">0</h3>
 		</div>
 		<div id="commentDiv" class="col-md-6">
 			<form class="form-horizontal" role="form">
 				<div class="form-group">
-					<label class="control-label col-sm-2" for="commentInput">Comment:</label>
-					<div class="col-sm-10">
+					<label class="control-label col-sm-3">Comment:</label>
+					<div class="col-sm-9">
 						<input type="text" class="form-control" id="commentInput" placeholder="Enter Comment Here">
 					</div>
 				</div>
 			</form>
 		</div>
 	</div>
-	<div class="row">
-		<div class="col-md-9 col-xs-11">
+	<div class="row" style="margin-top: 5px">
+		<div class="col-md-9 col-xs-11" >
 			<div id="myGrid" style="height:400px;"></div>
 		</div>
 		<div class="col-md-3 col-xs-12">
 			<div id="summTabDiv">
-				<button id="reqFeedByGridButton" onclick="updateFromGrid()" class="btn btn-primary btn-sm">Modify Revision from Grid</button>
-				<br>
+				<button id="reqFeedByGridButton" onclick="updateFromGrid()" class="btn btn-warning btn-sm">Modify Revision from Grid</button>
 				<h3 id='tiedInfo'>Requisition Summary Table, tied to grid</h3>
 				<table id="summTab" class="table table-bordered table-hover"></table>
-				<button id="buttonUpdateRevSummTab" onclick="saveToDatabase()" class="btn btn-primary btn-sm">Save Rev According to this Table</button>
+				<button id="buttonUpdateRevSummTab" onclick="saveToDatabase()" class="btn btn-success btn-sm">Save Rev According to this Table</button>
 				<br>
-				<button id="revSolButton" onclick="markCellsWithRevs()" class="btn btn-primary btn-sm">GetFeasibleSchedule</button>
+				<button id="revSolButton" onclick="markCellsWithRevs()" class="btn btn-info btn-sm" style="margin-top: 5px">GetFeasibleSchedule</button>
 			</div>
 		</div>
 	</div>
