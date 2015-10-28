@@ -1,3 +1,6 @@
+/**
+ * Created by PSSE on 10/29/2015.
+ */
 var grid; //The cell grid object.
 var data = []; //The data used by the cell grid
 //The Generator  default Parameters or the generator cofiguration
@@ -180,32 +183,6 @@ for (var i = 0; i < constituentNames.length; i++) {
 //version URS
 //Setting the Column names of the grid over
 
-function SelectAll(ele, tabname) {
-    var table = document.getElementById(tabname);
-    var action = true;
-    if (!ele.checked) action = false;
-    var cb;
-    for (var i = 1; i < table.rows.length; i++) {
-        cb = table.rows[i].cells[table.rows[i].cells.length - 1].childNodes[0];
-        cb.checked = action;
-    }
-}
-
-function showhide(el) {
-    var div = findSibling(el, "hidingClass");
-    if (div.style.display !== "none") {
-        div.style.display = "none";
-    } else {
-        div.style.display = "block";
-    }
-}
-
-function findSibling(el, cls) {
-    while (!el.classList.contains(cls)) {
-        el = el.nextElementSibling;
-    }
-    return el;
-}
 
 //On loading of the html page do the following
 $(function() {
@@ -319,57 +296,6 @@ function ConvertCellValToNum(cVal, constIndex, blk, Cat, onBarVal) //Cat = 0:Nor
         return cVal;
 }
 
-//Add Row to the tables of input requisitions and rsd and urs tables
-function addRow(tableID) {
-    var table = document.getElementById(tableID);
-    var rowCount = table.rows.length;
-    var selectmenu;
-    switch (tableID) {
-        case 'reqInputTable':
-            selectmenu = document.getElementById('selectReqConst');
-            break;
-        case 'reqRSDInputTable':
-            selectmenu = document.getElementById('selectRSDInputConst');
-            break;
-
-    }
-    var chosenval;
-    if (tableID == 'genDCInputTable')
-        chosenval = genName;
-    else if (tableID == 'genDecInputTable')
-        chosenval = genName;
-    else if (tableID == 'genMaxRampInputTable')
-        chosenval = "MaxRamp";
-    else
-        chosenval = constituentNames[selectmenu.selectedIndex];
-    var row = table.insertRow(rowCount);
-    var colCount = table.rows[0].cells.length;
-    var newcell = row.insertCell(0);
-    var t = document.createTextNode(chosenval);
-    var s = document.createElement("span");
-    s.appendChild(t);
-    newcell.appendChild(s);
-    for (var i = 1; i < colCount - 1; i++) {
-        newcell = row.insertCell(i);
-        var t = document.createElement("input");
-        t.min = '1';
-        t.maxlength = "5";
-        t.value = '';
-        if (i != colCount - 2) {
-            t.type = 'number';
-            t.onkeypress = isNumberKey;
-            t.min = '1';
-            t.max = '100';
-        }
-        newcell.appendChild(t);
-    }
-    newcell = row.insertCell(colCount - 1);
-    var cb = document.createElement("input");
-    cb.type = 'checkbox';
-    newcell.appendChild(cb);
-    //row inserted in to the table
-}
-
 function addRowRSDURS(tableID) {
     var table = document.getElementById(tableID);
     var rowCount = table.rows.length;
@@ -421,36 +347,40 @@ function addRowRSDURS(tableID) {
     //row inserted in to the table
 }
 
-function isNumberKey(evt) {
-    evt = (evt) ? evt : window.event;
-    var charCode = (evt.which) ? evt.which : evt.keyCode;
-    if (charCode > 31 && (charCode < 48 || charCode > 57)) {
-        return false;
-    }
-    return true;
-}
-
-function deleteRow(tableID) {
-    try {
-        var table = document.getElementById(tableID);
-        var rowCount = table.rows.length;
-        for (var i = 1; i < rowCount; i++) {
-            var row = table.rows[i];
-            var colCount = table.rows[0].cells.length;
-            var chkbox = row.cells[colCount - 1].childNodes[0];
-            if (null != chkbox && true == chkbox.checked) {
-                table.deleteRow(i);
-                rowCount--;
-                i--;
-            }
+function addRowNoSelect(el) {
+    var table = findPrevSibling(el, "tableInputClass");
+    var rowCount = table.rows.length;
+    var chosenval = genName;
+    var row = table.insertRow(rowCount);
+    var colCount = table.rows[0].cells.length;
+    var newcell = row.insertCell(0);
+    var t = document.createTextNode(chosenval);
+    var s = document.createElement("span");
+    s.appendChild(t);
+    newcell.appendChild(s);
+    for (var i = 1; i < colCount - 1; i++) {
+        newcell = row.insertCell(i);
+        var t = document.createElement("input");
+        t.min = '1';
+        t.maxlength = "5";
+        t.value = '';
+        if (i != colCount - 2) {
+            t.type = 'number';
+            t.onkeypress = isNumberKey;
+            t.min = '1';
+            t.max = '100';
         }
-    } catch (e) {
-        alert(e);
+        newcell.appendChild(t);
     }
+    newcell = row.insertCell(colCount - 1);
+    var cb = document.createElement("input");
+    cb.type = 'checkbox';
+    newcell.appendChild(cb);
+    //row inserted in to the table
 }
 
 function createSumm(overridePermissionRequired) { //by pressing modify revision by input tables button
-                                                  //tieing all the tables to one button
+    //tieing all the tables to one button
     var x1 = modifyReq(overridePermissionRequired);
     var x2 = modifyDC(!x1 && overridePermissionRequired);
     var x3 = modifyDec(!(x1 || x2) && overridePermissionRequired);
@@ -846,8 +776,8 @@ function getSummSecsToManual() //sections version of summtomanual
     var table = document.getElementById("reqInputTable");
     var tableRSDURS = document.getElementById("reqRSDInputTable");
     var sections;
-    table.innerHTML = "<tbody><tr><td>Constituent Name</td><td>From Block</td><td>To Block</td><td>Value</td><td><input type=\"checkbox\" name=\"chk\" onclick=\"SelectAll(this,'reqInputTable')\"></input></td></tr></tbody>";
-    tableRSDURS.innerHTML = "<tr><td>Constituent Name</td><td>From Block</td><td>To Block</td><td>RSD+URS Value</td><td>WantURS?</td><td><input type=\"checkbox\" name=\"chk\" onclick=\"SelectAll(this,'reqRSDInputTable')\"></td></tr>";
+    table.innerHTML = "<tbody><tr><td>Constituent Name</td><td>From Block</td><td>To Block</td><td>Value</td><td><input type=\"checkbox\" name=\"chk\" onclick=\"SelectAll(this)\"></input></td></tr></tbody>";
+    tableRSDURS.innerHTML = "<tr><td>Constituent Name</td><td>From Block</td><td>To Block</td><td>RSD+URS Value</td><td>WantURS?</td><td><input type=\"checkbox\" name=\"chk\" onclick=\"SelectAll(this)\"></td></tr>";
     for (var j = 0; j < sectionsArray.length; j++) {
         sections = sectionsArray[j];
         for (var k = 0; k < sections.length; k++) {
@@ -869,7 +799,7 @@ function getSummSecsToManual() //sections version of summtomanual
 function getSummDCToManual() {
     var table = document.getElementById("genDCInputTable");
     var sections;
-    table.innerHTML = "<tbody><tr><td>Generator Name</td><td>From Block</td><td>To Block</td><td>OnBarDc Value</td><td><input type=\"checkbox\" name=\"chk\" onclick=\"SelectAll(this,'genDCInputTable')\"></input></td></tr></tbody>";
+    table.innerHTML = "<tbody><tr><td>Generator Name</td><td>From Block</td><td>To Block</td><td>OnBarDc Value</td><td><input type=\"checkbox\" name=\"chk\" onclick=\"SelectAll(this)\"></input></td></tr></tbody>";
     if (sectionsArray.length) {
         sections = sectionsArray["onBar"];
         for (var k = 0; k < sections.length; k++) {
@@ -881,7 +811,7 @@ function getSummDCToManual() {
 function getSummDecToManual() {
     var table = document.getElementById("genDecInputTable");
     var sections;
-    table.innerHTML = "<tbody><tr><td>Generator Name</td><td>From Block</td><td>To Block</td><td>DC Value</td><td><input type=\"checkbox\" name=\"chk\" onclick=\"SelectAll(this,'genDecInputTable')\"></input></td></tr></tbody>";
+    table.innerHTML = "<tbody><tr><td>Generator Name</td><td>From Block</td><td>To Block</td><td>DC Value</td><td><input type=\"checkbox\" name=\"chk\" onclick=\"SelectAll(this)\"></input></td></tr></tbody>";
     if (sectionsArray.length) {
         sections = sectionsArray["DC"];
         for (var k = 0; k < sections.length; k++) {
@@ -893,7 +823,7 @@ function getSummDecToManual() {
 function getSummRampToManual() {
     var table = document.getElementById("genMaxRampInputTable");
     var sections;
-    table.innerHTML = "<tbody><tr><td>Generator Name</td><td>From Block</td><td>To Block</td><td>MaxRamp Value</td><td><input type=\"checkbox\" name=\"chk\" onclick=\"SelectAll(this,'genMaxRampInputTable')\"></input></td></tr></tbody>";
+    table.innerHTML = "<tbody><tr><td>Generator Name</td><td>From Block</td><td>To Block</td><td>MaxRamp Value</td><td><input type=\"checkbox\" name=\"chk\" onclick=\"SelectAll(this)\"></input></td></tr></tbody>";
     if (sectionsArray.length) {
         sections = sectionsArray["rampNum"];
         for (var k = 0; k < sections.length; k++) {
@@ -1122,7 +1052,7 @@ function calulateFormulaColumns(data,grid) {
 }
 
 //Marking each cell with the latest affecting rev number till current revision
-//Iterate through each revision from 1st till current revision and find the smallest block or row number affected 
+//Iterate through each revision from 1st till current revision and find the smallest block or row number affected
 //by the revision and mark the next remaining blocks of the column as the same rev number.
 //Continue this till current revision.
 function markCellsWithRevs() {

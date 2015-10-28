@@ -78,41 +78,36 @@
     <div class="row">
         <div  class="col-md-12">
             <h3>Enter the desired requisition values and onBarDC</h3>
-            <h2><mark>Note: The order matters!</mark></h2>
+            <h3><mark>Note: The order matters!</mark></h3>
         </div>
     </div>
     <div class="row">
-        <div class="col-md-6">
-            <button onclick="showhide(this)" class="btn btn-default btn-xs">Normal Share Inputs Table</button>
-            <div id="reqInputDiv" class="hidingClass table-responsive">
-                <table id="reqInputTable" class="table table-bordered table-hover">
+        <div class="col-md-6" style="margin-top: 5px">
+            <!--Copy this div to have a modular requisition table div and don't forget to include tablewidget.js-->
+            <!--Column for table-->
+            <button onclick="showhide(this)" class="btn btn-block btn-xs">Requisition Shares Input Table</button>
+            <div id="reqInputDiv" class="hidingClass table-responsive"><!--keyClass--hidingClass-->
+                <table id="shareInputTable" class="table table-bordered table-hover tableInputClass"><!--keyClass--tableInputClass-->
+                    <tbody>
                     <tr>
-                        <td>
-                            Constituent Name
-                        </td>
-                        <td>
-                            From Block
-                        </td>
-                        <td>
-                            To Block
-                        </td>
-                        <td>
-                            Value
-                        </td>
-                        <td><input type="checkbox" name="chk" onClick="SelectAll(this,'reqInputTable')"/></td>
+                        <td>Constituent Name</td>
+                        <td>From Block</td>
+                        <td>To Block</td>
+                        <td>Value</td>
+                        <td><input type="checkbox" name="chk" onclick="SelectAll(this)"></td>
                     </tr>
+                    </tbody>
                 </table>
 
-                <select id="selectReqConst"><option>MSEB</option><option>Const2</option><option>Const3</option></select>
-                <button id="reqAddRowButton" onclick="addRow('reqInputTable')" class="btn btn-primary btn-xs">AddRow</button>
-                <button id="reqDeleteRowButton" onclick="deleteRow('reqInputTable')" class="btn btn-primary btn-xs">DeleteRows</button>
-                <p id="addRowConsole"></p><br>
+                <select id="selectReqConst" class="selectAbsorb"><option>BPDB-ER</option><option>CSEB-NVVN</option><option>DD</option><option>DNH</option><option>GUVNL</option><option>GOA</option><option>HVDC-BHD</option><option>HVDC-VIN</option><option>JNK-NR</option><option>MPSEB</option><option>MSEB</option><option>MS-NVVN</option><option>RAJ-SOLAR</option></select><!--keyClass--SelectAbsorb-->
+                <button id="reqAddRowButton" onclick="addRow(this)" class="btn btn-success btn-xs">AddRow</button>
+                <button id="reqDeleteRowButton" onclick="deleteRow(this)" class="btn btn-danger btn-xs">DeleteRows</button>
             </div>
         </div>
-        <div class="col-md-6">
-            <button onclick="showhide(this)" class="btn btn-default btn-xs">RSD+URS Inputs Table</button>
-            <div class="hidingClass table-responsive" style="display:none">
-                <table id="reqRSDInputTable" class="table table-bordered table-hover">
+        <div class="col-md-6" style="margin-top: 5px">
+            <button onclick="showhide(this)" class="btn btn-block btn-xs">RSD+URS Inputs Table</button>
+            <div class="hidingClass table-responsive" style="display:none"><!--keyClass--hidingClass-->
+                <table id="reqRSDInputTable" class="table table-bordered table-hover tableInputClass"><!--keyClass--tableInputClass-->
                     <tr>
                         <td>
                             Constituent Name
@@ -129,20 +124,19 @@
                         <td>
                             WantURS?
                         </td>
-                        <td><input type="checkbox" name="chk" onClick="SelectAll(this,'reqRSDInputTable')"/></td>
+                        <td><input type="checkbox" name="chk" onClick="SelectAll(this)"/></td>
                     </tr>
                 </table>
-                <select id="selectRSDInputConst"><option>MSEB</option><option>Const2</option><option>Const3</option></select>
-                <button id="reqRSDInputAddRowButton" onclick="addRowRSDURS('reqRSDInputTable')" class="btn btn-primary btn-xs">AddRow</button>
-                <button id="reqRSDInputDeleteRowButton" onclick="deleteRow('reqRSDInputTable')" class="btn btn-primary btn-xs">DeleteRows</button></div>
-            <br>
+                <select id="selectRSDInputConst" class="selectAbsorb"><option>MSEB</option><option>Const2</option><option>Const3</option></select><!--keyClass--SelectAbsorb-->
+                <button id="reqRSDInputAddRowButton" onclick="addRowRSDURS('reqRSDInputTable')" class="btn btn-success btn-xs">AddRow</button>
+                <button id="reqRSDInputDeleteRowButton" onclick="deleteRow(this)" class="btn btn-danger btn-xs">DeleteRows</button></div>
         </div>
     </div>
     <div class="row">
-        <div class="col-md-6">
-            <button onclick="showhide(this)" class="btn btn-default btn-xs">DC Inputs Table</button><br>
-            <div class="hidingClass table-responsive" style="display:none">
-                <table id="genDecInputTable" class="table table-bordered table-hover">
+        <div class="col-md-6" style="margin-top: 5px">
+            <button onclick="showhide(this)" class="btn btn-block btn-xs">DC Inputs Table</button>
+            <div class="hidingClass table-responsive" style="display:none"><!--keyClass--hidingClass-->
+                <table id="genDecInputTable" class="table table-bordered table-hover tableInputClass"><!--keyClass--tableInputClass-->
                     <tr>
                         <td style="width:50px">
                             Generator Name
@@ -156,19 +150,18 @@
                         <td>
                             DC Value
                         </td>
-                        <td><input type="checkbox" name="chk" onClick="SelectAll(this,'genDecInputTable')"/></td>
+                        <td><input type="checkbox" name="chk" onClick="SelectAll(this)"/></td>
                     </tr>
                 </table>
 
-                <button id="decAddRowButton" onclick="addRow('genDecInputTable')" class="btn btn-primary btn-xs">AddRow</button>
-                <button id="decDeleteRowButton" onclick="deleteRow('genDecInputTable')" class="btn btn-primary btn-xs">DeleteRows</button>
-                <br>
+                <button id="decAddRowButton" onclick="addRowNoSelect(this)" class="btn btn-success btn-xs">AddRow</button>
+                <button id="decDeleteRowButton" onclick="deleteRow(this)" class="btn btn-danger btn-xs">DeleteRows</button>
             </div>
         </div>
-        <div class="col-md-6">
-            <button onclick="showhide(this)" class="btn btn-default btn-xs">OnBar DC Inputs Table</button>
-            <div class="hidingClass table-resonsive" style="display:none">
-                <table id="genDCInputTable" class="table table-bordered table-hover">
+        <div class="col-md-6" style="margin-top: 5px">
+            <button onclick="showhide(this)" class="btn btn-block btn-xs">OnBar DC Inputs Table</button>
+            <div class="hidingClass table-resonsive" style="display:none"><!--keyClass--hidingClass-->
+                <table id="genDCInputTable" class="tableInputClass table table-bordered table-hover"><!--keyClass--tableInputClass-->
                     <tr>
                         <td style="width:50px">
                             Generator Name
@@ -182,21 +175,21 @@
                         <td>
                             OnBarDC Value
                         </td>
-                        <td><input type="checkbox" name="chk" onClick="SelectAll(this,'genDCInputTable')"/></td>
+                        <td><input type="checkbox" name="chk" onClick="SelectAll(this)"/></td>
                     </tr>
                 </table>
 
-                <button id="dCAddRowButton" onclick="addRow('genDCInputTable')" class="btn btn-primary btn-xs">AddRow</button>
-                <button id="dCDeleteRowButton" onclick="deleteRow('genDCInputTable')" class="btn btn-primary btn-xs">DeleteRows</button>
+                <button id="dCAddRowButton" onclick="addRowNoSelect(this)" class="btn btn-success btn-xs">AddRow</button>
+                <button id="dCDeleteRowButton" onclick="deleteRow(this)" class="btn btn-danger btn-xs">DeleteRows</button>
             </div>
         </div>
     </div>
     <div class="row">
         <div class="col-md-3"></div>
-        <div class="col-md-6">
-            <button onclick="showhide(this)" class="btn btn-default btn-xs">Max Ramp Inputs Table</button>
-            <div class="hidingClass table-responsive" style="display:none">
-                <table id="genMaxRampInputTable" class="table table-bordered table-hover">
+        <div class="col-md-6" style="margin-top: 5px">
+            <button onclick="showhide(this)" class="btn btn-block btn-xs">Max Ramp Inputs Table</button>
+            <div class="hidingClass table-responsive" style="display:none"><!--keyClass--hidingClass-->
+                <table id="genMaxRampInputTable" class="tableInputClass table table-bordered table-hover"><!--keyClass--tableInputClass-->
                     <tr>
                         <td>
                             Generator Name
@@ -210,13 +203,12 @@
                         <td>
                             Max Ramp Value
                         </td>
-                        <td><input type="checkbox" name="chk" onClick="SelectAll(this,'genMaxRampInputTable')"/></td>
+                        <td><input type="checkbox" name="chk" onClick="SelectAll(this)"/></td>
                     </tr>
                 </table>
 
-                <button id="rampAddRowButton" onclick="addRow('genMaxRampInputTable')" class="btn btn-primary btn-xs">AddRow</button>
-                <button id="rampDeleteRowButton" onclick="deleteRow('genMaxRampInputTable')" class="btn btn-primary btn-xs">DeleteRows</button>
-                <br>
+                <button id="rampAddRowButton" onclick="addRowNoSelect(this)" class="btn btn-success btn-xs">AddRow</button>
+                <button id="rampDeleteRowButton" onclick="deleteRow(this)" class="btn btn-danger btn-xs">DeleteRows</button>
             </div>
         </div>
     </div>
@@ -224,7 +216,7 @@
         <div class="col-md-4" ></div>
         <div class="col-md-8">
             <button id="reqGetFromSummButton" onclick="getSummSecsToManual()" class="btn btn-primary btn-sm">Get from revision Summary</button>
-            <button id="reqFeedByTableButton" onclick="createSumm(true)" class="btn btn-primary btn-sm">Modify revision from Input Tables</button>
+            <button id="reqFeedByTableButton" onclick="createSumm(true)" class="btn btn-warning btn-sm">Modify revision from Input Tables</button>
         </div>
     </div>
     <div class="row">
@@ -272,9 +264,10 @@
 <script src="../slick.editors.js"></script>
 <script src="../slick.formatters.js"></script>
 <script src="../slick.grid.js"></script>
-<script src="MainSheetUI5.js"></script>
+<script src="schedulingui.js"></script>
 <script src="infix.js"></script>
 <script src = 'distributingRamp.js'></script>
+<script src="tablewidget.js"></script>
 <script src="./indexeddb.shim.min.js"></script>
 <script src="./indexedDBHelper.js"></script>
 </body>
