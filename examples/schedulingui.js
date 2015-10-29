@@ -253,7 +253,7 @@ function fetchSharesOfGenerator(genID){
             var shares = datafetched == null ? [] : (datafetched.shares instanceof Array ? datafetched.shares : [datafetched.shares]);
             console.log(JSON.stringify(shares));
             //Changing the percentageData depending on the fetched generator shares
-            for (var i = 0; i < shares.length; i++) { //iterator leaving the the table header
+            for (var i = 0; i < shares.length; i++) {
                 for (var blkNum = shares[i].from_b - 1; blkNum <= shares[i].to_b - 1; blkNum++) {
                     var constcol = shares[i].p_id;
                     //alert(constcol);
@@ -390,11 +390,11 @@ function ConvertCellValToNum(cVal, constIndex, blk, Cat, onBarVal) //Cat = 0:Nor
 {
     if (isNaN(cVal)) {
         if (cVal.match(/^\FULL$/i)) {
-            return (percentageData[blk])[constIndex] * onBarVal;
+            return (percentageData[blk])[constIndex] * onBarVal * 0.01;
             //return consReqPercentages[constIndex] * onBarVal;
         }
         else if (cVal.match(/^\d+(\.\d+)?\p$/i)) {
-            return (percentageData[blk])[constIndex] * onBarVal * (+(cVal.substr(0, cVal.length - 1))) * 0.01;
+            return (percentageData[blk])[constIndex] * onBarVal * 0.01 * (+(cVal.substr(0, cVal.length - 1))) * 0.01;
             //return consReqPercentages[constIndex] * onBarVal * (+(cVal.substr(0, cVal.length - 1))) * 0.01;
         }
     } else {
@@ -708,19 +708,29 @@ function createSectionSummaryTable() {
 
 function createSectionSummaryTableRSDURS(summTab, sectionsArray) {
     for (var j = 0; j < sectionsArray.length; j++) {
-        createSectionSummaryTableRowRSDURS(j, 'RSD', summTab);
+        createSectionSummaryTableRowRSDURS(j, 'RSD', summTab, sectionsArray);
     }
     for (var j = 0; j < sectionsArray.length; j++) {
-        createSectionSummaryTableRowRSDURS(j, 'URS', summTab);
+        createSectionSummaryTableRowRSDURS(j, 'URS', summTab, sectionsArray);
     }
 }
 
-function createSectionSummaryTableRowRSDURS(j, val, summTab) {
+function createSectionSummaryTableRowRSDURS(j, val, summTab, sectionsArray) {
     var sections = sectionsArray[val + j];
     var textStr;
     textStr = constituentNames[j] + " " + val;
     for (var i = 0; i < sections.length; i++) {
+        var texts = [textStr, (sections[i])['secStart'] + 1, (sections[i])['secEnd'] + 1, (sections[i])['val']];
         var tr = document.createElement('tr');
+        //
+        for(var j=0;j<texts.length;j++){
+            var td0 = document.createElement('td');
+            td0.appendChild(document.createTextNode(texts[j]));
+            td0.style.padding = "4px";
+            tr.appendChild(td0);
+        }
+        //
+        /*
         var td0 = document.createElement('td');
         var td1 = document.createElement('td');
         var td2 = document.createElement('td');
@@ -737,6 +747,7 @@ function createSectionSummaryTableRowRSDURS(j, val, summTab) {
         tr.appendChild(td1);
         tr.appendChild(td2);
         tr.appendChild(td3);
+        */
         summTab.appendChild(tr);
     }
 }
