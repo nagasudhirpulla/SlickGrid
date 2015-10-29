@@ -1793,3 +1793,78 @@ function calculateFormulaColumnsSolution(grid2, data2) {
 function decorateGrid(){
     genName = document.getElementById("genList").options[document.getElementById("genList").selectedIndex].text;
 }
+
+function saveToDB(){
+    //Get the current revision number.
+    //Take the sections array and save it to the database
+    if (!confirm("Save the changes to database in Revision " + curRev + "...?" + "\n" + "The data will be saved based on the Summary table"))
+        return false;
+    //Save to the SQL database the sectionsArray
+    var genID = genIDs[document.getElementById("genList").selectedIndex];
+    //Preparing data to post
+    var cats = [];
+    var conIDs = [];
+    var frombs = [];
+    var tobs = [];
+    var vals = [];
+    //converting sections to a json format acceptable by the server api
+    for (var j = 0; j < sectionsArray.length; j++) {
+        sections = sectionsArray[j];
+        for (var k = 0; k < sections.length; k++) {
+            if(sections[k].val>0){
+                cats.push('n');
+                conIDs.push(constituentIDs[j]);
+                frombs.push(sections[k].secStart + 1);
+                tobs.push(sections[k].secEnd + 1);
+                vals.push(sections[k].val);
+            }
+        }
+    }
+    for (var j = 0; j < sectionsArray.length; j++) {
+        sections = sectionsArray["RSD"+j];
+        for (var k = 0; k < sections.length; k++) {
+            if(sections[k].val>0){
+                cats.push('r');
+                conIDs.push(constituentIDs[j]);
+                frombs.push(sections[k].secStart + 1);
+                tobs.push(sections[k].secEnd + 1);
+                vals.push(sections[k].val);
+            }
+        }
+    }
+    for (var j = 0; j < sectionsArray.length; j++) {
+        sections = sectionsArray["URS"+j];
+        for (var k = 0; k < sections.length; k++) {
+            if(sections[k].val>0){
+                cats.push('u');
+                conIDs.push(constituentIDs[j]);
+                frombs.push(sections[k].secStart + 1);
+                tobs.push(sections[k].secEnd + 1);
+                vals.push(sections[k].val);
+            }
+        }
+    }
+    //TODO SECTIONS FOR DC ONBAR AND RAMP ALSO TO BE SAVED
+
+    //sending the ajax request to the server for saving revision
+    console.log('saving shares of Generator to the server');
+    $.ajax({
+        type: 'POST',
+        url: "http://localhost/api/revisions/"+curRev,
+        dataType: "json", // data type of response
+        data: JSON.stringify({
+            'genID':genID,
+            'cats':cats,
+            'conIDs': conIDs,
+            'frombs': frombs,
+            'tobs': tobs,
+            'vals': vals
+        }),
+        success: function (data, textStatus, jqXHR) {
+            alert("Saved the share Percentages successfully...");
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            alert('updateGenerator error: ' + textStatus);
+        }
+    });
+}
