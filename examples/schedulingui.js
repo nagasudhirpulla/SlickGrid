@@ -3,7 +3,10 @@
  */
 var grid; //The cell grid object.
 var data = []; //The data used by the cell grid
-//The Generator  default Parameters or the generator cofiguration
+var percentageData = [];//The requisition percentage data used by the algorithm and the UI
+var genNames = [];
+var genIDs = [];
+//The Generator  default Parameters or the generator configuration
 var genName = 'VSTPS1';
 //Below are default values for initialisation, can change if wanted through grid or input tables.
 var genRamp = 75;
@@ -18,6 +21,7 @@ var genDecCap = 965;
 //The constituent configuration settings for this particular generator.These are same throughout all revisions.
 var constituentNames = ['BPDB-ER','CSEB-NVVN','DD','DNH','GUVNL','GOA','HVDC-BHD','HVDC-VIN','JNK-NR','MPSEB','MSEB','MS-NVVN','RAJ-SOLAR'];
 constituentNames['generator'] = genName;
+var constituentIDs = [];
 var consReqPercentages = [0.007937, 0.002324, 0.011348, 0.032845, 0.18254, 0.030869999999999998, 0.002, 0.000603, 0.007692, 0.35150899999999996, 0.363732, 0.001952, 0.004648];
 document.title = genName+" Schedule";
 //Temporary Instance Data
@@ -95,101 +99,196 @@ var pluginOptions = {
 //cell grid options for customization over
 
 //Setting the Column names of the grid
-var columns = [{
-    id: 'maxRamp',
-    name: 'MaxRamp',
-    field: 'rampNum',
-    width: 30,
-    toolTip: "Maximum Ramp",
-    editor: Slick.Editors.Text
-}, {
-    id: 'DC',
-    name: 'DC',
-    field: 'DC',
-    width: 40,
-    toolTip: "Declared Capacity",
-    editor: Slick.Editors.Text
-}, {
-    id: "offBarDC",
-    name: "OffBarDC",
-    field: "offBar",
-    toolTip: "Offbar DC",
-    width: 40
-}, {
-    id: 'onBarDC',
-    name: 'OnBarDC',
-    field: 'onBar',
-    width: 40,
-    toolTip: "On Bar DC",
-    editor: Slick.Editors.Text
-}, {
-    id: "selector",
-    name: "Block",
-    field: "SNo",
-    width: 50,
-    toolTip: "Block Number"
-}, {
-    id: "ramp",
-    name: "Ramp",
-    field: "rampedVal",
-    width: 40,
-    toolTip: "Ramp"
-}, {
-    id: "availGen",
-    name: "AvailableGeneration",
-    field: "avail",
-    width: 40,
-    toolTip: "Available Generation"
-}];
-//Adding Constituent Requisition columns iteratively
-for (var i = 0; i < constituentNames.length; i++) {
+var columns = [];
+function setTableColumns() {
+    columns = [];
     columns.push({
-        id: i,
-        //name field is just for display
-        name: constituentNames[i],
-        //"field" is the field used by the program a particular cell in row
-        field: i,
+        id: 'maxRamp',
+        name: 'MaxRamp',
+        field: 'rampNum',
+        width: 30,
+        toolTip: "Maximum Ramp",
+        editor: Slick.Editors.Text
+    }, {
+        id: 'DC',
+        name: 'DC',
+        field: 'DC',
+        width: 40,
+        toolTip: "Declared Capacity",
+        editor: Slick.Editors.Text
+    }, {
+        id: "offBarDC",
+        name: "OffBarDC",
+        field: "offBar",
+        toolTip: "Offbar DC",
+        width: 40
+    }, {
+        id: 'onBarDC',
+        name: 'OnBarDC',
+        field: 'onBar',
+        width: 40,
+        toolTip: "On Bar DC",
+        editor: Slick.Editors.Text
+    }, {
+        id: "selector",
+        name: "Block",
+        field: "SNo",
         width: 50,
-        toolTip: constituentNames[i],
-        editor: Slick.Editors.Text
+        toolTip: "Block Number"
+    }, {
+        id: "ramp",
+        name: "Ramp",
+        field: "rampedVal",
+        width: 40,
+        toolTip: "Ramp"
+    }, {
+        id: "availGen",
+        name: "AvailableGeneration",
+        field: "avail",
+        width: 40,
+        toolTip: "Available Generation"
     });
-}
+//Adding Constituent Requisition columns iteratively
+    for (var i = 0; i < constituentNames.length; i++) {
+        columns.push({
+            id: i,
+            //name field is just for display
+            name: constituentNames[i],
+            //"field" is the field used by the program a particular cell in row
+            field: i,
+            width: 50,
+            toolTip: constituentNames[i],
+            editor: Slick.Editors.Text
+        });
+    }
 //version URS
-for (var i = 0; i < constituentNames.length; i++) {
-    columns.push({
-        id: 'RSD' + i,
-        //name field is just for display
-        name: constituentNames[i] + 'RSD',
-        //"field" is the field used by the program a particular cell in row
-        field: 'RSD' + i,
-        width: 65,
-        toolTip: constituentNames[i] + 'RSD',
-        editor: Slick.Editors.Text
-    });
-}
+    for (var i = 0; i < constituentNames.length; i++) {
+        columns.push({
+            id: 'RSD' + i,
+            //name field is just for display
+            name: constituentNames[i] + 'RSD',
+            //"field" is the field used by the program a particular cell in row
+            field: 'RSD' + i,
+            width: 65,
+            toolTip: constituentNames[i] + 'RSD',
+            editor: Slick.Editors.Text
+        });
+    }
 
-for (var i = 0; i < constituentNames.length; i++) {
-    columns.push({
-        id: 'URS' + i,
-        //name field is just for display
-        name: constituentNames[i] + 'URS',
-        //"field" is the field used by the program a particular cell in row
-        field: 'URS' + i,
-        width: 65,
-        toolTip: constituentNames[i] + 'URS',
-        editor: Slick.Editors.Text
-    });
-}
+    for (var i = 0; i < constituentNames.length; i++) {
+        columns.push({
+            id: 'URS' + i,
+            //name field is just for display
+            name: constituentNames[i] + 'URS',
+            //"field" is the field used by the program a particular cell in row
+            field: 'URS' + i,
+            width: 65,
+            toolTip: constituentNames[i] + 'URS',
+            editor: Slick.Editors.Text
+        });
+    }
 //version URS
 //Setting the Column names of the grid over
+}
 
 
 //On loading of the html page do the following
 $(function() {
-    //Add options to the dropdowns og the following 'select' inouts
-    addOptions(['selectReqConst', 'selectRSDInputConst']);
+    fetchConsNamesAjax();
+});
+
+function fetchConsNamesAjax(){
+    console.log('Fetching the Constituents names...');
+    $.ajax({
+        type: 'GET',
+        url: "http://localhost/api/names",
+        dataType: "json", // data type of response
+        success: function(data) {
+            // JAX-RS serializes an empty list as null, and a 'collection of one' as an object (not an 'array of one')
+            var list = data == null ? [] : (data.names instanceof Array ? data.names : [data.names]);
+            console.log(JSON.stringify(list));
+            constituentNames = [];
+            constituentIDs = [];
+            for(var i=0;i<list.length;i++){
+                constituentNames.push(list[i].name);
+                constituentIDs.push(list[i].id);
+            }
+            //fetch the generator names
+            fetchGenNamesAjax();
+        }
+    });
+}
+
+function fetchGenNamesAjax() {
+    console.log('Fetching the generators names...');
+    $.ajax({
+        type: 'GET',
+        url: "http://localhost/api/generators",
+        dataType: "json", // data type of response
+        success: function(data) {
+            // JAX-RS serializes an empty list as null, and a 'collection of one' as an object (not an 'array of one')
+            var list = data == null ? [] : (data.names instanceof Array ? data.names : [data.names]);
+            console.log(JSON.stringify(list));
+            genNames = [];
+            genIDs = [];
+            for(var i=0;i<list.length;i++){
+                genNames.push(list[i].name);
+                genIDs.push(list[i].id);
+
+            }
+            fetchSharesOfGenerator(genIDs[0]);
+        }
+    });
+}
+
+function fetchSharesOfGenerator(genID){
+    afterInitialFetch();
+    console.log('Fetching the Generator shares...');
+    $.ajax({
+        type: 'GET',
+        url: "http://localhost/api/generatorshares/"+genID,
+        dataType: "json", // data type of response
+        success: function(datafetched) {
+            // JAX-RS serializes an empty list as null, and a 'collection of one' as an object (not an 'array of one')
+            var shares = datafetched == null ? [] : (datafetched.shares instanceof Array ? datafetched.shares : [datafetched.shares]);
+            console.log(JSON.stringify(shares));
+            //Changing the percentageData depending on the fetched generator shares
+            for (var i = 0; i < shares.length; i++) { //iterator leaving the the table header
+                for (var blkNum = shares[i].from_b - 1; blkNum <= shares[i].to_b - 1; blkNum++) {
+                    var constcol = shares[i].p_id;
+                    //alert(constcol);
+                    constcol = constituentIDs.indexOf(constcol);
+                    //table.rows[i].cells[3].childNodes[0].value = number in the form of string and no need to convert to number since javascript takes care of it
+                    (percentageData[blkNum])[constcol] = shares[i].percentage;
+                }
+            }
+            //TODO do SECTIONS implementation for storing the percentageData variable also to save memory
+
+        }
+    });
+}
+
+function decorateSelectList(select,array) {
+    select.options.length = 0;
+    for(var i = 0; i < array.length; i++) {
+        select.options[select.options.length] = new Option(array[i], i);
+    }
+}
+
+function afterInitialFetch(){
+    setTableColumns();
+    //Populate the Generator options
+    var selList = document.getElementById("genList");
+    decorateSelectList(selList,genNames);
+    //Populate the Constituent Options
+    selList = document.getElementById("selectReqConst");
+    decorateSelectList(selList,constituentNames);
+    selList = document.getElementById("selectRSDInputConst");
+    decorateSelectList(selList,constituentNames);
+    //addOptions(['selectReqConst', 'selectRSDInputConst']);
     //Set the whole grid to default values, rsd urs not included
     for (var i = 0; i < 96; i++) {
+        var p = (percentageData[i] = {});
         //Setting the data values of the grid here...
         //i is iterator for the row i or block i+1...
         var d = (data[i] = {});
@@ -200,8 +299,8 @@ $(function() {
         d["DC"] = genDecCap;
         d["onBar"] = genOnBar;
         d["offBar"] = genDecCap - genOnBar;
-        var sumgen = 0;
         for (var j = 0; j < constituentNames.length; j++) {
+            p[j] = 0;
             //j is iterator the column j ...
             //Setting the data value for the cell i,j(row,column) or block i+1,j
             //d[j] = genOnBar*consReqPercentages[j];
@@ -220,7 +319,9 @@ $(function() {
         if (i > 0) {
             d["rampedVal"] = 0;
         } else
+        {
             d["rampedVal"] = "NA";
+        }
     }
     //Building the grid and configuring the grid
     grid = new Slick.Grid("#myGrid", data, columns, options);
@@ -257,15 +358,15 @@ $(function() {
         //now press the button reqFeedByTableButton virtually to recreate the summary table and modify the grid
         createSumm(false);
     };
-    databaseOpen(function() {
-        var afterCount = function() {
-            if (count > 0) {
-                loadRevision(count - 1, afterLoad, sectionsArray);
-            }
-        };
-        databaseRevsCount(afterCount);
-    });
-})
+    /*databaseOpen(function() {
+     var afterCount = function() {
+     if (count > 0) {
+     loadRevision(count - 1, afterLoad, sectionsArray);
+     }
+     };
+     databaseRevsCount(afterCount);
+     });*/
+}
 
 /*
  Adds the options as constituent Names into the dropdowns input elements
