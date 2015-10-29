@@ -389,12 +389,17 @@ function addOptions(selNameArray) {
 function ConvertCellValToNum(cVal, constIndex, blk, Cat, onBarVal) //Cat = 0:Normal;1:RSD;2:URS
 {
     if (isNaN(cVal)) {
-        if (cVal.match(/^\FULL$/i))
-            return consReqPercentages[constIndex] * onBarVal;
-        else if (cVal.match(/^\d+(\.\d+)?\p$/i))
-            return consReqPercentages[constIndex] * onBarVal * (+(cVal.substr(0, cVal.length - 1))) * 0.01;
-    } else
+        if (cVal.match(/^\FULL$/i)) {
+            return (percentageData[blk])[constIndex] * onBarVal;
+            //return consReqPercentages[constIndex] * onBarVal;
+        }
+        else if (cVal.match(/^\d+(\.\d+)?\p$/i)) {
+            return (percentageData[blk])[constIndex] * onBarVal * (+(cVal.substr(0, cVal.length - 1))) * 0.01;
+            //return consReqPercentages[constIndex] * onBarVal * (+(cVal.substr(0, cVal.length - 1))) * 0.01;
+        }
+    } else {
         return cVal;
+    }
 }
 
 function addRowRSDURS(tableID) {
@@ -490,7 +495,7 @@ function createSumm(overridePermissionRequired) { //by pressing modify revision 
     var x5 = modifyRSD(!(x1 || x2 || x3 || x4) && overridePermissionRequired);
     //URS version
     if (x1 || x2 || x3 || x4 || x5) {
-        calulateFormulaColumns(data,grid);
+        calculateFormulaColumns(data,grid);
         //Formulas implemented
         tiedToGrid = true;
         tiedToReq = true;
@@ -654,7 +659,6 @@ function createSections() {
             'secEnd': 95,
             'val': (data[95])['RSD' + constcol]
         });
-        //sectionsArray.push(sections);
         sectionsArray['RSD' + constcol] = sections;
     }
     //For URS option
@@ -690,19 +694,19 @@ function createSectionSummaryTable() {
     var summTab = document.getElementById('summTab');
     summTab.innerHTML = '';
     for (var j = 0; j < sectionsArray.length; j++) {
-        createSectionSummaryTableRow(j);
+        createSectionSummaryTableRow(j,sectionsArray, summTab);
     }
-    createSectionSummaryTableRSDURS(summTab);
-    createSectionSummaryTableRow("DC", summTab);
-    createSectionSummaryTableRow("onBar", summTab);
-    createSectionSummaryTableRow("rampNum", summTab);
+    createSectionSummaryTableRSDURS(summTab, sectionsArray);
+    createSectionSummaryTableRow("DC", sectionsArray, summTab);
+    createSectionSummaryTableRow("onBar", sectionsArray, summTab);
+    createSectionSummaryTableRow("rampNum", sectionsArray, summTab);
     summTab.border = '1';
     summTab.width = '200px';
     //created the section summary table
     createSummTableTiedInfo();
 }
 
-function createSectionSummaryTableRSDURS(summTab) {
+function createSectionSummaryTableRSDURS(summTab, sectionsArray) {
     for (var j = 0; j < sectionsArray.length; j++) {
         createSectionSummaryTableRowRSDURS(j, 'RSD', summTab);
     }
@@ -737,7 +741,7 @@ function createSectionSummaryTableRowRSDURS(j, val, summTab) {
     }
 }
 
-function createSectionSummaryTableRow(j) {
+function createSectionSummaryTableRow(j, sectionsArray, summTab) {
     var sections = sectionsArray[j];
     var textStr;
     if (isNaN(j))
@@ -745,7 +749,17 @@ function createSectionSummaryTableRow(j) {
     else
         textStr = constituentNames[j];
     for (var i = 0; i < sections.length; i++) {
+        var texts = [textStr, (sections[i])['secStart'] + 1, (sections[i])['secEnd'] + 1, (sections[i])['val']];
         var tr = document.createElement('tr');
+        //
+        for(var j=0;j<texts.length;j++){
+            var td0 = document.createElement('td');
+            td0.appendChild(document.createTextNode(texts[j]));
+            td0.style.padding = "4px";
+            tr.appendChild(td0);
+        }
+        //
+        /*
         var td0 = document.createElement('td');
         var td1 = document.createElement('td');
         var td2 = document.createElement('td');
@@ -762,70 +776,71 @@ function createSectionSummaryTableRow(j) {
         tr.appendChild(td1);
         tr.appendChild(td2);
         tr.appendChild(td3);
+        */
         summTab.appendChild(tr);
     }
 }
 
 function updateFromGrid() {
-    if (!validateGrid())
+    if (!validateGrid(data))
         return false;
-    calulateFormulaColumns(data,grid);
+    calculateFormulaColumns(data,grid);
     createSections();
     tiedToGrid = true;
     tiedToReq = false;
     createSectionSummaryTable();
 }
 
-function validateGrid() {
+function validateGrid(data) {
     //ToDo validate grid dynamically using on cellchange listener
     for (var i = 0; i < 96; i++) {
         //Validating the data values of the grid here...
         //i is iterator for the row i ...
         var d = (data[i]);
-        var cellval;
-        var alertstr;
+        var cellVal;
+        var alertStr;
         //validating constituent columns
         for (var j = 0; j < constituentNames.length; j++) {
             //j is iterator the column j ...
             //Validating the data value for the cell i,j(row,column)
-            cellval = d[j];
+            cellVal = d[j];
             //check if it is a number
-            if (typeof cellval == "number") {
+            if (typeof cellVal == "number") {
                 //No Validation required
             } else {
-                var isValid = cellval.match(/^\d+(\.\d+)?\p$/i) || cellval.match(/^\FULL$/i) || cellval.match(/^[+]?\d+(\.\d+)?$/i);
+                var isValid = cellVal.match(/^\d+(\.\d+)?\p$/i) || cellVal.match(/^\FULL$/i) || cellVal.match(/^[+]?\d+(\.\d+)?$/i);
                 if (!isValid) {
                     alert('Invalid values at Block ' + (i + 1) + 'of the Constituent ' + constituentNames[j] + '. Invalid values not allowed');
                     return false;
                 } else {
                     //if valid then capitalize all letters.Design  decision
-                    d[j] = cellval.toUpperCase();
+                    d[j] = cellVal.toUpperCase();
                 }
             }
             //URS Version
-            cellval = d["RSD" + j];
+            cellVal = d["RSD" + j];
             //check if it is a number
-            if (typeof cellval == "number") {
+            if (typeof cellVal == "number") {
                 //No Validation required
             } else {
-                var isValid = cellval.match(/^\d+(\.\d+)?\p$/i) || cellval.match(/^\FULL$/i) || cellval.match(/^[+]?\d+(\.\d+)?$/i);
+                var isValid = cellVal.match(/^\d+(\.\d+)?\p$/i) || cellVal.match(/^\FULL$/i) || cellVal.match(/^[+]?\d+(\.\d+)?$/i);
                 if (!isValid) {
-                    alert('Invalid values at Block ' + (i + 1) + 'of the RSD Constituent ' + constituentNames[j] + '. Invalid values not allowed');
+                    alert('Invalid values at Block ' + (i + 1) + 'of the RSD of Constituent ' + constituentNames[j] + '. Invalid values not allowed');
                     return false;
                 } else {
                     //if valid then capitalize all letters.Design  decision
-                    d["RSD" + j] = cellval.toUpperCase();
+                    d["RSD" + j] = cellVal.toUpperCase();
                 }
             }
-            cellval = d["URS" + j];
+            cellVal = d["URS" + j];
             //check if it is a number
-            if (typeof cellval == "number") {
-                if (cellval == 0) {
+            if (typeof cellVal == "number") {
+                if (cellVal == 0) {
                     d["URS" + j] = "No";
                 } else
                     d["URS" + j] = "Yes";
             } else {
-                var isNO = cellval.match(/^\NO$/i) || cellval == '0';
+                var isNO = cellVal.match(/^\NO$/i) || cellVal == '0';
                 if (isNO) {
                     d["URS" + j] = "No";
                 } else {
@@ -838,33 +853,33 @@ function validateGrid() {
         for (var j = 0; j < 3; j++) {
             //j is iterator the column j ...
             //Validating the data value for the cell i,j(row,column)
-            var colstr;
+            var colStr;
             switch (j) {
                 case 0:
-                    colstr = 'onBar'
-                    alertstr = 'Invalid values at Block ' + (i + 1) + 'of OnBarDC grid column' + '. Invalid values not allowed';
+                    colStr = 'onBar';
+                    alertStr = 'Invalid values at Block ' + (i + 1) + 'of OnBarDC grid column' + '. Invalid values not allowed';
                     break;
                 case 1:
-                    colstr = 'rampNum'
-                    alertstr = 'Invalid values at Block ' + (i + 1) + 'of MaxRamp grid column' + '. Invalid values not allowed';
+                    colStr = 'rampNum';
+                    alertStr = 'Invalid values at Block ' + (i + 1) + 'of MaxRamp grid column' + '. Invalid values not allowed';
                     break;
                 case 3:
-                    colstr = 'DC'
-                    alertstr = 'Invalid values at Block ' + (i + 1) + 'of DC grid column' + '. Invalid values not allowed';
+                    colStr = 'DC';
+                    alertStr = 'Invalid values at Block ' + (i + 1) + 'of DC grid column' + '. Invalid values not allowed';
                     break;
             }
-            cellval = d[colstr];
+            cellVal = d[colStr];
             //check if it is a number
-            if (typeof cellval == "number") {
+            if (typeof cellVal == "number") {
                 //No Validation required
             } else {
-                var isValid = cellval.match(/^[+]?\d+(\.\d+)?$/i);
+                var isValid = cellVal.match(/^[+]?\d+(\.\d+)?$/i);
                 if (!isValid) {
-                    alert(alertstr);
+                    alert(alertStr);
                     return false;
                 } else {
                     //if valid then capitalize all letters.Design  decision
-                    d[colstr] = cellval;
+                    d[colStr] = cellVal;
                 }
             }
         }
@@ -1129,20 +1144,20 @@ function setCurrRevDisplay(loadrev) {
  Calculate the formula columns values
 
  */
-function calulateFormulaColumns(data,grid) {
+function calculateFormulaColumns(data,grid) {
     for (var i = 0; i < 96; i++) {
         //i is iterator for the row i or block i+1...
         var d = (data[i]);
         d["offBar"] = d["DC"] - d["onBar"];
-        var sumgen = 0;
+        var sumGen = 0;
         for (var j = 0; j < constituentNames.length; j++) {
             //j is iterator the column j ...
-            sumgen += +ConvertCellValToNum(d[j], j, i, 0, d['onBar']);
+            sumGen += +ConvertCellValToNum(d[j], j, i, 0, d['onBar']);
             //URS Version
-            sumgen += +ConvertCellValToNum(d['RSD' + j], j, i, 0, d['offBar']);
+            sumGen += +ConvertCellValToNum(d['RSD' + j], j, i, 0, d['offBar']);
             //URS Version
         }
-        d["avail"] = d["onBar"] - sumgen;
+        d["avail"] = d["onBar"] - sumGen;
         if (i > 0) {
             d["rampedVal"] = d["avail"] - (data[i - 1])["avail"];
         } else
@@ -1658,7 +1673,7 @@ function performAlgo() {
         grid1.registerPlugin(new Slick.CellExternalCopyManager(pluginOptions));
         //Now the desired numeric values of the grid are displayed in the grid1 cellgrid
         //Calculate Formulas for the desired values grid
-        calulateFormulaColumns(data1, grid1);
+        calculateFormulaColumns(data1, grid1);
         //Now find the feasible cell values from the data1 array values and store in data2 array
         var data2 = [];
         for (var i = 0; i < data1.length; i++) {
