@@ -38,7 +38,7 @@
 <!-- Page Content -->
 <div class="container-fluid" style="margin:0px">
     <div class="row">
-        <div class="col-md-12 text-center"><select id="genList">
+        <div class="col-md-12 text-center" onchange="decorateGrid()"><select id="genList">
             <option value="">CGPL</option>
             <option value="">KSTPS</option>
             <option value="">VSTPS</option></select></div>
@@ -93,7 +93,7 @@
             <!--Column for table-->
             <button onclick="showhide(this)" class="btn btn-block btn-xs">Requisition Shares Input Table</button>
             <div id="reqInputDiv" class="hidingClass table-responsive"><!--keyClass--hidingClass-->
-                <table id="shareInputTable" class="table table-bordered table-hover tableInputClass"><!--keyClass--tableInputClass-->
+                <table id="reqInputTable" class="table table-bordered table-hover tableInputClass"><!--keyClass--tableInputClass-->
                     <tbody>
                     <tr>
                         <td>Constituent Name</td>
@@ -115,21 +115,11 @@
             <div class="hidingClass table-responsive" style="display:none"><!--keyClass--hidingClass-->
                 <table id="reqRSDInputTable" class="table table-bordered table-hover tableInputClass"><!--keyClass--tableInputClass-->
                     <tr>
-                        <td>
-                            Constituent Name
-                        </td>
-                        <td>
-                            From Block
-                        </td>
-                        <td>
-                            To Block
-                        </td>
-                        <td>
-                            RSD+URS Value
-                        </td>
-                        <td>
-                            WantURS?
-                        </td>
+                        <td>Constituent Name</td>
+                        <td>From Block</td>
+                        <td>To Block</td>
+                        <td>RSD+URS Value</td>
+                        <td>WantURS?</td>
                         <td><input type="checkbox" name="chk" onClick="SelectAll(this)"/></td>
                     </tr>
                 </table>
@@ -144,18 +134,10 @@
             <div class="hidingClass table-responsive" style="display:none"><!--keyClass--hidingClass-->
                 <table id="genDecInputTable" class="table table-bordered table-hover tableInputClass"><!--keyClass--tableInputClass-->
                     <tr>
-                        <td style="width:50px">
-                            Generator Name
-                        </td>
-                        <td>
-                            From Block
-                        </td>
-                        <td>
-                            To Block
-                        </td>
-                        <td>
-                            DC Value
-                        </td>
+                        <td style="width:50px">Generator Name</td>
+                        <td>From Block</td>
+                        <td>To Block</td>
+                        <td>DC Value</td>
                         <td><input type="checkbox" name="chk" onClick="SelectAll(this)"/></td>
                     </tr>
                 </table>
@@ -169,18 +151,10 @@
             <div class="hidingClass table-resonsive" style="display:none"><!--keyClass--hidingClass-->
                 <table id="genDCInputTable" class="tableInputClass table table-bordered table-hover"><!--keyClass--tableInputClass-->
                     <tr>
-                        <td style="width:50px">
-                            Generator Name
-                        </td>
-                        <td>
-                            From Block
-                        </td>
-                        <td>
-                            To Block
-                        </td>
-                        <td>
-                            OnBarDC Value
-                        </td>
+                        <td style="width:50px">Generator Name</td>
+                        <td>From Block</td>
+                        <td>To Block</td>
+                        <td>OnBarDC Value</td>
                         <td><input type="checkbox" name="chk" onClick="SelectAll(this)"/></td>
                     </tr>
                 </table>

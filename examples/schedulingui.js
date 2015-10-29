@@ -7,7 +7,7 @@ var percentageData = [];//The requisition percentage data used by the algorithm 
 var genNames = [];
 var genIDs = [];
 //The Generator  default Parameters or the generator configuration
-var genName = 'VSTPS1';
+var genName = document.getElementById("genList").options[document.getElementById("genList").selectedIndex].text;
 //Below are default values for initialisation, can change if wanted through grid or input tables.
 var genRamp = 75;
 var genOnBar = 765;
@@ -511,7 +511,7 @@ function modifyReq(overridePermissionRequired) {
     var rowCount = table.rows.length;
     if (rowCount < 2)
         return false;
-    //Fisrt validate the input semantics.Allowable values are 1 to 96 in case of block numbers and possitive integers along with null, full, nochange, percentage loads.
+    //First validate the input semantics.Allowable values are 1 to 96 in case of block numbers and possitive integers along with null, full, nochange, percentage loads.
     for (var i = 1; i < rowCount; i++) {
         var cellval = table.rows[i].cells[3].childNodes[0].value;
         //For null cell value validation
@@ -542,7 +542,7 @@ function modifyReq(overridePermissionRequired) {
             return false;
     }
     //Resetting the table  to a value called  'FULL'
-    resetGrid('FULL');
+    resetGrid(data,'FULL');
     //changing the table data depending on the requisition input table
     //formulas not implemented
     for (var i = 1; i < rowCount; i++) { //iterator leaving the the table header
@@ -562,7 +562,7 @@ function modifyReq(overridePermissionRequired) {
     return true;
 }
 
-function resetGrid(val) {
+function resetGrid(data, val) {
     //ToDo validate grid dynamically using on cellchange listener
     for (var i = 0; i < 96; i++) {
         //i is iterator for the row i ...
@@ -575,7 +575,7 @@ function resetGrid(val) {
     }
 }
 
-function resetGridRSDURS(val) {
+function resetGridRSDURS(data, val) {
     //ToDo validate grid dynamically using on cellchange listener
     for (var i = 0; i < 96; i++) {
         //i is iterator for the row i ...
@@ -589,7 +589,7 @@ function resetGridRSDURS(val) {
     }
 }
 
-function resetGridDCorRamp(val) {
+function resetGridDCorRamp(data, val) {
     for (var i = 0; i < 96; i++) {
         //i is iterator for the row i ...
         if (val == "DC")
@@ -903,8 +903,8 @@ function getSummSecsToManual() //sections version of summtomanual
     var table = document.getElementById("reqInputTable");
     var tableRSDURS = document.getElementById("reqRSDInputTable");
     var sections;
-    table.innerHTML = "<tbody><tr><td>Constituent Name</td><td>From Block</td><td>To Block</td><td>Value</td><td><input type=\"checkbox\" name=\"chk\" onclick=\"SelectAll(this)\"></input></td></tr></tbody>";
-    tableRSDURS.innerHTML = "<tr><td>Constituent Name</td><td>From Block</td><td>To Block</td><td>RSD+URS Value</td><td>WantURS?</td><td><input type=\"checkbox\" name=\"chk\" onclick=\"SelectAll(this)\"></td></tr>";
+    table.innerHTML = "<tbody><tr><td>Constituent Name</td><td>From Block</td><td>To Block</td><td>Value</td><td><input type=\"checkbox\" name=\"chk\" onclick=\"SelectAll(this)\"/></td></tr></tbody>";
+    tableRSDURS.innerHTML = "<tr><td>Constituent Name</td><td>From Block</td><td>To Block</td><td>RSD+URS Value</td><td>WantURS?</td><td><input type=\"checkbox\" name=\"chk\" onclick=\"SelectAll(this)\"/></td></tr>";
     for (var j = 0; j < sectionsArray.length; j++) {
         sections = sectionsArray[j];
         for (var k = 0; k < sections.length; k++) {
@@ -926,11 +926,11 @@ function getSummSecsToManual() //sections version of summtomanual
 function getSummDCToManual() {
     var table = document.getElementById("genDCInputTable");
     var sections;
-    table.innerHTML = "<tbody><tr><td>Generator Name</td><td>From Block</td><td>To Block</td><td>OnBarDc Value</td><td><input type=\"checkbox\" name=\"chk\" onclick=\"SelectAll(this)\"></input></td></tr></tbody>";
+    table.innerHTML = "<tbody><tr><td>Generator Name</td><td>From Block</td><td>To Block</td><td>OnBarDc Value</td><td><input type=\"checkbox\" name=\"chk\" onclick=\"SelectAll(this)\"/></td></tr></tbody>";
     if (sectionsArray.length) {
         sections = sectionsArray["onBar"];
         for (var k = 0; k < sections.length; k++) {
-            addRowOfInput("genDCInputTable", constituentNames['generator'], sections[k].secStart + 1, sections[k].secEnd + 1, sections[k].val);
+            addRowOfInput("genDCInputTable", genName, sections[k].secStart + 1, sections[k].secEnd + 1, sections[k].val);
         }
     }
 }
@@ -938,11 +938,11 @@ function getSummDCToManual() {
 function getSummDecToManual() {
     var table = document.getElementById("genDecInputTable");
     var sections;
-    table.innerHTML = "<tbody><tr><td>Generator Name</td><td>From Block</td><td>To Block</td><td>DC Value</td><td><input type=\"checkbox\" name=\"chk\" onclick=\"SelectAll(this)\"></input></td></tr></tbody>";
+    table.innerHTML = "<tbody><tr><td>Generator Name</td><td>From Block</td><td>To Block</td><td>DC Value</td><td><input type=\"checkbox\" name=\"chk\" onclick=\"SelectAll(this)\"/></td></tr></tbody>";
     if (sectionsArray.length) {
         sections = sectionsArray["DC"];
         for (var k = 0; k < sections.length; k++) {
-            addRowOfInput("genDecInputTable", constituentNames['generator'], sections[k].secStart + 1, sections[k].secEnd + 1, sections[k].val);
+            addRowOfInput("genDecInputTable", genName, sections[k].secStart + 1, sections[k].secEnd + 1, sections[k].val);
         }
     }
 }
@@ -960,7 +960,7 @@ function getSummRampToManual() {
 }
 
 //Adds a row of edittext inputs with values specified already, used in getsummtomanual
-function addRowOfInput(tableID, colName, fromb, tob, val, chosenval) {
+function addRowOfInput(tableID, colName, fromb, tob, val, chosenVal) {
     var table = document.getElementById(tableID);
     var rowCount = table.rows.length;
     var row = table.insertRow(rowCount);
@@ -993,7 +993,6 @@ function addRowOfInput(tableID, colName, fromb, tob, val, chosenval) {
         newcell.appendChild(t);
     }
     if (tableID == "reqRSDInputTable") {
-        //stubselect
         newcell = row.insertCell(colCount - 2);
         var t = document.createElement("select");
         var op = new Option();
@@ -1005,7 +1004,7 @@ function addRowOfInput(tableID, colName, fromb, tob, val, chosenval) {
         op.text = "No";
         t.options.add(op);
         newcell.appendChild(t);
-        t.value = chosenval;
+        t.value = chosenVal;
     }
     newcell = row.insertCell(colCount - 1);
     var cb = document.createElement("input");
@@ -1430,7 +1429,7 @@ function modifyDC(overridePermissionRequired) {
             return false;
     }
     //Resetting the table DC values to be equal to default onBarDC value of the generator
-    resetGridDCorRamp("DC");
+    resetGridDCorRamp(data, "DC");
     //Changing the table data depending on the requisition input table
     //formulas not implemented
     for (var i = 1; i < rowCount; i++) { //iterator leaving the the table header
@@ -1479,7 +1478,7 @@ function modifyDec(overridePermissionRequired) {
             return false;
     }
     //Resetting the table DC values to be equal to default onBarDC value of the generator
-    resetGridDCorRamp("Dec");
+    resetGridDCorRamp(data, "Dec");
     //Changing the table data depending on the requisition input table
     //formulas not implemented
     for (var i = 1; i < rowCount; i++) { //iterator leaving the the table header
@@ -1528,7 +1527,7 @@ function modifyRamp(overridePermissionRequired) {
             return false;
     }
     //Resetting the table DC values to be equal to default onBarDC value of the generator
-    resetGridDCorRamp("Ramp"); //changed
+    resetGridDCorRamp(data, "Ramp"); //changed
     //Changing the table data depending on the requisition input table
     //formulas not implemented
     for (var i = 1; i < rowCount; i++) { //iterator leaving the the table header
@@ -1578,7 +1577,7 @@ function modifyRSD(overridePermissionRequired) {
             return false;
     }
     //Resetting the table RSD and URS values to be equal to default value of 0
-    resetGridRSDURS(0);
+    resetGridRSDURS(data, 0);
     //changing the table data depending on the requisition input table
     //formulas not implemented
     for (var i = 1; i < rowCount; i++) { //iterator leaving the the table header
@@ -1605,9 +1604,7 @@ function createSummTableTiedInfo(atrr, val) {
     var gridTied, reqTableTied, DCTableTied, RampTableTied;
     gridTied = tiedToGrid ? 'grid' : '';
     reqTableTied = tiedToReq ? ', Manual Entry' : '';
-    DCTableTied = tiedToDC ? ', DC Manual Entry' : '';
-    RampTableTied = tiedToRamp ? ', MaxRamp Manual Entry' : '';
-    document.getElementById('tiedInfo').innerHTML = 'Revision Summary, tied to ' + gridTied + reqTableTied + DCTableTied + RampTableTied + '.';
+    document.getElementById('tiedInfo').innerHTML = 'Revision Summary tied to ' + gridTied + reqTableTied + '.';
 }
 
 function addAnRSDColumnToGrid(constName) {
@@ -1791,4 +1788,8 @@ function calculateFormulaColumnsSolution(grid2, data2) {
     }
     grid2.invalidateAllRows();
     grid2.render();
+}
+
+function decorateGrid(){
+    genName = document.getElementById("genList").options[document.getElementById("genList").selectedIndex].text;
 }
