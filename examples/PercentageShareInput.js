@@ -481,7 +481,7 @@ function saveSharesToDatabase(){
             alert("Saved the share Percentages successfully...");
         },
         error: function (jqXHR, textStatus, errorThrown) {
-            alert('updateGenerator error: ' + textStatus);
+            alert('updateShares error: ' + textStatus);
         }
     });
 }

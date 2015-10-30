@@ -731,23 +731,23 @@ function createSectionSummaryTableRowRSDURS(j, val, summTab, sectionsArray) {
         }
         //
         /*
-        var td0 = document.createElement('td');
-        var td1 = document.createElement('td');
-        var td2 = document.createElement('td');
-        var td3 = document.createElement('td');
-        td0.appendChild(document.createTextNode(textStr));
-        td1.appendChild(document.createTextNode((sections[i])['secStart'] + 1));
-        td2.appendChild(document.createTextNode((sections[i])['secEnd'] + 1));
-        td3.appendChild(document.createTextNode((sections[i])['val']));
-        td0.style.padding = "4px";
-        td1.style.padding = "4px";
-        td2.style.padding = "4px";
-        td3.style.padding = "4px";
-        tr.appendChild(td0);
-        tr.appendChild(td1);
-        tr.appendChild(td2);
-        tr.appendChild(td3);
-        */
+         var td0 = document.createElement('td');
+         var td1 = document.createElement('td');
+         var td2 = document.createElement('td');
+         var td3 = document.createElement('td');
+         td0.appendChild(document.createTextNode(textStr));
+         td1.appendChild(document.createTextNode((sections[i])['secStart'] + 1));
+         td2.appendChild(document.createTextNode((sections[i])['secEnd'] + 1));
+         td3.appendChild(document.createTextNode((sections[i])['val']));
+         td0.style.padding = "4px";
+         td1.style.padding = "4px";
+         td2.style.padding = "4px";
+         td3.style.padding = "4px";
+         tr.appendChild(td0);
+         tr.appendChild(td1);
+         tr.appendChild(td2);
+         tr.appendChild(td3);
+         */
         summTab.appendChild(tr);
     }
 }
@@ -771,23 +771,23 @@ function createSectionSummaryTableRow(j, sectionsArray, summTab) {
         }
         //
         /*
-        var td0 = document.createElement('td');
-        var td1 = document.createElement('td');
-        var td2 = document.createElement('td');
-        var td3 = document.createElement('td');
-        td0.appendChild(document.createTextNode(textStr));
-        td1.appendChild(document.createTextNode((sections[i])['secStart'] + 1));
-        td2.appendChild(document.createTextNode((sections[i])['secEnd'] + 1));
-        td3.appendChild(document.createTextNode((sections[i])['val']));
-        td0.style.padding = "4px";
-        td1.style.padding = "4px";
-        td2.style.padding = "4px";
-        td3.style.padding = "4px";
-        tr.appendChild(td0);
-        tr.appendChild(td1);
-        tr.appendChild(td2);
-        tr.appendChild(td3);
-        */
+         var td0 = document.createElement('td');
+         var td1 = document.createElement('td');
+         var td2 = document.createElement('td');
+         var td3 = document.createElement('td');
+         td0.appendChild(document.createTextNode(textStr));
+         td1.appendChild(document.createTextNode((sections[i])['secStart'] + 1));
+         td2.appendChild(document.createTextNode((sections[i])['secEnd'] + 1));
+         td3.appendChild(document.createTextNode((sections[i])['val']));
+         td0.style.padding = "4px";
+         td1.style.padding = "4px";
+         td2.style.padding = "4px";
+         td3.style.padding = "4px";
+         tr.appendChild(td0);
+         tr.appendChild(td1);
+         tr.appendChild(td2);
+         tr.appendChild(td3);
+         */
         summTab.appendChild(tr);
     }
 }
@@ -1808,46 +1808,76 @@ function saveToDB(){
     var tobs = [];
     var vals = [];
     //converting sections to a json format acceptable by the server api
+    var sections;
     for (var j = 0; j < sectionsArray.length; j++) {
         sections = sectionsArray[j];
         for (var k = 0; k < sections.length; k++) {
-            if(sections[k].val>0){
-                cats.push('n');
-                conIDs.push(constituentIDs[j]);
-                frombs.push(sections[k].secStart + 1);
-                tobs.push(sections[k].secEnd + 1);
-                vals.push(sections[k].val);
-            }
+
+            cats.push('n');
+            conIDs.push(constituentIDs[j]);
+            frombs.push(sections[k].secStart + 1);
+            tobs.push(sections[k].secEnd + 1);
+            vals.push(sections[k].val);
+
         }
     }
     for (var j = 0; j < sectionsArray.length; j++) {
         sections = sectionsArray["RSD"+j];
         for (var k = 0; k < sections.length; k++) {
-            if(sections[k].val>0){
-                cats.push('r');
-                conIDs.push(constituentIDs[j]);
-                frombs.push(sections[k].secStart + 1);
-                tobs.push(sections[k].secEnd + 1);
-                vals.push(sections[k].val);
-            }
+
+            cats.push('r');
+            conIDs.push(constituentIDs[j]);
+            frombs.push(sections[k].secStart + 1);
+            tobs.push(sections[k].secEnd + 1);
+            vals.push(sections[k].val);
+
         }
     }
     for (var j = 0; j < sectionsArray.length; j++) {
         sections = sectionsArray["URS"+j];
         for (var k = 0; k < sections.length; k++) {
-            if(sections[k].val>0){
-                cats.push('u');
-                conIDs.push(constituentIDs[j]);
-                frombs.push(sections[k].secStart + 1);
-                tobs.push(sections[k].secEnd + 1);
-                vals.push(sections[k].val);
-            }
+
+            cats.push('u');
+            conIDs.push(constituentIDs[j]);
+            frombs.push(sections[k].secStart + 1);
+            tobs.push(sections[k].secEnd + 1);
+            vals.push(sections[k].val);
+
         }
     }
-    //TODO SECTIONS FOR DC ONBAR AND RAMP ALSO TO BE SAVED
+    sections = sectionsArray["DC"];
+    for (var k = 0; k < sections.length; k++) {
 
-    //sending the ajax request to the server for saving revision
-    console.log('saving shares of Generator to the server');
+        cats.push('d');
+        conIDs.push(constituentIDs[0]);
+        frombs.push(sections[k].secStart + 1);
+        tobs.push(sections[k].secEnd + 1);
+        vals.push(sections[k].val);
+    }
+    sections = sectionsArray["rampNum"];
+    for (var k = 0; k < sections.length; k++) {
+
+        cats.push('ra');
+        conIDs.push(constituentIDs[0]);
+        frombs.push(sections[k].secStart + 1);
+        tobs.push(sections[k].secEnd + 1);
+        vals.push(sections[k].val);
+
+    }
+    sections = sectionsArray["onBar"];
+    for (var k = 0; k < sections.length; k++) {
+
+        cats.push('on');
+        conIDs.push(constituentIDs[0]);
+        frombs.push(sections[k].secStart + 1);
+        tobs.push(sections[k].secEnd + 1);
+        vals.push(sections[k].val);
+
+    }
+//TODO SECTIONS FOR DC ONBAR AND RAMP ALSO TO BE SAVED
+
+//sending the ajax request to the server for saving revision
+    console.log('saving revision to the server');
     $.ajax({
         type: 'POST',
         url: "http://localhost/api/revisions/"+curRev,
@@ -1862,9 +1892,12 @@ function saveToDB(){
         }),
         success: function (data, textStatus, jqXHR) {
             alert("Saved the share Percentages successfully...");
+            console.log(data);
         },
         error: function (jqXHR, textStatus, errorThrown) {
-            alert('updateGenerator error: ' + textStatus);
+            alert('updateRevision error: ' + textStatus);
+            console.log("updateRevision errorThrown: " + errorThrown);
+            console.log("updateRevision jqXHR: " + JSON.stringify(jqXHR));
         }
     });
 }
