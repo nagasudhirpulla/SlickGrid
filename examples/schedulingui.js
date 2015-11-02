@@ -262,8 +262,8 @@ function fetchSharesOfGenerator(genID){
                     (percentageData[blkNum])[constcol] = shares[i].percentage;
                 }
             }
+            //TODO load the latest revision
             //TODO do SECTIONS implementation for storing the percentageData variable also to save memory
-
         }
     });
 }
@@ -1115,6 +1115,64 @@ function loadRevisionFromDB() //Read Operation of the database.
     loadRevision(loadRev, afterLoad, sectionsArray);
 }
 
+function loadRevisionDB() //Read Operation of the database.
+{
+    //Get the rev number from the revInput TextBox element.Validate it first
+    var loadRev = +document.getElementById("revInput").value; //+ tries to converts string to a number
+    if (isNaN(loadRev)) {
+        alert('Invalid Input in the revision field. So cannot load...');
+        return false;
+    }
+
+    //Now the revision can be loaded...
+    //So if wanted change the table data accordingly and update the curRev variable
+    var afterLoadCount = function(count) {
+        var requested  = document.getElementById('revInput').value;
+        if(count == null){
+            alert('Cant load revision '+document.getElementById('revInput').value+'. No Revision is created yet...');
+            return false;
+        }
+        else if(requested == count+1){
+            if(!confirm('Create Revision '+requested+'???.\nIf changes not saved, press cancel and save...'))
+                return false;
+            else
+                createRevDB();
+        }
+        else if(requested > count){
+            alert('Cant load revision '+document.getElementById('revInput').value+'. Maximum loadable revision number is '+count);
+            return false;
+        }
+        else {
+            loadRevDB(requested);
+        }
+    };
+    //check the maximum revision count
+    console.log('Fetching the maximum revision number...');
+    $.ajax({
+        type: 'GET',
+        url: "http://localhost/api/revisions/count",
+        dataType: "json", // data type of response
+        success: function(data) {
+            if(data.error == 'true') {
+                alert("Error loading the count: " + data.message);
+            }
+            else {
+                afterLoadCount(data.count);
+            }
+        }
+    });
+}
+
+function createRevDB(){
+    alert('Creating a new revision');
+}
+
+function loadRevDB(requested){
+    alert('Loading revision '+requested);
+}
+
+
+
 function checkForRevInDb(loadRev) {
     if (loadRev < revDataArray.length) //special case for zero
         return true;
@@ -1874,9 +1932,20 @@ function saveToDB(){
         vals.push(sections[k].val);
 
     }
-//TODO SECTIONS FOR DC ONBAR AND RAMP ALSO TO BE SAVED
+    //Saving generator name
+    cats.push('gen');
+    conIDs.push(constituentIDs[0]);
+    frombs.push(1);
+    tobs.push(96);
+    vals.push(genName);
+    //Saving the comment of the revision
+    cats.push('comm');
+    conIDs.push(constituentIDs[0]);
+    frombs.push(1);
+    tobs.push(96);
+    vals.push(document.getElementById("commentInput").value);
 
-//sending the ajax request to the server for saving revision
+    //Sending the ajax request to the server for saving revision
     console.log('saving revision to the server');
     $.ajax({
         type: 'POST',
