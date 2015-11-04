@@ -1181,9 +1181,10 @@ function loadRevisionDB(){
 
 function createRevDB(){
     alert('Creating a new revision');
+    var genID = genIDs[genNames.indexOf(genName)];
     $.ajax({
         type: 'PUT',
-        url: "http://localhost/api/revisions/"+genIDs[genIDs.indexOf(genName)],
+        url: "http://localhost/api/revisions/"+genID,
         dataType: "json", // data type of response
         data: JSON.stringify({}),
         success: function (data, textStatus, jqXHR) {
@@ -1200,7 +1201,7 @@ function createRevDB(){
 }
 
 function loadRevDB(genID, requested){
-    alert('Loading Revision '+requested);
+    console.log('Loading Revision '+requested);
     $.ajax({
         type: 'GET',
         url: "http://www.localhost/api/revisions/"+genID+"/"+requested,
