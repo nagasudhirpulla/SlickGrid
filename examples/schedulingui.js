@@ -1181,6 +1181,22 @@ function loadRevisionDB(){
 
 function createRevDB(){
     alert('Creating a new revision');
+    $.ajax({
+        type: 'PUT',
+        url: "http://localhost/api/revisions/"+genIDs[genIDs.indexOf(genName)],
+        dataType: "json", // data type of response
+        data: JSON.stringify({}),
+        success: function (data, textStatus, jqXHR) {
+            alert("Created a new revision "+ data.new_rev +" successfully...");
+            console.log("New Revision number created ",data.new_rev);
+            loadRevDB(genID,data.new_rev);
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            alert('updateRevision error: ' + textStatus);
+            console.log("createNewRevision errorThrown: " + errorThrown);
+            console.log("createNewRevision jqXHR: " + JSON.stringify(jqXHR));
+        }
+    });
 }
 
 function loadRevDB(genID, requested){
