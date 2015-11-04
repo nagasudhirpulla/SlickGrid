@@ -234,14 +234,30 @@ function fetchGenNamesAjax() {
             for(var i=0;i<list.length;i++){
                 genNames.push(list[i].name);
                 genIDs.push(list[i].id);
-
             }
-            fetchSharesOfGenerator(genIDs[0]);
+            //Populate the Generator options
+            var selList = document.getElementById("genList");
+            decorateSelectList(selList,genNames);
+            fetchGenParamsAjax(0);
+        }
+    });
+}
+function fetchGenParamsAjax(reqGenIndex){
+    console.log('Fetching the generator parameters...');
+    $.ajax({
+        type: 'GET',
+        url: "http://localhost/api/generators/"+genNames[reqGenIndex],
+        dataType: "json", // data type of response
+        success: function(data) {
+            genRamp = data.ramp;
+            genDecCap = data.dc;
+            genOnBar = data.onbar;
+            fetchSharesOfGeneratorAjax(genIDs[reqGenIndex]);
         }
     });
 }
 
-function fetchSharesOfGenerator(genID){
+function fetchSharesOfGeneratorAjax(genID){
     afterInitialFetch();
     console.log('Fetching the Generator shares...');
     $.ajax({
@@ -264,6 +280,7 @@ function fetchSharesOfGenerator(genID){
             }
             //TODO load the latest revision
             //TODO do SECTIONS implementation for storing the percentageData variable also to save memory
+            loadRevDB(genID,curRev);
         }
     });
 }
@@ -278,10 +295,10 @@ function decorateSelectList(select,array) {
 function afterInitialFetch(){
     setTableColumns();
     //Populate the Generator options
-    var selList = document.getElementById("genList");
-    decorateSelectList(selList,genNames);
+    //var selList = document.getElementById("genList");
+    //decorateSelectList(selList,genNames);
     //Populate the Constituent Options
-    selList = document.getElementById("selectReqConst");
+    var selList = document.getElementById("selectReqConst");
     decorateSelectList(selList,constituentNames);
     selList = document.getElementById("selectRSDInputConst");
     decorateSelectList(selList,constituentNames);
@@ -604,7 +621,7 @@ function resetGridDCorRamp(data, val) {
 //TODO : sectionsArray being global variable.Make it local variable and pass between the functions like createSections,createSectionSummaryTable etc., whereever required
 function createSections() {
     //Find the sections of the columns
-    sectionsArray = new Array();
+    sectionsArray = [];
     for (var constcol1 = 0; constcol1 < constituentNames.length + 3; constcol1++) { //last two for onBarDC and MaxRamp and DC respectively
         switch (constcol1) {
             case constituentNames.length:
@@ -620,7 +637,7 @@ function createSections() {
                 constcol = constcol1;
                 break;
         }
-        var sections = new Array();
+        var sections = [];
         var sectionStart = 0;
         for (var blkNum = 1; blkNum < 96; blkNum++) {
             if ((data[blkNum])[constcol] != (data[blkNum - 1])[constcol]) {
@@ -1115,35 +1132,33 @@ function loadRevisionFromDB() //Read Operation of the database.
     loadRevision(loadRev, afterLoad, sectionsArray);
 }
 
-function loadRevisionDB() //Read Operation of the database.
-{
+function loadRevisionDB(){
     //Get the rev number from the revInput TextBox element.Validate it first
     var loadRev = +document.getElementById("revInput").value; //+ tries to converts string to a number
     if (isNaN(loadRev)) {
         alert('Invalid Input in the revision field. So cannot load...');
         return false;
     }
-
     //Now the revision can be loaded...
     //So if wanted change the table data accordingly and update the curRev variable
-    var afterLoadCount = function(count) {
-        var requested  = document.getElementById('revInput').value;
-        if(count == null){
-            alert('Cant load revision '+document.getElementById('revInput').value+'. No Revision is created yet...');
+    var afterLoadCount = function(loadRev, maxRevNum) {
+        if(maxRevNum == null){
+            alert('Cant load revision '+loadRev+'. No Revision is created yet...');
             return false;
         }
-        else if(requested == count+1){
-            if(!confirm('Create Revision '+requested+'???.\nIf changes not saved, press cancel and save...'))
+        else if(loadRev == maxRevNum+1){
+            if(!confirm('Create Revision '+loadRev+'???.\nIf changes not saved, press cancel and save...'))
                 return false;
             else
                 createRevDB();
         }
-        else if(requested > count){
-            alert('Cant load revision '+document.getElementById('revInput').value+'. Maximum loadable revision number is '+count);
+        else if(loadRev > maxRevNum){
+            alert('Cant load revision '+document.getElementById('revInput').value+'. Maximum loadable revision number is '+maxRevNum);
             return false;
         }
         else {
-            loadRevDB(requested);
+            var genID = genIDs[document.getElementById("genList").selectedIndex];
+            loadRevDB(genID, loadRev);
         }
     };
     //check the maximum revision count
@@ -1157,7 +1172,7 @@ function loadRevisionDB() //Read Operation of the database.
                 alert("Error loading the count: " + data.message);
             }
             else {
-                afterLoadCount(data.count);
+                afterLoadCount(loadRev,data.count);
             }
         }
     });
@@ -1167,8 +1182,82 @@ function createRevDB(){
     alert('Creating a new revision');
 }
 
-function loadRevDB(requested){
+function loadRevDB(genID, requested){
     alert('Loading revision '+requested);
+    $.ajax({
+        type: 'GET',
+        url: "http://www.localhost/api/revisions/"+genID+"/"+requested,
+        dataType: "json", // data type of response
+        success: function(dataFetched) {
+            //TODO check for data.error == false
+            // JAX-RS serializes an empty list as null, and a 'collection of one' as an object (not an 'array of one')
+            var fetchedRevData = dataFetched == null ? [] : (dataFetched.revData instanceof Array ? dataFetched.revData : [dataFetched.revData]);
+            console.log('fetched revision data of revision '+requested+': '+JSON.stringify(fetchedRevData));
+            //convert revision data into sections
+            var sectionsArrayFetched = [];
+            for (var i = 0; i < fetchedRevData.length; i++) {
+                var sectionObject = fetchedRevData[i];
+                if(sectionObject.cat == 'n'||sectionObject.cat == 'r'||sectionObject.cat == 'u'||sectionObject.cat == 'd'||sectionObject.cat == 'on'||sectionObject.cat == 'ra') {
+                    if (sectionObject.cat == 'n') {
+                        //Create a normal share section
+                        var constcol = constituentIDs.indexOf(sectionObject.p_id);
+                    }
+                    else if (sectionObject.cat == 'r') {
+                        //Create a RSD share section
+                        constcol = 'RSD' + constituentIDs.indexOf(sectionObject.p_id);
+                    }
+                    else if (sectionObject.cat == 'u') {
+                        //Create a RSD share section
+                        constcol = 'URS' + constituentIDs.indexOf(sectionObject.p_id);
+                    }
+                    else if (sectionObject.cat == 'd') {
+                        //Create a RSD share section
+                        constcol = 'DC';
+                    }
+                    else if (sectionObject.cat == 'on') {
+                        //Create a RSD share section
+                        constcol = 'onBar';
+                    }
+                    else if (sectionObject.cat == 'ra') {
+                        //Create a RSD share section
+                        constcol = 'rampNum';
+                    }
+                    if (!(sectionsArrayFetched[constcol] instanceof Array)) {
+                        sectionsArrayFetched[constcol] = [];
+                    }
+                    sectionsArrayFetched[constcol].push({
+                        'secStart': sectionObject.from_b - 1,
+                        'secEnd': sectionObject.to_b - 1,
+                        'val': sectionObject.val
+                    });
+                }
+                else{
+                    if(sectionObject.cat == 'comm'){
+                        //Create a comment section
+                        sectionsArrayFetched['comment'] = sectionObject.val;
+                    }
+                }
+            }
+            console.log('fetched sectionsArray of revision '+ requested, sectionsArrayFetched);
+            //Now the revision can be loaded...
+            //Set the comment
+            document.getElementById('commentInput').value = sectionsArrayFetched['comment'];
+            //So if wanted change the table data accordingly and update the curRev variable
+            setCurrRevDisplay(requested);
+            sectionsArray = sectionsArrayFetched;
+            //createSectionSummaryTable();
+            //press the button getfromsummarytable virtually and modify the grid
+            getSummSecsToManual();
+            //Because createSumm doesnot modify or reset grid if requisition rows are zero
+            resetGrid(data,'FULL');
+            resetGridRSDURS(data, 0);
+            resetGridDCorRamp(data, "DC");
+            resetGridDCorRamp(data, "Dec");
+            resetGridDCorRamp(data, "Ramp");
+            //now press the button reqFeedByTableButton virtually to recreate the summary table and modify the grid
+            createSumm(false);
+        }
+    });
 }
 
 
@@ -1816,7 +1905,7 @@ function performAlgo() {
         //enabling the excel style functionality by the plugin
         grid2.registerPlugin(new Slick.CellExternalCopyManager(pluginOptions));
         calculateFormulaColumnsSolution(grid2, data2);
-    }
+    };
     loadRevision(curRev,afterLoad,sectionsArray);
 }
 
@@ -1850,6 +1939,8 @@ function calculateFormulaColumnsSolution(grid2, data2) {
 
 function decorateGrid(){
     genName = document.getElementById("genList").options[document.getElementById("genList").selectedIndex].text;
+    //TODO fetch generator parameters
+    fetchGenParamsAjax(document.getElementById("genList").selectedIndex);
 }
 
 function saveToDB(){
@@ -1932,12 +2023,6 @@ function saveToDB(){
         vals.push(sections[k].val);
 
     }
-    //Saving generator name
-    cats.push('gen');
-    conIDs.push(constituentIDs[0]);
-    frombs.push(1);
-    tobs.push(96);
-    vals.push(genName);
     //Saving the comment of the revision
     cats.push('comm');
     conIDs.push(constituentIDs[0]);
