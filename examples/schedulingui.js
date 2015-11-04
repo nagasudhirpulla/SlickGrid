@@ -1147,6 +1147,7 @@ function loadRevisionDB(){
             return false;
         }
         else if(loadRev == maxRevNum+1){
+            //TODO user cannot decide the revision number of the created revision
             if(!confirm('Create Revision '+loadRev+'???.\nIf changes not saved, press cancel and save...'))
                 return false;
             else
@@ -1183,7 +1184,7 @@ function createRevDB(){
 }
 
 function loadRevDB(genID, requested){
-    alert('Loading revision '+requested);
+    alert('Loading Revision '+requested);
     $.ajax({
         type: 'GET',
         url: "http://www.localhost/api/revisions/"+genID+"/"+requested,
@@ -1289,6 +1290,14 @@ function createNewRev() //Create Operation of the database.
     }
     setCurrRevDisplay(count);
     return true;
+}
+
+function createNewRevisionDB() //Create Operation of the database.
+{
+    if (!confirm("Create a new Revision ?")) {
+        return false;
+    }
+    createRevDB();
 }
 
 function setCurrRevDisplay(loadrev) {
