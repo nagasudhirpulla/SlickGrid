@@ -1173,7 +1173,7 @@ function loadRevisionDB(){
         url: "http://"+localhost+"/api/revisions/count",
         dataType: "json", // data type of response
         success: function(data) {
-            if(data.error == 'true') {
+            if(data.error == true) {
                 alert("Error loading the count: " + data.message);
             }
             else {
@@ -2094,7 +2094,7 @@ function deleteRevisionDB(){
         type: 'DELETE',
         url: "http://"+localhost+"/api/revisions/"+curRev,
         success: function(data, textStatus, jqXHR){
-            if(data.error == 'false') {
+            if(data.error == false) {
                 console.log("Deleted the revision " + curRev + " successfully!");
                 alert("Deleted the revision " + curRev + " successfully!");
                 //Load the latest revision
