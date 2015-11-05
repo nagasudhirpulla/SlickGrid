@@ -1,6 +1,7 @@
 /**
  * Created by PSSE on 10/29/2015.
  */
+var localhost = "192.168.0.104";
 var grid; //The cell grid object.
 var data = []; //The data used by the cell grid
 var percentageData = [];//The requisition percentage data used by the algorithm and the UI
@@ -201,7 +202,7 @@ function fetchConsNamesAjax(){
     console.log('Fetching the Constituents names...');
     $.ajax({
         type: 'GET',
-        url: "http://localhost/api/names",
+        url: "http://"+localhost+"/api/names",
         dataType: "json", // data type of response
         success: function(data) {
             // JAX-RS serializes an empty list as null, and a 'collection of one' as an object (not an 'array of one')
@@ -223,7 +224,7 @@ function fetchGenNamesAjax() {
     console.log('Fetching the generators names...');
     $.ajax({
         type: 'GET',
-        url: "http://localhost/api/generators",
+        url: "http://"+localhost+"/api/generators",
         dataType: "json", // data type of response
         success: function(data) {
             // JAX-RS serializes an empty list as null, and a 'collection of one' as an object (not an 'array of one')
@@ -246,7 +247,7 @@ function fetchGenParamsAjax(reqGenIndex){
     console.log('Fetching the generator parameters...');
     $.ajax({
         type: 'GET',
-        url: "http://localhost/api/generators/"+genNames[reqGenIndex],
+        url: "http://"+localhost+"/api/generators/"+genNames[reqGenIndex],
         dataType: "json", // data type of response
         success: function(data) {
             genRamp = data.ramp;
@@ -262,7 +263,7 @@ function fetchSharesOfGeneratorAjax(genID){
     console.log('Fetching the Generator shares...');
     $.ajax({
         type: 'GET',
-        url: "http://localhost/api/generatorshares/"+genID,
+        url: "http://"+localhost+"/api/generatorshares/"+genID,
         dataType: "json", // data type of response
         success: function(datafetched) {
             // JAX-RS serializes an empty list as null, and a 'collection of one' as an object (not an 'array of one')
@@ -1169,7 +1170,7 @@ function loadRevisionDB(){
     console.log('Fetching the maximum revision number...');
     $.ajax({
         type: 'GET',
-        url: "http://localhost/api/revisions/count",
+        url: "http://"+localhost+"/api/revisions/count",
         dataType: "json", // data type of response
         success: function(data) {
             if(data.error == 'true') {
@@ -1187,7 +1188,7 @@ function createRevDB(){
     var genID = genIDs[genNames.indexOf(genName)];
     $.ajax({
         type: 'POST',
-        url: "http://localhost/api/revisions/"+genID,
+        url: "http://"+localhost+"/api/revisions/"+genID,
         dataType: "json", // data type of response
         data: JSON.stringify({}),
         success: function (data, textStatus, jqXHR) {
@@ -1207,7 +1208,7 @@ function loadRevDB(genID, requested){
     console.log('Loading Revision '+requested);
     $.ajax({
         type: 'GET',
-        url: "http://www.localhost/api/revisions/"+genID+"/"+requested,
+        url: "http://"+localhost+"/api/revisions/"+genID+"/"+requested,
         dataType: "json", // data type of response
         success: function(dataFetched) {
             //TODO check for data.error == false
@@ -2063,7 +2064,7 @@ function saveToDB(){
     console.log('saving revision to the server');
     $.ajax({
         type: 'PUT',
-        url: "http://localhost/api/revisions/"+curRev,
+        url: "http://"+localhost+"/api/revisions/"+curRev,
         dataType: "json", // data type of response
         data: JSON.stringify({
             'genID':genID,
@@ -2091,7 +2092,7 @@ function deleteRevisionDB(){
     console.log("Requesting the Database to delete the Revision");
     $.ajax({
         type: 'DELETE',
-        url: "http://localhost/api/revisions/"+curRev,
+        url: "http://"+localhost+"/api/revisions/"+curRev,
         success: function(data, textStatus, jqXHR){
             if(data.error == 'false') {
                 console.log("Deleted the revision " + curRev + " successfully!");
@@ -2118,7 +2119,7 @@ function loadLatestRevisionDB(){
     var genID = genIDs[genNames.indexOf(genName)];
     $.ajax({
         type: 'GET',
-        url: "http://www.localhost/api/revisions/"+genID+"/latest",
+        url: "http://"+localhost+"/api/revisions/"+genID+"/latest",
         dataType: "json", // data type of response
         success: function(dataFetched) {
             //TODO check for data.error == false
