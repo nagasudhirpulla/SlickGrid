@@ -280,7 +280,9 @@ function fetchSharesOfGeneratorAjax(genID){
             }
             //TODO load the latest revision
             //TODO do SECTIONS implementation for storing the percentageData variable also to save memory
-            loadRevDB(genID,curRev);
+            //loadRevDB(genID,curRev);
+            //TODO when every time generator changes latest revision loads...
+            loadLatestRevisionDB();
         }
     });
 }
@@ -1148,10 +1150,9 @@ function loadRevisionDB(){
         }
         else if(loadRev == maxRevNum+1){
             //TODO user cannot decide the revision number of the created revision
-            if(!confirm('Create Revision '+loadRev+'???.\nIf changes not saved, press cancel and save...'))
+            if(!confirm('Create Revision '+loadRev+' ???.\nIf changes not saved, press cancel and save...'))
                 return false;
-            else
-                createRevDB();
+            createRevDB();
         }
         else if(loadRev > maxRevNum){
             alert('Cant load revision '+document.getElementById('revInput').value+'. Maximum loadable revision number is '+maxRevNum);
@@ -1159,6 +1160,8 @@ function loadRevisionDB(){
         }
         else {
             var genID = genIDs[document.getElementById("genList").selectedIndex];
+            if(!confirm("Load the revision "+ loadRev +" ???.\nIf changes not saved, press cancel and save..."))
+                return false;
             loadRevDB(genID, loadRev);
         }
     };
@@ -1183,7 +1186,7 @@ function createRevDB(){
     alert('Creating a new revision');
     var genID = genIDs[genNames.indexOf(genName)];
     $.ajax({
-        type: 'PUT',
+        type: 'POST',
         url: "http://localhost/api/revisions/"+genID,
         dataType: "json", // data type of response
         data: JSON.stringify({}),
@@ -1193,7 +1196,7 @@ function createRevDB(){
             loadRevDB(genID,data.new_rev);
         },
         error: function (jqXHR, textStatus, errorThrown) {
-            alert('updateRevision error: ' + textStatus);
+            alert('createRevision error: ' + textStatus);
             console.log("createNewRevision errorThrown: " + errorThrown);
             console.log("createNewRevision jqXHR: " + JSON.stringify(jqXHR));
         }
@@ -2059,7 +2062,7 @@ function saveToDB(){
     //Sending the ajax request to the server for saving revision
     console.log('saving revision to the server');
     $.ajax({
-        type: 'POST',
+        type: 'PUT',
         url: "http://localhost/api/revisions/"+curRev,
         dataType: "json", // data type of response
         data: JSON.stringify({
@@ -2078,6 +2081,113 @@ function saveToDB(){
             alert('updateRevision error: ' + textStatus);
             console.log("updateRevision errorThrown: " + errorThrown);
             console.log("updateRevision jqXHR: " + JSON.stringify(jqXHR));
+        }
+    });
+}
+
+function deleteRevisionDB(){
+    if (!confirm("Delete the Revision " + curRev + " ???\nThe data of all the  generator changes of this revision will be lost..."))
+        return false;
+    console.log("Requesting the Database to delete the Revision");
+    $.ajax({
+        type: 'DELETE',
+        url: "http://localhost/api/revisions/"+curRev,
+        success: function(data, textStatus, jqXHR){
+            if(data.error == 'false') {
+                console.log("Deleted the revision " + curRev + " successfully!");
+                alert("Deleted the revision " + curRev + " successfully!");
+                //Load the latest revision
+                console.log("Requesting to load the latest revision after deletion...");
+                loadLatestRevisionDB();
+            }
+            else{
+                console.log("deleteRevision "+curRev+" error:",data.num_rows);
+                alert("Failed to Delete Revision "+curRev+".\nSee Console for message...");
+            }
+        },
+        error: function(jqXHR, textStatus, errorThrown){
+            alert('deleteRevision error: '+textStatus);
+            console.log("deleteRevision "+curRev+" jqXHR:",jqXHR);
+            console.log("deleteRevision "+curRev+" errorThrown:", errorThrown);
+        }
+    });
+}
+
+function loadLatestRevisionDB(){
+    console.log("Loading the latest revision...");
+    var genID = genIDs[genNames.indexOf(genName)];
+    $.ajax({
+        type: 'GET',
+        url: "http://www.localhost/api/revisions/"+genID+"/latest",
+        dataType: "json", // data type of response
+        success: function(dataFetched) {
+            //TODO check for data.error == false
+            // JAX-RS serializes an empty list as null, and a 'collection of one' as an object (not an 'array of one')
+            var fetchedRevData = dataFetched == null ? [] : (dataFetched.revData instanceof Array ? dataFetched.revData : [dataFetched.revData]);
+            console.log('fetched revision data of revision '+dataFetched.revNumber+': '+JSON.stringify(fetchedRevData));
+            //convert revision data into sections
+            var sectionsArrayFetched = [];
+            for (var i = 0; i < fetchedRevData.length; i++) {
+                var sectionObject = fetchedRevData[i];
+                if(sectionObject.cat == 'n'||sectionObject.cat == 'r'||sectionObject.cat == 'u'||sectionObject.cat == 'd'||sectionObject.cat == 'on'||sectionObject.cat == 'ra') {
+                    if (sectionObject.cat == 'n') {
+                        //Create a normal share section
+                        var constcol = constituentIDs.indexOf(sectionObject.p_id);
+                    }
+                    else if (sectionObject.cat == 'r') {
+                        //Create a RSD share section
+                        constcol = 'RSD' + constituentIDs.indexOf(sectionObject.p_id);
+                    }
+                    else if (sectionObject.cat == 'u') {
+                        //Create a RSD share section
+                        constcol = 'URS' + constituentIDs.indexOf(sectionObject.p_id);
+                    }
+                    else if (sectionObject.cat == 'd') {
+                        //Create a RSD share section
+                        constcol = 'DC';
+                    }
+                    else if (sectionObject.cat == 'on') {
+                        //Create a RSD share section
+                        constcol = 'onBar';
+                    }
+                    else if (sectionObject.cat == 'ra') {
+                        //Create a RSD share section
+                        constcol = 'rampNum';
+                    }
+                    if (!(sectionsArrayFetched[constcol] instanceof Array)) {
+                        sectionsArrayFetched[constcol] = [];
+                    }
+                    sectionsArrayFetched[constcol].push({
+                        'secStart': sectionObject.from_b - 1,
+                        'secEnd': sectionObject.to_b - 1,
+                        'val': sectionObject.val
+                    });
+                }
+                else{
+                    if(sectionObject.cat == 'comm'){
+                        //Create a comment section
+                        sectionsArrayFetched['comment'] = sectionObject.val;
+                    }
+                }
+            }
+            console.log('fetched sectionsArray of revision '+ dataFetched.revNumber, sectionsArrayFetched);
+            //Now the revision can be loaded...
+            //Set the comment
+            document.getElementById('commentInput').value = sectionsArrayFetched['comment'];
+            //So if wanted change the table data accordingly and update the curRev variable
+            setCurrRevDisplay(dataFetched.revNumber);
+            sectionsArray = sectionsArrayFetched;
+            //createSectionSummaryTable();
+            //press the button getfromsummarytable virtually and modify the grid
+            getSummSecsToManual();
+            //Because createSumm doesnot modify or reset grid if requisition rows are zero
+            resetGrid(data,'FULL');
+            resetGridRSDURS(data, 0);
+            resetGridDCorRamp(data, "DC");
+            resetGridDCorRamp(data, "Dec");
+            resetGridDCorRamp(data, "Ramp");
+            //now press the button reqFeedByTableButton virtually to recreate the summary table and modify the grid
+            createSumm(false);
         }
     });
 }
