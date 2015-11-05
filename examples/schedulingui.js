@@ -2075,7 +2075,7 @@ function saveToDB(){
             'vals': vals
         }),
         success: function (data, textStatus, jqXHR) {
-            alert("Saved the share Percentages successfully...");
+            alert("Updated the revision successfully...");
             console.log(data);
         },
         error: function (jqXHR, textStatus, errorThrown) {
