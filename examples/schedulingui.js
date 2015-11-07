@@ -38,7 +38,7 @@ var tiedToDC = false;
 var tiedToRamp = false;
 
 //Database Array-Used right now as the database
-var revDataArray = new Array();
+var revDataArray = [];
 
 
 //cell grid options for customization
@@ -332,8 +332,8 @@ function afterInitialFetch(){
             d['RSD' + j] = 0;
             d['URS' + j] = 'Yes';
             //Accommodating markRev
-            m['RSD' + j] = 0;
-            m['URS' + j] = 0;
+            m['RSD' + j] = 1000;
+            m['URS' + j] = 2000;
             //RSD version
         }
         d["avail"] = 0;
@@ -1283,8 +1283,11 @@ function loadRevDB(genID, requested){
             resetGridDCorRamp(data, "DC");
             resetGridDCorRamp(data, "Dec");
             resetGridDCorRamp(data, "Ramp");
+            calculateFormulaColumns(data,grid);
             //now press the button reqFeedByTableButton virtually to recreate the summary table and modify the grid
             createSumm(false);
+            createSections();
+            createSectionSummaryTable();
         }
     });
 }
@@ -1598,7 +1601,7 @@ function markCellsWithRevsDB() {
     console.log('Fetching the revision numbers of the generator...');
     var genID = genIDs[genNames.indexOf(genName)];
     var generatorRevisions = [];
-    var currentRevision = 0;
+    var currentRevisionIndex = 0;
     $.ajax({
         type: 'GET',
         url: "http://"+localhost+"/api/generatorRevisionNumbers/"+genID,
@@ -1613,14 +1616,28 @@ function markCellsWithRevsDB() {
             generatorRevisions = data == null ? [] : (data.revisionNumbers instanceof Array ? data.revisionNumbers : [data.revisionNumbers]);
             console.log("Fetched revisions of generator "+genID, JSON.stringify(generatorRevisions));
             //Now mark cells with revisions
-            if(generatorRevisions.length == 0){
-
-            }
-            else if(generatorRevisions.length == 1){
-
+            if(generatorRevisions.length == 0 || generatorRevisions[currentRevisionIndex] > curRev){
+                //cells are already marked with revision zero...So no need of marking revisions
+                //Mark all cells with this revision number...
+                for (var i = 0; i < 96; i++) {
+                    //i is iterator for the row i or block i+1...
+                    var m = markRev[i];
+                    for (var j = 0; j < constituentNames.length; j++) {
+                        //j is iterator the column j ...
+                        //Accommodating markRev
+                        m[j] = 0;
+                        //RSD version
+                        //Accommodating markRev
+                        m['RSD' + j] = 1000;
+                        m['URS' + j] = 2000;
+                        //RSD version
+                    }
+                }
+                createMarkRevsTable();
+                performAlgoDB();
             }
             else{
-                    FetchFirstRevision(generatorRevisions[0]);
+                FetchFirstRevision(generatorRevisions[0]);
             }
         }
     });
@@ -1641,16 +1658,38 @@ function markCellsWithRevsDB() {
                 //Now the next Revision can be loaded for marking cells...
                 console.log("Marking from revision " + firstRev + "...");
                 sectionsArray = sectionsArrayFetched;
-                //*********Don't forget to increment the current Revision that is being processed
-                currentRevision++;
-                afterFirstLoadDB();
+                //Mark all cells with this revision number...
+                for (var i = 0; i < 96; i++) {
+                    //i is iterator for the row i or block i+1...
+                    var m = markRev[i];
+                    for (var j = 0; j < constituentNames.length; j++) {
+                        //j is iterator the column j ...
+                        //Accommodating markRev
+                        m[j] = generatorRevisions[currentRevisionIndex];
+                        //RSD version
+                        //Accommodating markRev
+                        m['RSD' + j] = 1000+generatorRevisions[currentRevisionIndex];
+                        m['URS' + j] = 2000+generatorRevisions[currentRevisionIndex];
+                        //RSD version
+                    }
+                }
+                if(generatorRevisions.length == 1 || generatorRevisions[currentRevisionIndex + 1] > curRev){
+                    createMarkRevsTable();
+                    performAlgoDB();
+                }
+                else{
+                    //*********Don't forget to increment the current Revision that is being processed
+                    currentRevisionIndex++;
+                    afterFirstLoadDB();
+                }
+
             }
         });
     }
     function afterFirstLoadDB(){
         //Get the revision data of the present and prev revisions
         var sectionsArrayPrev = sectionsArray;
-        var Rev = generatorRevisions[currentRevision];
+        var Rev = generatorRevisions[currentRevisionIndex];
         $.ajax({
             type: 'GET',
             url: "http://" + localhost + "/api/revisions/" + genID + "/" + Rev,
@@ -1664,7 +1703,7 @@ function markCellsWithRevsDB() {
                 var sectionsArrayFetched = convertRevDataToSectionsArray(fetchedRevData);
                 console.log('fetched sectionsArray of revision ' + Rev, sectionsArrayFetched);
                 //*********Don't forget to increment the current Revision that is being processed
-                currentRevision++;
+                currentRevisionIndex++;
                 //Now the next Revision can be loaded for marking cells...
                 console.log("Marking from revision " + Rev + "...");
                 sectionsArray = sectionsArrayFetched;
@@ -1758,296 +1797,104 @@ function markCellsWithRevsDB() {
                     //URS Version
 
                 }
-                if(generatorRevisions[currentRevision] <= curRev){
+                if(generatorRevisions[currentRevisionIndex] <= curRev){
                     afterFirstLoadDB();
                 }
                 else{
-                    //Now the cells are marked with the latest rev change tags.
-                    //Lets output them to the revMarkTable
-                    var tab = document.getElementById("revMarkTable");
-                    tab.innerHTML = '';
-                    //Add a row
-                    var tr = document.createElement('tr');
-                    for (var constcol = -4; constcol < constituentNames.length; constcol++) {
-                        //Add cells to the table
-                        var td0 = document.createElement('td');
-                        switch (constcol) {
-                            case -4:
-                                td0.appendChild(document.createTextNode("BlockNumber"));
-                                break;
-                            case -3:
-                                td0.appendChild(document.createTextNode("DC"));
-                                break;
-                            case -2:
-                                td0.appendChild(document.createTextNode("OnBarDC"));
-                                break;
-                            case -1:
-                                td0.appendChild(document.createTextNode("MaxRamp"));
-                                break;
-                            default:
-                                td0.appendChild(document.createTextNode(constituentNames[constcol]));
-                                break;
-                        }
-                        tr.appendChild(td0);
-                    }
-                    for (var constcol = 0; constcol < constituentNames.length; constcol++) {
-                        //Add cells to the table
-                        var td0 = document.createElement('td');
-                        td0.appendChild(document.createTextNode("RSD" + constituentNames[constcol]));
-                        tr.appendChild(td0);
-                    }
-                    for (var constcol = 0; constcol < constituentNames.length; constcol++) {
-                        //Add cells to the table
-                        var td0 = document.createElement('td');
-                        td0.appendChild(document.createTextNode("URS" + constituentNames[constcol]));
-                        tr.appendChild(td0);
-                    }
-                    tab.appendChild(tr);
-                    for (var i = 0; i < 96; i++) {
-                        //Add a row
-                        tr = document.createElement('tr');
-                        for (var constcol = 0; constcol < 4; constcol++) {
-                            //Add cells to the table
-                            td0 = document.createElement('td');
-                            switch (constcol) {
-                                case 0:
-                                    td0.appendChild(document.createTextNode(i + 1));
-                                    break;
-                                case 1:
-                                    td0.appendChild(document.createTextNode("DC"));
-                                    break;
-                                case 2:
-                                    td0.appendChild(document.createTextNode("OnBarDC"));
-                                    break;
-                                case 3:
-                                    td0.appendChild(document.createTextNode("MaxRamp"));
-                                    break;
-                            }
-                            tr.appendChild(td0);
-                        }
-                        for (var constcol = 0; constcol < constituentNames.length; constcol++) {
-                            //Add cells to the table
-                            td0 = document.createElement('td');
-                            td0.appendChild(document.createTextNode((markRev[i])[constcol]));
-                            tr.appendChild(td0);
-                        }
-                        for (var constcol = 0; constcol < constituentNames.length; constcol++) {
-                            //Add cells to the table
-                            td0 = document.createElement('td');
-                            td0.appendChild(document.createTextNode((markRev[i])["RSD" + constcol]));
-                            tr.appendChild(td0);
-                        }
-                        for (var constcol = 0; constcol < constituentNames.length; constcol++) {
-                            //Add cells to the table
-                            td0 = document.createElement('td');
-                            td0.appendChild(document.createTextNode((markRev[i])["URS" + constcol]));
-                            tr.appendChild(td0);
-                        }
-                        tab.appendChild(tr);
-                    }
-                    tab.border = '1';
-                    //tab.width = '100px';
-                    performAlgo();
+                    createMarkRevsTable();
+                    performAlgoDB();
                 }
             }
         });
     }
-    var afterLoad = function(record) {
-        console.log("Marking from revision " + 0 + "...");
-        console.log(record.revData);
-        sectionsArray = record.revData;
-        //Iterate from 1st to current revision
-        for (var rev1 = 1; rev1 <= curRev; rev1++) {
-            //Get the revision data of the present and prev revisions
-            var afterLoad1 = function(record1) {
-                var sectionsArrayPrev = sectionsArray;
-                //sectionsArray = revDataArray[rev];
-                var rev = record1.revNo;
-                console.log("Marking from revision " + rev + "...");
-                sectionsArray = record1.revData;
-                console.log(record1.revData);
-                //iterate through each column of this revision to find the min blk num affected by this rev in this column
-                for (var constcol = 0; constcol < constituentNames.length; constcol++) {
-                    //Column data of prev and present revisions
-                    var sectionsprev = sectionsArrayPrev[constcol];
-                    var sections = sectionsArray[constcol];
-                    var column = new Array(96);
-                    //var columnprev = new Array(96);
-                    //Build the columns of prev and present revisions of this constituent
-                    for (var i = 0; i < sections.length; i++) {
-                        for (var blkNum = Number(sections[i]["secStart"]); blkNum <= Number(sections[i]["secEnd"]); blkNum++) {
-                            column[blkNum] = sections[i]["val"];
-                        }
-                    }
-                    var changeRow = 96;
-                    for (var i = 0; i < sectionsprev.length; i++) {
-                        for (var blkNum = Number(sectionsprev[i]["secStart"]); blkNum <= Number(sectionsprev[i]["secEnd"]); blkNum++) {
-                            //Check if prev column mismatches with present and declare the min blk number or row
-                            if (sectionsprev[i]["val"] != column[blkNum]) //change row found
-                            {
-                                changeRow = blkNum;
-                                break;
-                            }
-                        }
-                    }
-                    //TODO
-                    //This computation for changeRow of each column in a rev can be avoided by calculating and saving the array of this variable in the database
-                    //Marking the row rev on the basis of changeRow variable
-                    for (var i = changeRow; i < 96; i++) {
-                        (markRev[i])[constcol] = rev;
-                    }
-                    //URS Version
-                    //Column data of prev and present revisions
-                    sectionsprev = sectionsArrayPrev["RSD" + constcol];
-                    sections = sectionsArray["RSD" + constcol];
-                    column = new Array(96);
-                    //var columnprev = new Array(96);
-                    //Build the columns of prev and present revisions of this constituent
-                    for (var i = 0; i < sections.length; i++) {
-                        for (var blkNum = Number(sections[i]["secStart"]); blkNum <= Number(sections[i]["secEnd"]); blkNum++) {
-                            column[blkNum] = sections[i]["val"];
-                        }
-                    }
-                    changeRow = 96;
-                    for (var i = 0; i < sectionsprev.length; i++) {
-                        for (var blkNum = Number(sectionsprev[i]["secStart"]); blkNum <= Number(sectionsprev[i]["secEnd"]); blkNum++) {
-                            //Check if prev column mismatches with present and declare the min blk number or row
-                            if (sectionsprev[i]["val"] != column[blkNum]) //change row found
-                            {
-                                changeRow = blkNum;
-                                break;
-                            }
-                        }
-                    }
-                    //TODO
-                    //This computation for changeRow of each column in a rev can be avoided by calculating and saving the array of this variable in the database
-                    //Marking the row rev on the basis of changeRow variable
-                    for (var i = changeRow; i < 96; i++) {
-                        (markRev[i])["RSD" + constcol] = 1000 + rev;
-                    }
-                    //Column data of prev and present revisions
-                    sectionsprev = sectionsArrayPrev["URS" + constcol];
-                    sections = sectionsArray["URS" + constcol];
-                    column = new Array(96);
-                    //var columnprev = new Array(96);
-                    //Build the columns of prev and present revisions of this constituent
-                    for (var i = 0; i < sections.length; i++) {
-                        for (var blkNum = Number(sections[i]["secStart"]); blkNum <= Number(sections[i]["secEnd"]); blkNum++) {
-                            column[blkNum] = sections[i]["val"];
-                        }
-                    }
-                    changeRow = 96;
-                    for (var i = 0; i < sectionsprev.length; i++) {
-                        for (var blkNum = Number(sectionsprev[i]["secStart"]); blkNum <= Number(sectionsprev[i]["secEnd"]); blkNum++) {
-                            //Check if prev column mismatches with present and declare the min blk number or row
-                            if (sectionsprev[i]["val"] != column[blkNum]) //change row found
-                            {
-                                changeRow = blkNum;
-                                break;
-                            }
-                        }
-                    }
-                    //TODO
-                    //This computation for changeRow of each column in a rev can be avoided by calculating and saving the array of this variable in the database
-                    //Marking the row rev on the basis of changeRow variable
-                    for (var i = changeRow; i < 96; i++) {
-                        (markRev[i])["URS" + constcol] = 2000 + rev;
-                    }
-                    //URS Version
+}
 
-                }
-                if(rev == curRev){
-                    //Now cells are marked with the latest rev change tags.
-                    //Lets output them to the revMarkTable
-                    var tab = document.getElementById("revMarkTable");
-                    tab.innerHTML = '';
-                    //Add a row
-                    var tr = document.createElement('tr');
-                    for (var constcol = -4; constcol < constituentNames.length; constcol++) {
-                        //Add cells to the table
-                        var td0 = document.createElement('td');
-                        switch (constcol) {
-                            case -4:
-                                td0.appendChild(document.createTextNode("BlockNumber"));
-                                break;
-                            case -3:
-                                td0.appendChild(document.createTextNode("DC"));
-                                break;
-                            case -2:
-                                td0.appendChild(document.createTextNode("OnBarDC"));
-                                break;
-                            case -1:
-                                td0.appendChild(document.createTextNode("MaxRamp"));
-                                break;
-                            default:
-                                td0.appendChild(document.createTextNode(constituentNames[constcol]));
-                                break;
-                        }
-                        tr.appendChild(td0);
-                    }
-                    for (var constcol = 0; constcol < constituentNames.length; constcol++) {
-                        //Add cells to the table
-                        var td0 = document.createElement('td');
-                        td0.appendChild(document.createTextNode("RSD" + constituentNames[constcol]));
-                        tr.appendChild(td0);
-                    }
-                    for (var constcol = 0; constcol < constituentNames.length; constcol++) {
-                        //Add cells to the table
-                        var td0 = document.createElement('td');
-                        td0.appendChild(document.createTextNode("URS" + constituentNames[constcol]));
-                        tr.appendChild(td0);
-                    }
-                    tab.appendChild(tr);
-                    for (var i = 0; i < 96; i++) {
-                        //Add a row
-                        tr = document.createElement('tr');
-                        for (var constcol = 0; constcol < 4; constcol++) {
-                            //Add cells to the table
-                            td0 = document.createElement('td');
-                            switch (constcol) {
-                                case 0:
-                                    td0.appendChild(document.createTextNode(i + 1));
-                                    break;
-                                case 1:
-                                    td0.appendChild(document.createTextNode("DC"));
-                                    break;
-                                case 2:
-                                    td0.appendChild(document.createTextNode("OnBarDC"));
-                                    break;
-                                case 3:
-                                    td0.appendChild(document.createTextNode("MaxRamp"));
-                                    break;
-                            }
-                            tr.appendChild(td0);
-                        }
-                        for (var constcol = 0; constcol < constituentNames.length; constcol++) {
-                            //Add cells to the table
-                            td0 = document.createElement('td');
-                            td0.appendChild(document.createTextNode((markRev[i])[constcol]));
-                            tr.appendChild(td0);
-                        }
-                        for (var constcol = 0; constcol < constituentNames.length; constcol++) {
-                            //Add cells to the table
-                            td0 = document.createElement('td');
-                            td0.appendChild(document.createTextNode((markRev[i])["RSD" + constcol]));
-                            tr.appendChild(td0);
-                        }
-                        for (var constcol = 0; constcol < constituentNames.length; constcol++) {
-                            //Add cells to the table
-                            td0 = document.createElement('td');
-                            td0.appendChild(document.createTextNode((markRev[i])["URS" + constcol]));
-                            tr.appendChild(td0);
-                        }
-                        tab.appendChild(tr);
-                    }
-                    tab.border = '1';
-                    //tab.width = '100px';
-                    performAlgo();
-                }
-            };
-            loadRevision(rev1, afterLoad1, sectionsArray);//sectionsArray of iteration being shared among all requests so may have a problem of concurrency...//todo 24/09/2015
+function createMarkRevsTable(){
+    //Now the cells are marked with the latest rev change tags.
+    //Lets output them to the revMarkTable
+    var tab = document.getElementById("revMarkTable");
+    tab.innerHTML = '';
+    //Add a row
+    var tr = document.createElement('tr');
+    for (var constcol = -4; constcol < constituentNames.length; constcol++) {
+        //Add cells to the table
+        var td0 = document.createElement('td');
+        switch (constcol) {
+            case -4:
+                td0.appendChild(document.createTextNode("BlockNumber"));
+                break;
+            case -3:
+                td0.appendChild(document.createTextNode("DC"));
+                break;
+            case -2:
+                td0.appendChild(document.createTextNode("OnBarDC"));
+                break;
+            case -1:
+                td0.appendChild(document.createTextNode("MaxRamp"));
+                break;
+            default:
+                td0.appendChild(document.createTextNode(constituentNames[constcol]));
+                break;
         }
-    };
+        tr.appendChild(td0);
+    }
+    for (var constcol = 0; constcol < constituentNames.length; constcol++) {
+        //Add cells to the table
+        var td0 = document.createElement('td');
+        td0.appendChild(document.createTextNode("RSD" + constituentNames[constcol]));
+        tr.appendChild(td0);
+    }
+    for (var constcol = 0; constcol < constituentNames.length; constcol++) {
+        //Add cells to the table
+        var td0 = document.createElement('td');
+        td0.appendChild(document.createTextNode("URS" + constituentNames[constcol]));
+        tr.appendChild(td0);
+    }
+    tab.appendChild(tr);
+    for (var i = 0; i < 96; i++) {
+        //Add a row
+        tr = document.createElement('tr');
+        for (var constcol = 0; constcol < 4; constcol++) {
+            //Add cells to the table
+            td0 = document.createElement('td');
+            switch (constcol) {
+                case 0:
+                    td0.appendChild(document.createTextNode(i + 1));
+                    break;
+                case 1:
+                    td0.appendChild(document.createTextNode("DC"));
+                    break;
+                case 2:
+                    td0.appendChild(document.createTextNode("OnBarDC"));
+                    break;
+                case 3:
+                    td0.appendChild(document.createTextNode("MaxRamp"));
+                    break;
+            }
+            tr.appendChild(td0);
+        }
+        for (var constcol = 0; constcol < constituentNames.length; constcol++) {
+            //Add cells to the table
+            td0 = document.createElement('td');
+            td0.appendChild(document.createTextNode((markRev[i])[constcol]));
+            tr.appendChild(td0);
+        }
+        for (var constcol = 0; constcol < constituentNames.length; constcol++) {
+            //Add cells to the table
+            td0 = document.createElement('td');
+            td0.appendChild(document.createTextNode((markRev[i])["RSD" + constcol]));
+            tr.appendChild(td0);
+        }
+        for (var constcol = 0; constcol < constituentNames.length; constcol++) {
+            //Add cells to the table
+            td0 = document.createElement('td');
+            td0.appendChild(document.createTextNode((markRev[i])["URS" + constcol]));
+            tr.appendChild(td0);
+        }
+        tab.appendChild(tr);
+    }
+    tab.border = '1';
+    //tab.width = '100px';
 }
 
 function modifyDC(overridePermissionRequired) {
@@ -2419,6 +2266,159 @@ function performAlgo() {
     loadRevision(curRev,afterLoad,sectionsArray);
 }
 
+function performAlgoDB() {
+    var data1 = new Array(96);
+    //Initialize the data1 array
+    for (var i = 0; i < data1.length; i++) {
+        data1[i] = {};
+        (data1[i])["SNo"] = i+1;
+    }
+    //First get all cells with desired numeric cell values into a  table dataDes from the revision summary array of the current revision
+    //constraint - this  has to be saved.
+    var afterLoad = function(){
+        //var sectionsArray = record.revData;
+        for (var constcol1 = -3; constcol1 < constituentNames.length; constcol1++) { //last three for onBarDC, MaxRamp and DC respectively
+            switch (constcol1) {
+                case -3:
+                    constcol = "onBar";
+                    break;
+                case -2:
+                    constcol = "rampNum";
+                    break;
+                case -1:
+                    constcol = "DC";
+                    break;
+                default:
+                    constcol = constcol1;
+                    break;
+            }
+            var sections = sectionsArray[constcol];
+            for (var j = 0; j < sections.length; j++) {
+                for (var k = sections[j].secStart; k <= sections[j].secEnd; k++) {
+                    if (isNaN(constcol))
+                        (data1[k])[constcol] = +sections[j].val;
+                    else
+                        (data1[k])[constcol] = +ConvertCellValToNum(sections[j].val, constcol, k, 0, (data1[k])['onBar']);
+                }
+            }
+            //URS Version
+            if (!isNaN(constcol)) {
+                sections = sectionsArray["RSD" + constcol];
+                for (var j = 0; j < sections.length; j++) {
+                    for (var k = sections[j].secStart; k <= sections[j].secEnd; k++) {
+                        (data1[k])["RSD" + constcol] = +ConvertCellValToNum(sections[j].val, constcol, k, 0, (data1[k])['DC'] - (data1[k])['onBar']);
+                    }
+                }
+                sections = sectionsArray["URS" + constcol];
+                for (var j = 0; j < sections.length; j++) {
+                    for (var k = sections[j].secStart; k <= sections[j].secEnd; k++) {
+                        (data1[k])["URS" + constcol] = sections[j].val;
+                    }
+                }
+            }
+            //URS Version
+        }
+        //Now the desired numeric values fo the grid are known
+        //Use these values to be used in revision tag table
+        var revtagtab = document.getElementById("revMarkTable");
+        for(var i=0;i<96;i++){
+            revtagtab.rows[i+1].cells[1].innerHTML = (data1[i])["DC"];
+            revtagtab.rows[i+1].cells[2].innerHTML = (data1[i])["onBar"];
+            revtagtab.rows[i+1].cells[3].innerHTML = (data1[i])["rampNum"];
+        }
+        //Building the grid and configuring the grid
+
+        grid1 = new Slick.Grid("#myGridDes", data1, columns, options);
+        grid1.setSelectionModel(new Slick.CellSelectionModel());
+        grid1.registerPlugin(new Slick.AutoTooltips());
+        grid1.onCellChanged;
+        //enabling the excel style functionality by the plugin
+        grid1.registerPlugin(new Slick.CellExternalCopyManager(pluginOptions));
+        //Now the desired numeric values of the grid are displayed in the grid1 cellgrid
+        //Calculate Formulas for the desired values grid
+        calculateFormulaColumns(data1, grid1);
+        //Now find the feasible cell values from the data1 array values and store in data2 array
+        var data2 = [];
+        for (var i = 0; i < data1.length; i++) {
+            data2[i] = {};
+            (data2[i])["onBar"] = (data1[i])["onBar"];
+            (data2[i])["DC"] = (data1[i])["DC"];
+            (data2[i])["rampNum"] = (data1[i])["rampNum"];
+        }
+        for (var i = 0; i < constituentNames.length; i++) {
+            (data2[0])[i] = (data1[0])[i];
+            //URS Version
+            (data2[0])["RSD" + i] = (data1[0])["RSD" + i];
+            (data2[0])["URS" + i] = 0; //ToDo Temporary setting for 1st URS row
+            //URS Version
+        }
+        (data2[0])["SNo"] = 1;
+        var maxCellVals = new Array(3 * constituentNames.length);
+        //initialize the array maxcellvals array with 0
+        for (var j = 0; j < maxCellVals.length; j++) {
+            maxCellVals[j] = 0;
+        }
+        var rowRevVals;
+        var rowPrevRevVals;
+        var rowRevs;
+        var percentages;
+        for (var i = 1; i < data1.length; i++) { //data1.length = 96
+            rowRevVals = [];
+            rowPrevRevVals = [];
+            rowRevs = [];
+            percentages = [];
+            var obj = percentageData[i];
+            var consReqPercentages = Object.keys(obj).map(function(k){return obj[k];});
+            for (var j = 0; j < consReqPercentages.length; j++) {
+                maxCellVals[j] = consReqPercentages[j] * 0.01 * (data1[i])["onBar"];
+                rowRevVals.push((data1[i])[j]);
+                rowPrevRevVals.push((data2[i - 1])[j]);
+                rowRevs.push((markRev[i])[j]);
+                percentages.push(consReqPercentages[j]*0.01);
+            }
+            //URS Version
+            //Adding the RSD+URS requirements to the solving array
+            for (var j = 0; j < consReqPercentages.length; j++) {
+                maxCellVals[j + consReqPercentages.length] = consReqPercentages[j] * 0.01 * ((data1[i])["DC"] - (data1[i])["onBar"]);
+                rowRevVals.push((data1[i])["RSD" + j]);
+                rowPrevRevVals.push((data2[i - 1])["RSD" + j]);
+                rowRevs.push((markRev[i])["RSD" + j]);
+                //percentages.push(consReqPercentages[j]*0.01);
+            }
+            //Now enter desired URS
+            for (var j = 0; j < consReqPercentages.length; j++) {
+                maxCellVals[j + 2 * consReqPercentages.length] = (data1[i])["onBar"];
+                var maxrsdshare = consReqPercentages[j] * 0.01 * ((data1[i])["DC"] - (data1[i])["onBar"]);
+                if ((data1[i])["RSD" + j] > maxrsdshare && (data1[i])["URS" + j] == "Yes") //if RSD+URS>RSD Share and URS asked == Yes then allocate desired URS
+                {
+                    rowRevVals.push((data1[i])["RSD" + j] - maxrsdshare);
+                } else {
+                    rowRevVals.push(0);
+                }
+                rowPrevRevVals.push((data2[i - 1])["URS" + j]);
+                rowRevs.push((markRev[i])["URS" + j]);
+                //percentages.push(consReqPercentages[j]*0.01);
+            }
+            var result = solveRamping(percentages, rowRevs, rowRevVals, rowPrevRevVals, maxCellVals, (data1[i])["rampNum"], (data1[i])["onBar"]);
+            for (var j = 0; j < consReqPercentages.length; j++) {
+                (data2[i])[j] = result[j];
+                (data2[i])["RSD" + j] = result[consReqPercentages.length + j];
+                (data2[i])["URS" + j] = result[2 * consReqPercentages.length + j];
+            }
+            //URS Version
+            //data2[i] = solveRamping(consReqPercentages, rowRevs, rowRevVals, rowPrevRevVals, maxCellVals, (data1[i])["rampNum"], (data1[i])["onBar"]);
+            (data2[i])["SNo"] = i + 1;
+        }
+        grid2 = new Slick.Grid("#myGridFeasible", data2, columns, options);
+        grid2.setSelectionModel(new Slick.CellSelectionModel());
+        grid2.onCellChanged;
+        //enabling the excel style functionality by the plugin
+        grid2.registerPlugin(new Slick.CellExternalCopyManager(pluginOptions));
+        calculateFormulaColumnsSolution(grid2, data2);
+    };
+    afterLoad();
+}
+
 /*
  Calculate the formula columns values for resulting solution
 
@@ -2667,6 +2667,7 @@ function loadLatestRevisionDB(){
             resetGridDCorRamp(data, "DC");
             resetGridDCorRamp(data, "Dec");
             resetGridDCorRamp(data, "Ramp");
+            calculateFormulaColumns(data,grid);
             //now press the button reqFeedByTableButton virtually to recreate the summary table and modify the grid
             createSumm(false);
         }
