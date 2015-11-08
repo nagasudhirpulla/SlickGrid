@@ -1185,7 +1185,7 @@ function loadRevisionDB(){
 }
 
 function createRevDB(){
-    alert('Creating a new revision');
+    console.log('Creating a new revision');
     var genID = genIDs[genNames.indexOf(genName)];
     $.ajax({
         type: 'POST',
@@ -1624,10 +1624,8 @@ function markCellsWithRevsDB() {
                     var m = markRev[i];
                     for (var j = 0; j < constituentNames.length; j++) {
                         //j is iterator the column j ...
-                        //Accommodating markRev
                         m[j] = 0;
                         //RSD version
-                        //Accommodating markRev
                         m['RSD' + j] = 1000;
                         m['URS' + j] = 2000;
                         //RSD version
@@ -1664,10 +1662,8 @@ function markCellsWithRevsDB() {
                     var m = markRev[i];
                     for (var j = 0; j < constituentNames.length; j++) {
                         //j is iterator the column j ...
-                        //Accommodating markRev
                         m[j] = generatorRevisions[currentRevisionIndex];
                         //RSD version
-                        //Accommodating markRev
                         m['RSD' + j] = 1000+generatorRevisions[currentRevisionIndex];
                         m['URS' + j] = 2000+generatorRevisions[currentRevisionIndex];
                         //RSD version
