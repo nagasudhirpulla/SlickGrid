@@ -196,6 +196,15 @@ function setTableColumns() {
 
 //On loading of the html page do the following
 $(function() {
+    $("#datePicker").datepicker({
+        dateFormat: "dd-mm-yy"
+    });
+    var today = new Date();
+    var dd = ("0" + (today.getDate())).slice(-2);
+    var mm = ("0" + (today.getMonth()+1)).slice(-2);
+    var yyyy = today.getFullYear();
+    today = dd + '-' + mm + '-' + yyyy ;
+    $("#datePicker").attr("value", today);
     fetchConsNamesAjax();
 });
 
