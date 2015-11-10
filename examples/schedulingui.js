@@ -1,8 +1,8 @@
 /**
  * Created by PSSE on 10/29/2015.
  */
-//var localhost = "192.168.0.104";
-var localhost = "localhost";
+var localhost = "192.168.1.102";
+//var localhost = "localhost";
 var grid; //The cell grid object.
 var data = []; //The data used by the cell grid
 var percentageData = [];//The requisition percentage data used by the algorithm and the UI
