@@ -1,4 +1,7 @@
 /**
+ * Created by PSSE on 11/11/2015.
+ */
+/**
  * Created by PSSE on 10/29/2015.
  */
 //var localhost = "192.168.1.102";
@@ -1148,6 +1151,8 @@ function loadRevisionFromDB() //Read Operation of the database.
 function loadRevisionDB(){
     //Get the rev number from the revInput TextBox element.Validate it first
     var loadRev = +document.getElementById("revInput").value; //+ tries to converts string to a number
+    var picker = $( "#datePicker" );
+    var date = picker.datepicker( "getDate" ).getFullYear()+"-"+(picker.datepicker( "getDate" ).getMonth()+1)+"-"+picker.datepicker("getDate").getDate();
     if (isNaN(loadRev)) {
         alert('Invalid Input in the revision field. So cannot load...');
         return false;
@@ -1173,14 +1178,14 @@ function loadRevisionDB(){
             var genID = genIDs[document.getElementById("genList").selectedIndex];
             if(!confirm("Load the revision "+ loadRev +" ???.\nIf changes not saved, press cancel and save..."))
                 return false;
-            loadRevDB(genID, loadRev);
+            loadRevDB(genID, date, loadRev);
         }
     };
     //check the maximum revision count
     console.log('Fetching the maximum revision number...');
     $.ajax({
         type: 'GET',
-        url: "http://"+localhost+"/api/revisions/count",
+        url: "http://"+localhost+"/api/revisions/"+date+"/count",
         dataType: "json", // data type of response
         success: function(data) {
             if(data.error == true) {
@@ -1196,9 +1201,11 @@ function loadRevisionDB(){
 function createRevDB(){
     console.log('Creating a new revision');
     var genID = genIDs[genNames.indexOf(genName)];
+    var picker = $( "#datePicker" );
+    var date = picker.datepicker( "getDate" ).getFullYear()+"-"+(picker.datepicker( "getDate" ).getMonth()+1)+"-"+picker.datepicker("getDate").getDate();
     $.ajax({
         type: 'POST',
-        url: "http://"+localhost+"/api/revisions/"+genID,
+        url: "http://"+localhost+"/api/revisions/"+date+"/"+genID,
         dataType: "json", // data type of response
         data: JSON.stringify({}),
         success: function (data, textStatus, jqXHR) {
@@ -1262,11 +1269,11 @@ function convertRevDataToSectionsArray(fetchedRevData){
     return sectionsArrayFetched;
 }
 
-function loadRevDB(genID, requested){
+function loadRevDB(genID, date, requested){
     console.log('Loading Revision '+requested);
     $.ajax({
         type: 'GET',
-        url: "http://"+localhost+"/api/revisions/"+genID+"/"+requested,
+        url: "http://"+localhost+"/api/revisions/"+date+"/"+genID+"/"+requested,
         dataType: "json", // data type of response
         success: function(dataFetched) {
             //TODO check for data.error == false
@@ -1611,9 +1618,11 @@ function markCellsWithRevsDB() {
     var genID = genIDs[genNames.indexOf(genName)];
     var generatorRevisions = [];
     var currentRevisionIndex = 0;
+    var picker = $( "#datePicker" );
+    var date = picker.datepicker( "getDate" ).getFullYear()+"-"+(picker.datepicker( "getDate" ).getMonth()+1)+"-"+picker.datepicker("getDate").getDate();
     $.ajax({
         type: 'GET',
-        url: "http://"+localhost+"/api/generatorRevisionNumbers/"+genID,
+        url: "http://"+localhost+"/api/generatorRevisionNumbers/"+date+"/"+genID,
         dataType: "json", // data type of response
         success: function(data) {
             if(data.error == true)
@@ -1644,14 +1653,14 @@ function markCellsWithRevsDB() {
                 performAlgoDB();
             }
             else{
-                FetchFirstRevision(generatorRevisions[0]);
+                FetchFirstRevision(date, generatorRevisions[0]);
             }
         }
     });
-    function FetchFirstRevision(firstRev){
+    function FetchFirstRevision(date, firstRev){
         $.ajax({
             type: 'GET',
-            url: "http://" + localhost + "/api/revisions/" + genID + "/" + firstRev,
+            url: "http://" + localhost + "/api/revisions/" + date + "/" + genID + "/" + firstRev,
             dataType: "json", // data type of response
             success: function (dataFetched) {
                 //TODO check for data.error == false
@@ -1685,19 +1694,19 @@ function markCellsWithRevsDB() {
                 else{
                     //*********Don't forget to increment the current Revision that is being processed
                     currentRevisionIndex++;
-                    afterFirstLoadDB();
+                    afterFirstLoadDB(date);
                 }
 
             }
         });
     }
-    function afterFirstLoadDB(){
+    function afterFirstLoadDB(date){
         //Get the revision data of the present and prev revisions
         var sectionsArrayPrev = sectionsArray;
         var Rev = generatorRevisions[currentRevisionIndex];
         $.ajax({
             type: 'GET',
-            url: "http://" + localhost + "/api/revisions/" + genID + "/" + Rev,
+            url: "http://" + localhost + "/api/revisions/" + date + "/" + genID + "/" + Rev,
             dataType: "json", // data type of response
             success: function (dataFetched) {
                 //TODO check for data.error == false
@@ -1803,7 +1812,7 @@ function markCellsWithRevsDB() {
 
                 }
                 if(generatorRevisions[currentRevisionIndex] <= curRev){
-                    afterFirstLoadDB();
+                    afterFirstLoadDB(date);
                 }
                 else{
                     createMarkRevsTable();
@@ -2547,9 +2556,11 @@ function saveToDB(){
 
     //Sending the ajax request to the server for saving revision
     console.log('saving revision to the server');
+    var picker = $( "#datePicker" );
+    var date = picker.datepicker("getDate").getFullYear()+"-"+(picker.datepicker("getDate").getMonth()+1)+"-"+picker.datepicker("getDate").getDate();
     $.ajax({
         type: 'PUT',
-        url: "http://"+localhost+"/api/revisions/"+curRev,
+        url: "http://"+localhost+"/api/revisions/"+date+"/"+curRev,
         dataType: "json", // data type of response
         data: JSON.stringify({
             'genID':genID,
@@ -2574,10 +2585,12 @@ function saveToDB(){
 function deleteRevisionDB(){
     if (!confirm("Delete the Revision " + curRev + " ???\nThe data of all the  generator changes of this revision will be lost..."))
         return false;
+    var picker = $( "#datePicker" );
+    var date = picker.datepicker( "getDate" ).getFullYear()+"-"+(picker.datepicker( "getDate" ).getMonth()+1)+"-"+picker.datepicker("getDate").getDate();
     console.log("Requesting the Database to delete the Revision");
     $.ajax({
         type: 'DELETE',
-        url: "http://"+localhost+"/api/revisions/"+curRev,
+        url: "http://"+localhost+"/api/revisions/"+date+"/"+curRev,
         success: function(data, textStatus, jqXHR){
             if(data.error == false) {
                 console.log("Deleted the revision " + curRev + " successfully!");
@@ -2602,14 +2615,26 @@ function deleteRevisionDB(){
 function loadLatestRevisionDB(){
     console.log("Loading the latest revision...");
     var genID = genIDs[genNames.indexOf(genName)];
+    var picker = $( "#datePicker" );
+    var date = picker.datepicker( "getDate" ).getFullYear()+"-"+(picker.datepicker( "getDate" ).getMonth()+1)+"-"+picker.datepicker("getDate").getDate();
     $.ajax({
         type: 'GET',
-        url: "http://"+localhost+"/api/revisions/"+genID+"/latest",
+        url: "http://"+localhost+"/api/revisions/"+date+"/"+genID+"/latest",
         dataType: "json", // data type of response
         success: function(dataFetched) {
             //TODO check for data.error == false
+            if(dataFetched.error == true){
+                alert("Error loading the latest revision... \nSeeConsole for message");
+                console.log("Error loading the latest revision...",dataFetched.message);
+                return false;
+            }
             // JAX-RS serializes an empty list as null, and a 'collection of one' as an object (not an 'array of one')
             var fetchedRevData = dataFetched == null ? [] : (dataFetched.revData instanceof Array ? dataFetched.revData : [dataFetched.revData]);
+            if(isNaN(dataFetched.revNumber)||dataFetched.revNumber==null||dataFetched.revNumber==undefined){
+                alert("Looks like there is no latest revision...");
+                console.log("Error loading the latest revision...","Got an undefined latest revision");
+                return false;
+            }
             console.log('fetched revision data of revision '+dataFetched.revNumber+': '+JSON.stringify(fetchedRevData));
             //convert revision data into sections
             var sectionsArrayFetched = [];
