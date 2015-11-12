@@ -1,4 +1,5 @@
-var rootURL = "http://localhost/api/generators";
+var localhost = "59.182.133.232";
+var rootURL = "http://"+localhost+"/api/generators";
 var consRootURL = "http://localhost/api/names";
 function  Skelitise(){
     var elems = document.body.getElementsByTagName("*");

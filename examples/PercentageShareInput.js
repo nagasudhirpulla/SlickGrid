@@ -5,6 +5,7 @@
 var grid; //The cell grid object.
 var data = []; //The data used by the cell grid
 //The constituent configuration settings for this particular generator.These are same throughout all revisions.
+var localhost = "59.182.133.232";
 var constituentNames = ['BPDB-ER','CSEB-NVVN','DD','DNH','GUVNL','GOA','HVDC-BHD','HVDC-VIN','JNK-NR','MPSEB','MSEB','MS-NVVN','RAJ-SOLAR'];
 var constituentIDs = [];
 var genNames = [];
@@ -355,7 +356,7 @@ function fetchGenNamesAjax() {
     console.log('Fetching the generators names...');
     $.ajax({
         type: 'GET',
-        url: "http://localhost/api/generators",
+        url: "http://"+localhost+"/api/generators",
         dataType: "json", // data type of response
         success: function(data) {
             // JAX-RS serializes an empty list as null, and a 'collection of one' as an object (not an 'array of one')
@@ -394,7 +395,7 @@ function fetchConsNamesAjax(){
     console.log('Fetching the Constituents names...');
     $.ajax({
         type: 'GET',
-        url: "http://localhost/api/names",
+        url: "http://"+localhost+"/api/names",
         dataType: "json", // data type of response
         success: function(data) {
             // JAX-RS serializes an empty list as null, and a 'collection of one' as an object (not an 'array of one')
@@ -416,7 +417,7 @@ function fetchSharesOfGenerator(genID){
     console.log('Fetching the Generator shares...');
     $.ajax({
         type: 'GET',
-        url: "http://localhost/api/generatorshares/"+genID,
+        url: "http://"+localhost+"/api/generatorshares/"+genID,
         dataType: "json", // data type of response
         success: function(datafetched) {
             // JAX-RS serializes an empty list as null, and a 'collection of one' as an object (not an 'array of one')
@@ -469,7 +470,7 @@ function saveSharesToDatabase(){
     console.log('saving shares of Generator to the server');
     $.ajax({
         type: 'POST',
-        url: "http://localhost/api/generatorshares/"+genID,
+        url: "http://"+localhost+"/api/generatorshares/"+genID,
         dataType: "json", // data type of response
         data: JSON.stringify({
             'conIDs': conIDs,
