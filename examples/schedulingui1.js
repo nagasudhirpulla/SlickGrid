@@ -200,7 +200,11 @@ function setTableColumns() {
 //On loading of the html page do the following
 $(function() {
     $("#datePicker").datepicker({
-        dateFormat: "dd-mm-yy"
+        dateFormat: "dd-mm-yy",
+        onSelect:function(dateText) {
+            //alert("Selected date: " + dateText + "; input's current value: " + this.value);
+            decorateGrid();
+        }
     });
     var today = new Date();
     var dd = ("0" + (today.getDate())).slice(-2);
@@ -2633,6 +2637,7 @@ function loadLatestRevisionDB(){
             if(isNaN(dataFetched.revNumber)||dataFetched.revNumber==null||dataFetched.revNumber==undefined){
                 alert("Looks like there is no latest revision...");
                 console.log("Error loading the latest revision...","Got an undefined latest revision");
+                loadRevDB(genID,date,0);
                 return false;
             }
             console.log('fetched revision data of revision '+dataFetched.revNumber+': '+JSON.stringify(fetchedRevData));
