@@ -1207,15 +1207,15 @@ function createRevDB(){
     var genID = genIDs[genNames.indexOf(genName)];
     var picker = $( "#datePicker" );
     var date = picker.datepicker( "getDate" ).getFullYear()+"-"+(picker.datepicker( "getDate" ).getMonth()+1)+"-"+picker.datepicker("getDate").getDate();
+    var timeOfOrigin = document.getElementById("TO").value;
     $.ajax({
         type: 'POST',
         url: "http://"+localhost+"/api/revisions/"+date+"/"+genID,
         dataType: "json", // data type of response
-        data: JSON.stringify({}),
+        data: JSON.stringify({'TO':timeOfOrigin,'comm':document.getElementById("commentInput").value}),
         success: function (data, textStatus, jqXHR) {
-            alert("Created a new revision "+ data.new_rev +" successfully...");
             console.log("New Revision number created ",data.new_rev);
-            loadRevDB(genID,data.new_rev);
+            loadRevDB(genID,date,data.new_rev);
         },
         error: function (jqXHR, textStatus, errorThrown) {
             alert('createRevision error: ' + textStatus);
@@ -1290,7 +1290,9 @@ function loadRevDB(genID, date, requested){
             console.log('fetched sectionsArray of revision '+ requested, sectionsArrayFetched);
             //Now the revision can be loaded...
             //Set the comment
-            document.getElementById('commentInput').value = sectionsArrayFetched['comment'];
+            //document.getElementById('commentInput').value = sectionsArrayFetched['comment'];
+            document.getElementById('commentInput').value = dataFetched.comment;
+            document.getElementById('TO').value = dataFetched.TO;
             //So if wanted change the table data accordingly and update the curRev variable
             setCurrRevDisplay(requested);
             sectionsArray = sectionsArrayFetched;
@@ -1348,6 +1350,8 @@ function createNewRevisionDB() //Create Operation of the database.
     if (!confirm("Create a new Revision ?")) {
         return false;
     }
+    var dateObj = new Date();
+    document.getElementById("TO").value = dateObj.getHours() + ":" + dateObj.getMinutes() + ":" + dateObj.getSeconds();
     createRevDB();
 }
 
@@ -2471,11 +2475,21 @@ function decorateGrid(){
     fetchGenParamsAjax(document.getElementById("genList").selectedIndex);
 }
 
+function isValidTimeFormat(timeOfOrigin){
+    //TODO timestring validation
+    return true;
+}
+
 function saveToDB(){
     //Get the current revision number.
     //Take the sections array and save it to the database
     if (!confirm("Save the changes to database in Revision " + curRev + "...?" + "\n" + "The data will be saved based on the Summary table"))
         return false;
+    var timeOfOrigin = document.getElementById("TO").value;
+    if(!isValidTimeFormat(timeOfOrigin)){
+        alert("Incompatible format of origin time...");
+        return false;
+    }
     //Save to the SQL database the sectionsArray
     var genID = genIDs[document.getElementById("genList").selectedIndex];
     //Preparing data to post
@@ -2567,6 +2581,8 @@ function saveToDB(){
         url: "http://"+localhost+"/api/revisions/"+date+"/"+curRev,
         dataType: "json", // data type of response
         data: JSON.stringify({
+            'TO':timeOfOrigin,
+            'comm':document.getElementById("commentInput").value,
             'genID':genID,
             'cats':cats,
             'conIDs': conIDs,
@@ -2637,6 +2653,8 @@ function loadLatestRevisionDB(){
             if(isNaN(dataFetched.revNumber)||dataFetched.revNumber==null||dataFetched.revNumber==undefined){
                 alert("Looks like there is no latest revision...");
                 console.log("Error loading the latest revision...","Got an undefined latest revision");
+                var dateObj = new Date();
+                document.getElementById("TO").value = dateObj.getHours() + ":" + dateObj.getMinutes() + ":" + dateObj.getSeconds();
                 loadRevDB(genID,date,0);
                 return false;
             }
@@ -2689,7 +2707,9 @@ function loadLatestRevisionDB(){
             console.log('fetched sectionsArray of revision '+ dataFetched.revNumber, sectionsArrayFetched);
             //Now the revision can be loaded...
             //Set the comment
-            document.getElementById('commentInput').value = sectionsArrayFetched['comment'];
+            //document.getElementById('commentInput').value = sectionsArrayFetched['comment'];
+            document.getElementById('commentInput').value = dataFetched.comment;
+            document.getElementById('TO').value = dataFetched.TO;
             //So if wanted change the table data accordingly and update the curRev variable
             setCurrRevDisplay(dataFetched.revNumber);
             sectionsArray = sectionsArrayFetched;
