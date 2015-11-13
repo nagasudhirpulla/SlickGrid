@@ -49,9 +49,9 @@
             <input id="datePicker"><br>
             <span>Revision Number</span>
             <input type="number" min="0" max="500" value="0" id="revInput"><br>
-            <button style="margin-top: 5px" id="loadRevButton" onclick ="loadRevisionDB()" class="btn btn-primary btn-sm">LoadRevision</button>
-            <button style="margin-top: 5px" id="deleteRevButton" class="btn btn-danger btn-sm" onclick="deleteRevisionDB()">DeleteRevision</button>
-            <button style="margin-top: 5px" id="createRevButton" onclick="createNewRevisionDB()" class="btn btn-success btn-sm">CreateNewRevision</button>
+            <button style="margin-top: 5px" id="loadRevButton" onclick ="loadRevisionDB()" class="btn btn-primary btn-sm"><span class="glyphicon glyphicon-folder-open"></span>    LoadRevision</button>
+            <button style="margin-top: 5px" id="deleteRevButton" class="btn btn-danger btn-sm" onclick="deleteRevisionDB()"><span class="glyphicon glyphicon-trash"></span>   DeleteRevision</button>
+            <button style="margin-top: 5px" id="createRevButton" onclick="createNewRevisionDB()" class="btn btn-success btn-sm"><span class="glyphicon glyphicon-plus-sign"></span>   CreateNewRevision</button>
         </div>
         <div id="revDisplayDiv" class="col-md-3">
             <h3 style="margin-top:5px;text-align: center">CurrentRevision</h3>
@@ -80,13 +80,13 @@
         </div>
         <div class="col-md-3 col-xs-12">
             <div id="summTabDiv">
-                <button id="reqFeedByGridButton" onclick="updateFromGrid()" class="btn btn-warning btn-sm">Modify Revision from Grid</button>
+                <button id="reqFeedByGridButton" onclick="updateFromGrid()" class="btn btn-warning btn-sm"><span class="glyphicon glyphicon-th"></span>  Modify Revision from Grid</button>
                 <h3 id='tiedInfo' onclick="showhide(this)">Requisition Summary Table, tied to grid</h3>
                 <div class="hidingClass table-responsive">
                     <table id="summTab" class="table table-bordered table-hover"></table>
-                    <button id="buttonUpdateRevSummTab" onclick="saveToDB()" class="btn btn-success btn-sm">Save Rev According to this Table</button>
+                    <button id="buttonUpdateRevSummTab" onclick="saveToDB()" class="btn btn-success btn-sm"><span class="glyphicon glyphicon-floppy-disk"></span>  Save Rev According to this Table</button>
                     <br>
-                    <button id="revSolButton" onclick="markCellsWithRevsDB()" class="btn btn-info btn-sm" style="margin-top: 5px">GetFeasibleSchedule</button>
+                    <button id="revSolButton" onclick="markCellsWithRevsDB()" class="btn btn-info btn-sm" style="margin-top: 5px"><span class="glyphicon glyphicon-play"></span>  GetFeasibleSchedule</button>
                 </div>
 
             </div>
@@ -207,7 +207,7 @@
         <div class="col-md-4" ></div>
         <div class="col-md-8">
             <button id="reqGetFromSummButton" onclick="getSummSecsToManual()" class="btn btn-primary btn-sm">Get from revision Summary</button>
-            <button id="reqFeedByTableButton" onclick="createSumm(true)" class="btn btn-warning btn-sm">Modify revision from Input Tables</button>
+            <button id="reqFeedByTableButton" onclick="createSumm(true)" class="btn btn-warning btn-sm"><span class="glyphicon glyphicon-pencil"></span>  Modify revision from Input Tables</button>
         </div>
     </div>
     <div class="row">
@@ -241,13 +241,13 @@
             <div id="myGridFeasible" style="height:300px;display: none" class="hidingClass"> </div>
         </div>
         <div class="col-md-2 col-xs-10 col-xs-offset-2 col-md-offset-0 text-center">
-            <button style="width: 100%" onclick="selectCells('Feasible')" class="btn btn-info btn-xs">Select Shares</button>
+            <button style="width: 100%" onclick="selectCells('Feasible')" class="btn btn-default btn-xs">Select Shares</button>
             <br><br>
-            <button style="width: 100%" onclick="selectCells('FeasibleNormal')" class="btn btn-info btn-xs">Select Normal Shares</button>
+            <button style="width: 100%" onclick="selectCells('FeasibleNormal')" class="btn btn-default btn-xs">Select Normal Shares</button>
             <br><br>
-            <button style="width: 100%" onclick="selectCells('FeasibleRSD')" class="btn btn-info btn-xs">Select RSD Shares</button>
+            <button style="width: 100%" onclick="selectCells('FeasibleRSD')" class="btn btn-default btn-xs">Select RSD Shares</button>
             <br><br>
-            <button style="width: 100%" onclick="selectCells('FeasibleURS')" class="btn btn-info btn-xs">Select URS Shares</button>
+            <button style="width: 100%" onclick="selectCells('FeasibleURS')" class="btn btn-default btn-xs">Select URS Shares</button>
             <br><br>
         </div>
     </div>
