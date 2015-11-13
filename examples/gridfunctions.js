@@ -43,3 +43,9 @@ function resetGrid(data, constituentNames, val) {
         }
     }
 }
+
+function headerClick(e, args) {
+    var colInd = args.grid.getColumnIndex(args.column.id);
+    args.grid.getSelectionModel().setSelectedRanges([new Slick.Range(0,colInd,95,colInd)]);
+    //console.log(columnID);
+}

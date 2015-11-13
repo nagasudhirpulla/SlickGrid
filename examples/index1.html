@@ -5,7 +5,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>CGPL SChedule</title>
+    <title>Schedule</title>
     <link rel="stylesheet" href="../slick.grid.css" type="text/css"/>
     <link rel="stylesheet" href="../css/smoothness/jquery-ui-1.8.16.custom.css" type="text/css"/>
     <link rel="stylesheet" href="examples.css" type="text/css"/>
@@ -81,11 +81,14 @@
         <div class="col-md-3 col-xs-12">
             <div id="summTabDiv">
                 <button id="reqFeedByGridButton" onclick="updateFromGrid()" class="btn btn-warning btn-sm">Modify Revision from Grid</button>
-                <h3 id='tiedInfo'>Requisition Summary Table, tied to grid</h3>
-                <table id="summTab" class="table table-bordered table-hover"></table>
-                <button id="buttonUpdateRevSummTab" onclick="saveToDB()" class="btn btn-success btn-sm">Save Rev According to this Table</button>
-                <br>
-                <button id="revSolButton" onclick="markCellsWithRevsDB()" class="btn btn-info btn-sm" style="margin-top: 5px">GetFeasibleSchedule</button>
+                <h3 id='tiedInfo' onclick="showhide(this)">Requisition Summary Table, tied to grid</h3>
+                <div class="hidingClass table-responsive">
+                    <table id="summTab" class="table table-bordered table-hover"></table>
+                    <button id="buttonUpdateRevSummTab" onclick="saveToDB()" class="btn btn-success btn-sm">Save Rev According to this Table</button>
+                    <br>
+                    <button id="revSolButton" onclick="markCellsWithRevsDB()" class="btn btn-info btn-sm" style="margin-top: 5px">GetFeasibleSchedule</button>
+                </div>
+
             </div>
         </div>
     </div>
@@ -220,7 +223,7 @@
     <div class="row">
         <div class="col-md-10 col-xs-11">
             <button onclick="showhide(this)" class="btn btn-block btn-xs">RevisionTags Of Cells</button>
-            <div class="table-responsive hidingClass">
+            <div class="table-responsive hidingClass" style="display: none">
                 <table id="revMarkTable" class="table table-bordered table-hover">
                 </table>
             </div>
@@ -229,13 +232,23 @@
     <div class="row">
         <div class="col-md-10 col-xs-11">
             <button onclick="showhide(this)" class="btn btn-block btn-xs">Desired Numeric Requisions</button>
-            <div id="myGridDes" style="height:300px" class="hidingClass"> </div>
+            <div id="myGridDes" style="height:300px;display: none" class="hidingClass"> </div>
         </div>
     </div>
     <div class="row">
         <div class="col-md-10 col-xs-11">
             <button onclick="showhide(this)" class="btn btn-block btn-xs">Feasible Requisions of Constituents</button>
-            <div id="myGridFeasible" style="height:300px" class="hidingClass"> </div>
+            <div id="myGridFeasible" style="height:300px;display: none" class="hidingClass"> </div>
+        </div>
+        <div class="col-md-2 col-xs-10 col-xs-offset-2 col-md-offset-0 text-center">
+            <button style="width: 100%" onclick="selectCells('Feasible')" class="btn btn-info btn-xs">Select Shares</button>
+            <br><br>
+            <button style="width: 100%" onclick="selectCells('FeasibleNormal')" class="btn btn-info btn-xs">Select Normal Shares</button>
+            <br><br>
+            <button style="width: 100%" onclick="selectCells('FeasibleRSD')" class="btn btn-info btn-xs">Select RSD Shares</button>
+            <br><br>
+            <button style="width: 100%" onclick="selectCells('FeasibleURS')" class="btn btn-info btn-xs">Select URS Shares</button>
+            <br><br>
         </div>
     </div>
 </div>

@@ -4,8 +4,8 @@
 /**
  * Created by PSSE on 10/29/2015.
  */
-//var localhost = "192.168.1.102";
-var localhost = "59.182.133.232";
+var localhost = "localhost";
+//var localhost = "59.182.133.232";
 var grid; //The cell grid object.
 var data = []; //The data used by the cell grid
 var percentageData = [];//The requisition percentage data used by the algorithm and the UI
@@ -378,6 +378,7 @@ function afterInitialFetch(){
         grid.updateRowCount();
         grid.render();
     });
+    grid.onHeaderClick.subscribe(headerClick);
     //IndexedDB addition - opened the database
     var afterLoad = function(record) {
         console.log("Loading revision " + (count - 1) + "...");
@@ -2205,6 +2206,7 @@ function performAlgo() {
         grid1.onCellChanged;
         //enabling the excel style functionality by the plugin
         grid1.registerPlugin(new Slick.CellExternalCopyManager(pluginOptions));
+        grid1.onHeaderClick.subscribe(headerClick);
         //Now the desired numeric values of the grid are displayed in the grid1 cellgrid
         //Calculate Formulas for the desired values grid
         calculateFormulaColumns(data1, grid1);
@@ -2283,6 +2285,7 @@ function performAlgo() {
         grid2.onCellChanged;
         //enabling the excel style functionality by the plugin
         grid2.registerPlugin(new Slick.CellExternalCopyManager(pluginOptions));
+        grid2.onHeaderClick.subscribe(headerClick);
         calculateFormulaColumnsSolution(grid2, data2);
     };
     loadRevision(curRev,afterLoad,sectionsArray);
@@ -2354,6 +2357,7 @@ function performAlgoDB() {
         grid1.setSelectionModel(new Slick.CellSelectionModel());
         grid1.registerPlugin(new Slick.AutoTooltips());
         grid1.onCellChanged;
+        grid1.onHeaderClick.subscribe(headerClick);
         //enabling the excel style functionality by the plugin
         grid1.registerPlugin(new Slick.CellExternalCopyManager(pluginOptions));
         //Now the desired numeric values of the grid are displayed in the grid1 cellgrid
@@ -2436,6 +2440,7 @@ function performAlgoDB() {
         grid2.onCellChanged;
         //enabling the excel style functionality by the plugin
         grid2.registerPlugin(new Slick.CellExternalCopyManager(pluginOptions));
+        grid2.onHeaderClick.subscribe(headerClick);
         calculateFormulaColumnsSolution(grid2, data2);
     };
     afterLoad();
@@ -2727,4 +2732,38 @@ function loadLatestRevisionDB(){
             createSumm(false);
         }
     });
+}
+
+function headerClick(e, args) {
+    var colInd = args.grid.getColumnIndex(args.column.id);
+    args.grid.getSelectionModel().setSelectedRanges([new Slick.Range(0,colInd,95,colInd)]);
+    //console.log(columnID);
+}
+
+function selectCells(str){
+    var selgrid;
+    var colInd;
+    var endColInd;
+    if(str == 'FeasibleNormal'){
+        selgrid = grid2;
+        colInd = selgrid.getColumnIndex(0);
+        endColInd = selgrid.getColumnIndex(constituentNames.length-1);
+    }
+    else if(str == 'FeasibleRSD'){
+        selgrid = grid2;
+        colInd = selgrid.getColumnIndex("RSD"+0);
+        endColInd = selgrid.getColumnIndex("RSD"+(constituentNames.length-1));
+    }
+    else if(str == 'FeasibleURS'){
+        selgrid = grid2;
+        colInd = selgrid.getColumnIndex("URS"+0);
+        endColInd = selgrid.getColumnIndex("URS"+(constituentNames.length-1));
+    }
+    else if(str == 'Feasible'){
+        selgrid = grid2;
+        colInd = selgrid.getColumnIndex(0);
+        endColInd = selgrid.getColumnIndex("URS"+(constituentNames.length-1));
+    }
+    selgrid.getSelectionModel().setSelectedRanges([new Slick.Range(0,colInd,95,endColInd)]);
+    selgrid.focus();
 }
