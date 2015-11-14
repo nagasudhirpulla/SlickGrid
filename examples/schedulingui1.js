@@ -296,10 +296,11 @@ function fetchSharesOfGeneratorAjax(genID){
                     (percentageData[blkNum])[constcol] = shares[i].percentage;
                 }
             }
+            //TODO reorder constituents array and subsequently the grid after fetching shares so as to send the zero share constituents to the end
+
             //TODO load the latest revision
             //TODO do SECTIONS implementation for storing the percentageData variable also to save memory
             //loadRevDB(genID,curRev);
-            //TODO when every time generator changes latest revision loads...
             loadLatestRevisionDB();
         }
     });

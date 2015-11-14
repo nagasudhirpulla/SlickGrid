@@ -37,22 +37,28 @@
     </div>
 </div>
 <!-- Page Content -->
-<div class="container-fluid" style="margin:0px">
+<div class="container-fluid" style="margin:0">
     <div class="row">
-        <div class="col-md-12 text-center" onchange="decorateGrid()"><select id="genList">
+        <div class="col-md-12 text-center" style="margin-bottom: 5px" onchange="decorateGrid()"><select id="genList">
             <option value="">CGPL</option>
             <option value="">KSTPS</option>
             <option value="">VSTPS</option></select></div>
     </div>
     <div class="row">
         <div id="revInputDiv" class="col-md-3">
-            <span>Date: </span>
-            <input id="datePicker"><br>
-            <span>Revision Number</span>
-            <input type="number" min="0" max="500" value="0" id="revInput"><br>
-            <button style="margin-top: 5px" id="loadRevButton" onclick ="loadRevisionDB()" class="btn btn-primary btn-sm"><span class="glyphicon glyphicon-folder-open"></span>    LoadRevision</button>
-            <button style="margin-top: 5px" id="deleteRevButton" class="btn btn-danger btn-sm" onclick="deleteRevisionDB()"><span class="glyphicon glyphicon-trash"></span>   DeleteRevision</button>
-            <button style="margin-top: 5px" id="createRevButton" onclick="createNewRevisionDB()" class="btn btn-success btn-sm"><span class="glyphicon glyphicon-plus-sign"></span>   CreateNewRevision</button>
+            <div style="float: left">
+                <div style="margin-bottom: 5px">
+                    <span>Date: </span>
+                    <input id="datePicker"><br>
+                </div>
+                <span>Revision Number</span>
+                <input type="number" min="0" max="500" value="0" id="revInput"><br>
+                <button style="margin-top: 5px" id="loadRevButton" onclick ="loadRevisionDB()" class="btn btn-primary btn-sm"><span class="glyphicon glyphicon-folder-open"></span>    LoadRevision</button>
+                <button style="margin-top: 5px" id="deleteRevButton" class="btn btn-danger btn-sm" onclick="deleteRevisionDB()"><span class="glyphicon glyphicon-trash"></span>   DeleteRevision</button>
+                <div class="text-center">
+                    <button style="margin-top: 5px" id="createRevButton" onclick="createNewRevisionDB()" class="btn btn-success btn-sm"><span class="glyphicon glyphicon-plus-sign"></span>   CreateNewRevision</button>
+                </div>
+            </div>
         </div>
         <div id="revDisplayDiv" class="col-md-3">
             <h3 style="margin-top:5px;text-align: center">CurrentRevision</h3>
@@ -79,13 +85,13 @@
         <div class="col-md-9 col-xs-11" >
             <div id="myGrid" style="height:400px;"></div>
         </div>
-        <div class="col-md-3 col-xs-12">
+        <div class="col-md-3 col-xs-12 text-center">
             <div id="summTabDiv">
-                <button id="reqFeedByGridButton" onclick="updateFromGrid()" class="btn btn-warning btn-sm"><span class="glyphicon glyphicon-th"></span>  Modify Revision from Grid</button>
+                <button id="reqFeedByGridButton" style="margin-top: 5px" onclick="updateFromGrid()" class="btn btn-warning btn-sm"><span class="glyphicon glyphicon-th"></span>  Modify Revision from Grid</button>
                 <h3 id='tiedInfo' onclick="showhide(this)">Requisition Summary Table, tied to grid</h3>
                 <div class="hidingClass table-responsive">
-                    <table id="summTab" class="table table-bordered table-hover"></table>
-                    <button id="buttonUpdateRevSummTab" onclick="saveToDB()" class="btn btn-success btn-sm"><span class="glyphicon glyphicon-floppy-disk"></span>  Save Rev According to this Table</button>
+                    <table id="summTab" class="table table-bordered table-hover text-left"></table>
+                    <button id="buttonUpdateRevSummTab" style="margin-top: 5px" onclick="saveToDB()" class="btn btn-success btn-sm"><span class="glyphicon glyphicon-floppy-disk"></span>  Save Rev According to this Table</button>
                     <br>
                     <button id="revSolButton" onclick="markCellsWithRevsDB()" class="btn btn-info btn-sm" style="margin-top: 5px"><span class="glyphicon glyphicon-play"></span>  GetFeasibleSchedule</button>
                 </div>
@@ -95,8 +101,7 @@
     </div>
     <div class="row">
         <div  class="col-md-12">
-            <h3>Enter the desired requisition values and onBarDC</h3>
-            <h3><mark>Note: The order matters!</mark></h3>
+            <h3>Enter the desired requisition values and onBarDC  <span class="mark">Note: The order matters!</span></h3>
         </div>
     </div>
     <div class="row">
@@ -105,7 +110,7 @@
             <!--Column for table-->
             <button onclick="showhide(this)" class="btn btn-block btn-xs">Requisition Shares Input Table</button>
             <div id="reqInputDiv" class="hidingClass table-responsive"><!--keyClass--hidingClass-->
-                <table id="reqInputTable" class="table table-bordered table-hover tableInputClass"><!--keyClass--tableInputClass-->
+                <table style="margin-bottom: 5px" id="reqInputTable" class="table table-bordered table-hover tableInputClass"><!--keyClass--tableInputClass-->
                     <tbody>
                     <tr>
                         <td>Constituent Name</td>
@@ -125,7 +130,7 @@
         <div class="col-md-6" style="margin-top: 5px">
             <button onclick="showhide(this)" class="btn btn-block btn-xs">RSD+URS Inputs Table</button>
             <div class="hidingClass table-responsive" style="display:none"><!--keyClass--hidingClass-->
-                <table id="reqRSDInputTable" class="table table-bordered table-hover tableInputClass"><!--keyClass--tableInputClass-->
+                <table style="margin-bottom: 5px" id="reqRSDInputTable" class="table table-bordered table-hover tableInputClass"><!--keyClass--tableInputClass-->
                     <tr>
                         <td>Constituent Name</td>
                         <td>From Block</td>
@@ -144,7 +149,7 @@
         <div class="col-md-6" style="margin-top: 5px">
             <button onclick="showhide(this)" class="btn btn-block btn-xs">DC Inputs Table</button>
             <div class="hidingClass table-responsive" style="display:none"><!--keyClass--hidingClass-->
-                <table id="genDecInputTable" class="table table-bordered table-hover tableInputClass"><!--keyClass--tableInputClass-->
+                <table style="margin-bottom: 5px" id="genDecInputTable" class="table table-bordered table-hover tableInputClass"><!--keyClass--tableInputClass-->
                     <tr>
                         <td style="width:50px">Generator Name</td>
                         <td>From Block</td>
@@ -161,7 +166,7 @@
         <div class="col-md-6" style="margin-top: 5px">
             <button onclick="showhide(this)" class="btn btn-block btn-xs">OnBar DC Inputs Table</button>
             <div class="hidingClass table-resonsive" style="display:none"><!--keyClass--hidingClass-->
-                <table id="genDCInputTable" class="tableInputClass table table-bordered table-hover"><!--keyClass--tableInputClass-->
+                <table style="margin-bottom: 5px" id="genDCInputTable" class="tableInputClass table table-bordered table-hover"><!--keyClass--tableInputClass-->
                     <tr>
                         <td style="width:50px">Generator Name</td>
                         <td>From Block</td>
@@ -181,7 +186,7 @@
         <div class="col-md-6" style="margin-top: 5px">
             <button onclick="showhide(this)" class="btn btn-block btn-xs">Max Ramp Inputs Table</button>
             <div class="hidingClass table-responsive" style="display:none"><!--keyClass--hidingClass-->
-                <table id="genMaxRampInputTable" class="tableInputClass table table-bordered table-hover"><!--keyClass--tableInputClass-->
+                <table style="margin-bottom: 5px" id="genMaxRampInputTable" class="tableInputClass table table-bordered table-hover"><!--keyClass--tableInputClass-->
                     <tr>
                         <td>
                             Generator Name
@@ -204,14 +209,13 @@
             </div>
         </div>
     </div>
-    <div class="row" style="margin-top:10px">
-        <div class="col-md-4" ></div>
-        <div class="col-md-8">
-            <button id="reqGetFromSummButton" onclick="getSummSecsToManual()" class="btn btn-primary btn-sm"><span class="glyphicon glyphicon-import"></span>  Get from revision Summary</button>
-            <button id="reqFeedByTableButton" onclick="createSumm(true)" class="btn btn-warning btn-sm"><span class="glyphicon glyphicon-pencil"></span>  Modify revision from Input Tables</button>
+    <div class="row">
+        <div class="col-md-12 text-center">
+            <button id="reqGetFromSummButton"  style="margin-top:5px" onclick="getSummSecsToManual()" class="btn btn-primary btn-sm"><span class="glyphicon glyphicon-import"></span>  Get from revision Summary</button>
+            <button id="reqFeedByTableButton"  style="margin-top:5px" onclick="createSumm(true)" class="btn btn-warning btn-sm"><span class="glyphicon glyphicon-pencil"></span>  Modify revision from Input Tables</button>
         </div>
     </div>
-    <div class="row">
+    <div class="row" style="display: none">
         <div class="col-md-12">
             <h2>Undo/redo support :</h2>
             <ul>
@@ -222,7 +226,7 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-md-10 col-xs-11">
+        <div class="col-md-10 col-xs-11" style="margin-top:15px">
             <button onclick="showhide(this)" class="btn btn-block btn-xs">RevisionTags Of Cells</button>
             <div class="table-responsive hidingClass" style="display: none">
                 <table id="revMarkTable" class="table table-bordered table-hover">
@@ -231,17 +235,17 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-md-10 col-xs-11">
+        <div class="col-md-10 col-xs-11" style="margin-top:10px">
             <button onclick="showhide(this)" class="btn btn-block btn-xs">Desired Numeric Requisions</button>
             <div id="myGridDes" style="height:300px;display: none" class="hidingClass"> </div>
         </div>
     </div>
     <div class="row">
-        <div class="col-md-10 col-xs-11">
+        <div class="col-md-10 col-xs-11"  style="margin-top:10px">
             <button onclick="showhide(this)" class="btn btn-block btn-xs">Feasible Requisions of Constituents</button>
             <div id="myGridFeasible" style="height:300px;display: none" class="hidingClass"> </div>
         </div>
-        <div class="col-md-2 col-xs-10 col-xs-offset-2 col-md-offset-0 text-center">
+        <div class="col-md-2 text-center" style="margin-top:15px">
             <button style="width: 100%" onclick="selectCells('Feasible')" class="btn btn-default btn-xs">Select Shares</button>
             <br><br>
             <button style="width: 100%" onclick="selectCells('FeasibleNormal')" class="btn btn-default btn-xs">Select Normal Shares</button>
