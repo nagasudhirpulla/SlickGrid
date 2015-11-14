@@ -684,7 +684,8 @@ function createSections() {
         var sections = new Array();
         var sectionStart = 0;
         for (var blkNum = 1; blkNum < 96; blkNum++) {
-            if ((data[blkNum])['RSD' + constcol] != (data[blkNum - 1])['RSD' + constcol]) {
+            //TODO decouple the dependence of URS and RSD sections
+            if ((data[blkNum])['RSD' + constcol] != (data[blkNum - 1])['RSD' + constcol] || (data[blkNum])['URS' + constcol] != (data[blkNum - 1])['URS' + constcol]) {
                 sections.push({
                     'secStart': sectionStart,
                     'secEnd': blkNum - 1,
@@ -705,7 +706,8 @@ function createSections() {
         var sections = new Array();
         var sectionStart = 0;
         for (var blkNum = 1; blkNum < 96; blkNum++) {
-            if ((data[blkNum])['URS' + constcol] != (data[blkNum - 1])['URS' + constcol]) {
+            //TODO decouple the dependence of URS and RSD sections
+            if ((data[blkNum])['URS' + constcol] != (data[blkNum - 1])['URS' + constcol] || (data[blkNum])['RSD' + constcol] != (data[blkNum - 1])['RSD' + constcol]) {
                 sections.push({
                     'secStart': sectionStart,
                     'secEnd': blkNum - 1,
@@ -947,12 +949,14 @@ function getSummSecsToManual() //sections version of summtomanual
     for (var j = 0; j < sectionsArray.length; j++) {
         sections = sectionsArray[j];
         for (var k = 0; k < sections.length; k++) {
+            //TODO decouple the dependence of URS and RSD sections
             addRowOfInput("reqInputTable", constituentNames[j], sections[k].secStart + 1, sections[k].secEnd + 1, sections[k].val);
         }
         //URS Version
         sections = sectionsArray["RSD" + j];
         sectionsURS = sectionsArray["URS" + j];
         for (var k = 0; k < sections.length; k++) {
+            //TODO decouple the dependence of URS and RSD sections
             addRowOfInput("reqRSDInputTable", constituentNames[j], sections[k].secStart + 1, sections[k].secEnd + 1, sections[k].val, sectionsURS[k].val);
         }
         //URS Version
