@@ -6,7 +6,7 @@ var grid; //The cell grid object.
 var data = []; //The data used by the cell grid
 //The constituent configuration settings for this particular generator.These are same throughout all revisions.
 //var localhost = "localhost";
-var localhost = "59.182.145.20";
+//var localhost = "59.182.145.20";
 var constituentNames = ['BPDB-ER','CSEB-NVVN','DD','DNH','GUVNL','GOA','HVDC-BHD','HVDC-VIN','JNK-NR','MPSEB','MSEB','MS-NVVN','RAJ-SOLAR'];
 var constituentIDs = [];
 var genNames = [];
