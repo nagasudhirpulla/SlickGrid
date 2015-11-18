@@ -1,0 +1,17 @@
+.navbar-inverse .navbar-brand {
+    color: whitesmoke;
+}
+.navbar-inverse .navbar-brand:hover {
+    color: #1abc9c;
+}
+
+thead tr{
+    font-weight: bold;
+    font-size: 110%;
+}
+
+.navbar-inverse {
+    background-color: #626262;
+    border-color: #626262;
+}
+
