@@ -1664,7 +1664,7 @@ function markCellsWithRevsDB() {
                     }
                 }
                 createMarkRevsTable();
-                performAlgoDB();
+                performAlgoDBImplemented();
             }
             else{
                 FetchFirstRevision(date, generatorRevisions[0]);
@@ -1703,7 +1703,7 @@ function markCellsWithRevsDB() {
                 }
                 if(generatorRevisions.length == 1 || generatorRevisions[currentRevisionIndex + 1] > curRev){
                     createMarkRevsTable();
-                    performAlgoDB();
+                    performAlgoDBImplemented();
                 }
                 else{
                     //*********Don't forget to increment the current Revision that is being processed
@@ -1830,7 +1830,7 @@ function markCellsWithRevsDB() {
                 }
                 else{
                     createMarkRevsTable();
-                    performAlgoDB();
+                    performAlgoDBImplemented();
                 }
             }
         });
@@ -2453,6 +2453,251 @@ function performAlgoDB() {
     afterLoad();
 }
 
+function performAlgoDBImplemented() {
+    var data1 = new Array(96);
+    //Initialize the data1 array
+    for (var i = 0; i < data1.length; i++) {
+        data1[i] = {};
+        (data1[i])["SNo"] = i+1;
+    }
+    //First get all cells with desired numeric cell values into a  table dataDes from the revision summary array of the current revision
+    //constraint - this  has to be saved.
+    var afterLoad = function(){
+        for (var constcol1 = -3; constcol1 < constituentNames.length; constcol1++) { //last three for onBarDC, MaxRamp and DC respectively
+            switch (constcol1) {
+                case -3:
+                    constcol = "onBar";
+                    break;
+                case -2:
+                    constcol = "rampNum";
+                    break;
+                case -1:
+                    constcol = "DC";
+                    break;
+                default:
+                    constcol = constcol1;
+                    break;
+            }
+            var sections = sectionsArray[constcol];
+            for (var j = 0; j < sections.length; j++) {
+                for (var k = sections[j].secStart; k <= sections[j].secEnd; k++) {
+                    if (isNaN(constcol))
+                        (data1[k])[constcol] = +sections[j].val;
+                    else
+                        (data1[k])[constcol] = +ConvertCellValToNum(sections[j].val, constcol, k, 0, (data1[k])['onBar']);
+                }
+            }
+            //URS Version
+            if (!isNaN(constcol)) {
+                sections = sectionsArray["RSD" + constcol];
+                for (var j = 0; j < sections.length; j++) {
+                    for (var k = sections[j].secStart; k <= sections[j].secEnd; k++) {
+                        (data1[k])["RSD" + constcol] = +ConvertCellValToNum(sections[j].val, constcol, k, 0, (data1[k])['DC'] - (data1[k])['onBar']);
+                    }
+                }
+                sections = sectionsArray["URS" + constcol];
+                for (var j = 0; j < sections.length; j++) {
+                    for (var k = sections[j].secStart; k <= sections[j].secEnd; k++) {
+                        (data1[k])["URS" + constcol] = sections[j].val;
+                    }
+                }
+            }
+            //URS Version
+        }
+        //Now the desired numeric values fo the grid are known
+        //Use these values to be used in revision tag table
+        var revtagtab = document.getElementById("revMarkTable");
+        for(var i=0;i<96;i++){
+            revtagtab.rows[i+1].cells[1].innerHTML = (data1[i])["DC"];
+            revtagtab.rows[i+1].cells[2].innerHTML = (data1[i])["onBar"];
+            revtagtab.rows[i+1].cells[3].innerHTML = (data1[i])["rampNum"];
+        }
+        //Building the grid and configuring the grid
+
+        grid1 = new Slick.Grid("#myGridDes", data1, columns, options);
+        grid1.setSelectionModel(new Slick.CellSelectionModel());
+        grid1.registerPlugin(new Slick.AutoTooltips());
+        grid1.onCellChanged;
+        grid1.onHeaderClick.subscribe(headerClick);
+        //enabling the excel style functionality by the plugin
+        grid1.registerPlugin(new Slick.CellExternalCopyManager(pluginOptions));
+        //Now the desired numeric values of the grid are displayed in the grid1 cellgrid
+        //Calculate Formulas for the desired values grid
+        calculateFormulaColumns(data1, grid1);
+        //Implemented Version
+        //Assumption - Previous revision implemented schedule should always be present
+        //Fetch the previous revision implemented schedule
+        var implementedRev = curRev-1;
+        var genID = genIDs[genNames.indexOf(genName)];
+        var picker = $( "#datePicker" );
+        var date = picker.datepicker( "getDate" ).getFullYear()+"-"+(picker.datepicker( "getDate" ).getMonth()+1)+"-"+picker.datepicker("getDate").getDate();
+        console.log('Loading Implemented Revision '+implementedRev);
+        $.ajax({
+            type: 'GET',
+            url: "http://"+localhost+"/api/revisionsimplemented/"+date+"/"+genID+"/"+implementedRev,
+            dataType: "json", // data type of response
+            success: function(dataFetched) {
+                //TODO check for data.error == false
+                // JAX-RS serializes an empty list as null, and a 'collection of one' as an object (not an 'array of one')
+                var fetchedRevData = dataFetched == null ? [] : (dataFetched.revData instanceof Array ? dataFetched.revData : [dataFetched.revData]);
+                console.log('fetched revision data of revision '+implementedRev+': '+JSON.stringify(fetchedRevData));
+                //convert revision data into sections
+                var sectionsArrayFetched = convertRevDataToSectionsArray(fetchedRevData);
+                console.log('fetched sectionsArray of Implemented revision '+ implementedRev, sectionsArrayFetched);
+                //Initialise the grid array for the sectionsArrayFetched
+                var dataimp = [];
+                for (var i = 0; i < data1.length; i++) {
+                    dataimp[i] = {};
+                    (dataimp[i])["onBar"] = 0;
+                    (dataimp[i])["DC"] = 0;
+                    (dataimp[i])["rampNum"] = 0;
+                }
+                for (var i = 0; i < constituentNames.length; i++) {
+                    (dataimp[0])[i] = 0;
+                    //URS Version
+                    (dataimp[0])["RSD" + i] = 0;
+                    (dataimp[0])["URS" + i] = 0;
+                    //URS Version
+                }
+                for(var i = 0; i < constituentNames.length; i++){
+                    var conscol = ""+i;
+                    var sections = sectionsArrayFetched[conscol];
+                    for(var j = 0; j < sections.length; j++){
+                        var sectionObject = sections[j];
+                        for(var k=sectionObject.secStart;k<=sectionObject.secEnd;k++){
+                            (dataimp[k])[conscol]= +sectionObject.val;
+                        }
+                    }
+                    conscol = "RSD"+i;
+                    sections = sectionsArrayFetched[conscol];
+                    for(var j = 0; j < sections.length; j++){
+                        sectionObject = sections[j];
+                        for(var k=sectionObject.secStart;k<=sectionObject.secEnd;k++){
+                            (dataimp[k])[conscol]= +sectionObject.val;
+                        }
+                    }
+                    conscol = "URS"+i;
+                    sections = sectionsArrayFetched[conscol];
+                    for(var j = 0; j < sections.length; j++){
+                        sectionObject = sections[j];
+                        for(var k=sectionObject.secStart;k<=sectionObject.secEnd;k++){
+                            (dataimp[k])[conscol]= +sectionObject.val;
+                        }
+                    }
+                }
+                conscol = "DC";
+                sections = sectionsArrayFetched[conscol];
+                for(var j = 0; j < sections.length; j++){
+                    sectionObject = sections[j];
+                    for(var k=sectionObject.secStart;k<=sectionObject.secEnd;k++){
+                        (dataimp[k])[conscol]= +sectionObject.val;
+                    }
+                }
+                conscol = "onBar";
+                sections = sectionsArrayFetched[conscol];
+                for(var j = 0; j < sections.length; j++){
+                    sectionObject = sections[j];
+                    for(var k=sectionObject.secStart;k<=sectionObject.secEnd;k++){
+                        (dataimp[k])[conscol]= +sectionObject.val;
+                    }
+                }
+                conscol = "rampNum";
+                sections = sectionsArrayFetched[conscol];
+                for(var j = 0; j < sections.length; j++){
+                    sectionObject = sections[j];
+                    for(var k=sectionObject.secStart;k<=sectionObject.secEnd;k++){
+                        (dataimp[k])[conscol]= +sectionObject.val;
+                    }
+                }
+                console.log("created the previous revision implemented array"+dataimp);
+            }
+        });
+
+        //Now find the feasible cell values from the data1 array values and store in data2 array
+        var data2 = [];
+        for (var i = 0; i < data1.length; i++) {
+            data2[i] = {};
+            (data2[i])["onBar"] = (data1[i])["onBar"];
+            (data2[i])["DC"] = (data1[i])["DC"];
+            (data2[i])["rampNum"] = (data1[i])["rampNum"];
+        }
+        for (var i = 0; i < constituentNames.length; i++) {
+            (data2[0])[i] = (data1[0])[i];
+            //URS Version
+            (data2[0])["RSD" + i] = (data1[0])["RSD" + i];
+            (data2[0])["URS" + i] = 0; //ToDo Temporary setting for 1st URS row
+            //URS Version
+        }
+        (data2[0])["SNo"] = 1;
+        var maxCellVals = new Array(3 * constituentNames.length);
+        //initialize the array maxcellvals array with 0
+        for (var j = 0; j < maxCellVals.length; j++) {
+            maxCellVals[j] = 0;
+        }
+        var rowRevVals;
+        var rowPrevRevVals;
+        var rowRevs;
+        var percentages;
+        for (var i = 1; i < data1.length; i++) { //data1.length = 96
+            rowRevVals = [];
+            rowPrevRevVals = [];
+            rowRevs = [];
+            percentages = [];
+            var obj = percentageData[i];
+            var consReqPercentages = Object.keys(obj).map(function(k){return obj[k];});
+            for (var j = 0; j < consReqPercentages.length; j++) {
+                maxCellVals[j] = consReqPercentages[j] * 0.01 * (data1[i])["onBar"];
+                rowRevVals.push((data1[i])[j]);
+                rowPrevRevVals.push((data2[i - 1])[j]);
+                rowRevs.push((markRev[i])[j]);
+                percentages.push(consReqPercentages[j]*0.01);
+            }
+            //URS Version
+            //Adding the RSD+URS requirements to the solving array
+            for (var j = 0; j < consReqPercentages.length; j++) {
+                maxCellVals[j + consReqPercentages.length] = consReqPercentages[j] * 0.01 * ((data1[i])["DC"] - (data1[i])["onBar"]);
+                rowRevVals.push((data1[i])["RSD" + j]);
+                rowPrevRevVals.push((data2[i - 1])["RSD" + j]);
+                rowRevs.push((markRev[i])["RSD" + j]);
+                //percentages.push(consReqPercentages[j]*0.01);
+            }
+            //Now enter desired URS
+            for (var j = 0; j < consReqPercentages.length; j++) {
+                maxCellVals[j + 2 * consReqPercentages.length] = (data1[i])["onBar"];
+                var maxrsdshare = consReqPercentages[j] * 0.01 * ((data1[i])["DC"] - (data1[i])["onBar"]);
+                if ((data1[i])["RSD" + j] > maxrsdshare && (data1[i])["URS" + j] == "Yes") //if RSD+URS>RSD Share and URS asked == Yes then allocate desired URS
+                {
+                    rowRevVals.push((data1[i])["RSD" + j] - maxrsdshare);
+                } else {
+                    rowRevVals.push(0);
+                }
+                rowPrevRevVals.push((data2[i - 1])["URS" + j]);
+                rowRevs.push((markRev[i])["URS" + j]);
+                //percentages.push(consReqPercentages[j]*0.01);
+            }
+            var result = solveRamping(percentages, rowRevs, rowRevVals, rowPrevRevVals, maxCellVals, (data1[i])["rampNum"], (data1[i])["onBar"]);
+            for (var j = 0; j < consReqPercentages.length; j++) {
+                (data2[i])[j] = result[j];
+                (data2[i])["RSD" + j] = result[consReqPercentages.length + j];
+                (data2[i])["URS" + j] = result[2 * consReqPercentages.length + j];
+            }
+            //URS Version
+            //data2[i] = solveRamping(consReqPercentages, rowRevs, rowRevVals, rowPrevRevVals, maxCellVals, (data1[i])["rampNum"], (data1[i])["onBar"]);
+            (data2[i])["SNo"] = i + 1;
+        }
+        //Now Feasible requisitions are available here
+        var sectionsArrayFeasible = createSectionsFeasible(data2);
+        saveToDBFeasible(sectionsArrayFeasible);
+        grid2 = new Slick.Grid("#myGridFeasible", data2, columns, options);
+        grid2.setSelectionModel(new Slick.CellSelectionModel());
+        grid2.onCellChanged;
+        //enabling the excel style functionality by the plugin
+        grid2.registerPlugin(new Slick.CellExternalCopyManager(pluginOptions));
+        grid2.onHeaderClick.subscribe(headerClick);
+        calculateFormulaColumnsSolution(grid2, data2);
+    };
+    afterLoad();
+}
 /*
  Calculate the formula columns values for resulting solution
 
@@ -2973,10 +3218,10 @@ function saveToDBFeasible(sectionsArray){
     }
     //Saving the comment of the revision
     /*cats.push('comm');
-    conIDs.push(constituentIDs[0]);
-    frombs.push(1);
-    tobs.push(96);
-    vals.push(document.getElementById("commentInput").value);*/
+     conIDs.push(constituentIDs[0]);
+     frombs.push(1);
+     tobs.push(96);
+     vals.push(document.getElementById("commentInput").value);*/
 
     //Sending the ajax request to the server for saving revision
     console.log('saving implemented revision to the server');
