@@ -2306,7 +2306,6 @@ function performAlgoDB() {
     //First get all cells with desired numeric cell values into a  table dataDes from the revision summary array of the current revision
     //constraint - this  has to be saved.
     var afterLoad = function(){
-        //var sectionsArray = record.revData;
         for (var constcol1 = -3; constcol1 < constituentNames.length; constcol1++) { //last three for onBarDC, MaxRamp and DC respectively
             switch (constcol1) {
                 case -3:
@@ -2440,6 +2439,9 @@ function performAlgoDB() {
             //data2[i] = solveRamping(consReqPercentages, rowRevs, rowRevVals, rowPrevRevVals, maxCellVals, (data1[i])["rampNum"], (data1[i])["onBar"]);
             (data2[i])["SNo"] = i + 1;
         }
+        //Now Feasible requisitions are available here
+        var sectionsArrayFeasible = createSectionsFeasible(data2);
+        saveToDBFeasible(sectionsArrayFeasible);
         grid2 = new Slick.Grid("#myGridFeasible", data2, columns, options);
         grid2.setSelectionModel(new Slick.CellSelectionModel());
         grid2.onCellChanged;
@@ -2627,6 +2629,7 @@ function deleteRevisionDB(){
                 alert("Deleted the revision " + curRev + " successfully!");
                 //Load the latest revision
                 console.log("Requesting to load the latest revision after deletion...");
+                deleteImplementedRevision();
                 loadLatestRevisionDB();
             }
             else{
@@ -2640,6 +2643,32 @@ function deleteRevisionDB(){
             console.log("deleteRevision "+curRev+" errorThrown:", errorThrown);
         }
     });
+    //Implemented version
+    function deleteImplementedRevision(){
+        console.log("Requesting the Database to delete the Implemented Revision");
+        $.ajax({
+            type: 'DELETE',
+            url: "http://"+localhost+"/api/revisionsimplemented/"+date+"/"+curRev,
+            success: function(data, textStatus, jqXHR){
+                if(data.error == false) {
+                    console.log("Deleted the implemented revision " + curRev + " successfully!");
+                    //alert("Deleted the revision " + curRev + " successfully!");
+                    //Load the latest revision
+                    //console.log("Requesting to load the latest revision after deletion...");
+                    //loadLatestRevisionDB();
+                }
+                else{
+                    console.log("deleteImplementedRevision "+curRev+" error:",data.num_rows);
+                    //alert("Failed to Delete Implemented Revision "+curRev+".\nSee Console for message...");
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown){
+                //alert('deleteImplementedRevision error: '+textStatus);
+                console.log("deleteImplementedRevision "+curRev+" jqXHR:",jqXHR);
+                console.log("deleteImplementedRevision "+curRev+" errorThrown:", errorThrown);
+            }
+        });
+    }
 }
 
 function loadLatestRevisionDB(){
@@ -2771,4 +2800,210 @@ function selectCells(str){
     }
     selgrid.getSelectionModel().setSelectedRanges([new Slick.Range(0,colInd,95,endColInd)]);
     selgrid.focus();
+}
+
+function createSectionsFeasible(data) {
+    //Find the sections of the columns
+    var sectionsArrayFeasible = [];
+    for (var constcol1 = 0; constcol1 < constituentNames.length + 3; constcol1++) { //last two for onBarDC and MaxRamp and DC respectively
+        switch (constcol1) {
+            case constituentNames.length:
+                constcol = "onBar";
+                break;
+            case constituentNames.length + 1:
+                constcol = "rampNum";
+                break;
+            case constituentNames.length + 2:
+                constcol = "DC";
+                break;
+            default:
+                constcol = constcol1;
+                break;
+        }
+        var sections = [];
+        var sectionStart = 0;
+        for (var blkNum = 1; blkNum < 96; blkNum++) {
+            if ((data[blkNum])[constcol] != (data[blkNum - 1])[constcol]) {
+                sections.push({
+                    'secStart': sectionStart,
+                    'secEnd': blkNum - 1,
+                    'val': (data[blkNum - 1])[constcol]
+                });
+                sectionStart = blkNum;
+            }
+        }
+        sections.push({
+            'secStart': sectionStart,
+            'secEnd': 95,
+            'val': (data[95])[constcol]
+        });
+        //sectionsArray.push(sections);
+        sectionsArrayFeasible[constcol] = sections;
+    }
+    //URS Version
+    for (var constcol = 0; constcol < constituentNames.length; constcol++) {
+        var sections = new Array();
+        var sectionStart = 0;
+        for (var blkNum = 1; blkNum < 96; blkNum++) {
+            //TODO decouple the dependence of URS and RSD sections
+            if ((data[blkNum])['RSD' + constcol] != (data[blkNum - 1])['RSD' + constcol] || (data[blkNum])['URS' + constcol] != (data[blkNum - 1])['URS' + constcol]) {
+                sections.push({
+                    'secStart': sectionStart,
+                    'secEnd': blkNum - 1,
+                    'val': (data[blkNum - 1])['RSD' + constcol]
+                });
+                sectionStart = blkNum;
+            }
+        }
+        sections.push({
+            'secStart': sectionStart,
+            'secEnd': 95,
+            'val': (data[95])['RSD' + constcol]
+        });
+        sectionsArrayFeasible['RSD' + constcol] = sections;
+    }
+    //For URS option
+    for (var constcol = 0; constcol < constituentNames.length; constcol++) {
+        var sections = new Array();
+        var sectionStart = 0;
+        for (var blkNum = 1; blkNum < 96; blkNum++) {
+            //TODO decouple the dependence of URS and RSD sections
+            if ((data[blkNum])['URS' + constcol] != (data[blkNum - 1])['URS' + constcol] || (data[blkNum])['RSD' + constcol] != (data[blkNum - 1])['RSD' + constcol]) {
+                sections.push({
+                    'secStart': sectionStart,
+                    'secEnd': blkNum - 1,
+                    'val': (data[blkNum - 1])['URS' + constcol]
+                });
+                sectionStart = blkNum;
+            }
+        }
+        sections.push({
+            'secStart': sectionStart,
+            'secEnd': 95,
+            'val': (data[95])['URS' + constcol]
+        });
+        //sectionsArray.push(sections);
+        sectionsArrayFeasible['URS' + constcol] = sections;
+    }
+    //URS Version
+    //Saving the generator name also
+    sectionsArrayFeasible['genName'] = genName;
+    sectionsArrayFeasible['comment'] = document.getElementById('commentInput').value;
+    //sections of the columns found
+    return sectionsArrayFeasible;
+}
+
+function saveToDBFeasible(sectionsArray){
+    //Take the sections array Feasible and save it to the database
+
+    //Save to the SQL database the sectionsArray
+    var genID = genIDs[document.getElementById("genList").selectedIndex];
+    //Preparing data to post
+    var cats = [];
+    var conIDs = [];
+    var frombs = [];
+    var tobs = [];
+    var vals = [];
+    //converting sections to a json format acceptable by the server api
+    var sections;
+    for (var j = 0; j < sectionsArray.length; j++) {
+        sections = sectionsArray[j];
+        for (var k = 0; k < sections.length; k++) {
+
+            cats.push('n');
+            conIDs.push(constituentIDs[j]);
+            frombs.push(sections[k].secStart + 1);
+            tobs.push(sections[k].secEnd + 1);
+            vals.push(sections[k].val);
+
+        }
+    }
+    for (var j = 0; j < sectionsArray.length; j++) {
+        sections = sectionsArray["RSD"+j];
+        for (var k = 0; k < sections.length; k++) {
+
+            cats.push('r');
+            conIDs.push(constituentIDs[j]);
+            frombs.push(sections[k].secStart + 1);
+            tobs.push(sections[k].secEnd + 1);
+            vals.push(sections[k].val);
+
+        }
+    }
+    for (var j = 0; j < sectionsArray.length; j++) {
+        sections = sectionsArray["URS"+j];
+        for (var k = 0; k < sections.length; k++) {
+
+            cats.push('u');
+            conIDs.push(constituentIDs[j]);
+            frombs.push(sections[k].secStart + 1);
+            tobs.push(sections[k].secEnd + 1);
+            vals.push(sections[k].val);
+
+        }
+    }
+    sections = sectionsArray["DC"];
+    for (var k = 0; k < sections.length; k++) {
+
+        cats.push('d');
+        conIDs.push(constituentIDs[0]);
+        frombs.push(sections[k].secStart + 1);
+        tobs.push(sections[k].secEnd + 1);
+        vals.push(sections[k].val);
+    }
+    sections = sectionsArray["rampNum"];
+    for (var k = 0; k < sections.length; k++) {
+
+        cats.push('ra');
+        conIDs.push(constituentIDs[0]);
+        frombs.push(sections[k].secStart + 1);
+        tobs.push(sections[k].secEnd + 1);
+        vals.push(sections[k].val);
+
+    }
+    sections = sectionsArray["onBar"];
+    for (var k = 0; k < sections.length; k++) {
+
+        cats.push('on');
+        conIDs.push(constituentIDs[0]);
+        frombs.push(sections[k].secStart + 1);
+        tobs.push(sections[k].secEnd + 1);
+        vals.push(sections[k].val);
+
+    }
+    //Saving the comment of the revision
+    /*cats.push('comm');
+    conIDs.push(constituentIDs[0]);
+    frombs.push(1);
+    tobs.push(96);
+    vals.push(document.getElementById("commentInput").value);*/
+
+    //Sending the ajax request to the server for saving revision
+    console.log('saving implemented revision to the server');
+    var picker = $( "#datePicker" );
+    var date = picker.datepicker("getDate").getFullYear()+"-"+(picker.datepicker("getDate").getMonth()+1)+"-"+picker.datepicker("getDate").getDate();
+    $.ajax({
+        type: 'PUT',
+        url: "http://"+localhost+"/api/revisionsimplemented/"+date+"/"+curRev,
+        dataType: "json", // data type of response
+        data: JSON.stringify({
+            'TO':"",
+            'comm':document.getElementById("commentInput").value,
+            'genID':genID,
+            'cats':cats,
+            'conIDs': conIDs,
+            'frombs': frombs,
+            'tobs': tobs,
+            'vals': vals
+        }),
+        success: function (data, textStatus, jqXHR) {
+            console.log("Updated the implemented revision successfully...");
+            console.log(data);
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            alert('updateImplementedRevision error: ' + textStatus);
+            console.log("updateImplementedRevision errorThrown: " + errorThrown);
+            console.log("updateImplementedRevision jqXHR: " + JSON.stringify(jqXHR));
+        }
+    });
 }
