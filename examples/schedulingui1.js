@@ -2561,7 +2561,7 @@ function performAlgoDBImplemented() {
                 }
                 for(var i = 0; i < constituentNames.length; i++){
                     var conscol = ""+i;
-                    var sections = sectionsArrayFetched[conscol];
+                    var sections = sectionsArrayFetched[conscol]||[];
                     for(var j = 0; j < sections.length; j++){
                         var sectionObject = sections[j];
                         for(var k=sectionObject.secStart;k<=sectionObject.secEnd;k++){
@@ -2569,7 +2569,7 @@ function performAlgoDBImplemented() {
                         }
                     }
                     conscol = "RSD"+i;
-                    sections = sectionsArrayFetched[conscol];
+                    sections = sectionsArrayFetched[conscol]||[];
                     for(var j = 0; j < sections.length; j++){
                         sectionObject = sections[j];
                         for(var k=sectionObject.secStart;k<=sectionObject.secEnd;k++){
@@ -2577,7 +2577,7 @@ function performAlgoDBImplemented() {
                         }
                     }
                     conscol = "URS"+i;
-                    sections = sectionsArrayFetched[conscol];
+                    sections = sectionsArrayFetched[conscol]||[];
                     for(var j = 0; j < sections.length; j++){
                         sectionObject = sections[j];
                         for(var k=sectionObject.secStart;k<=sectionObject.secEnd;k++){
@@ -2586,7 +2586,7 @@ function performAlgoDBImplemented() {
                     }
                 }
                 conscol = "DC";
-                sections = sectionsArrayFetched[conscol];
+                sections = sectionsArrayFetched[conscol]||[];
                 for(var j = 0; j < sections.length; j++){
                     sectionObject = sections[j];
                     for(var k=sectionObject.secStart;k<=sectionObject.secEnd;k++){
@@ -2594,7 +2594,7 @@ function performAlgoDBImplemented() {
                     }
                 }
                 conscol = "onBar";
-                sections = sectionsArrayFetched[conscol];
+                sections = sectionsArrayFetched[conscol]||[];
                 for(var j = 0; j < sections.length; j++){
                     sectionObject = sections[j];
                     for(var k=sectionObject.secStart;k<=sectionObject.secEnd;k++){
@@ -2602,7 +2602,7 @@ function performAlgoDBImplemented() {
                     }
                 }
                 conscol = "rampNum";
-                sections = sectionsArrayFetched[conscol];
+                sections = sectionsArrayFetched[conscol]||[];
                 for(var j = 0; j < sections.length; j++){
                     sectionObject = sections[j];
                     for(var k=sectionObject.secStart;k<=sectionObject.secEnd;k++){
@@ -2610,10 +2610,133 @@ function performAlgoDBImplemented() {
                     }
                 }
                 console.log("created the previous revision implemented array"+dataimp);
+                //Find the row till the precious implemented revision is to be copied
+                var implementedRow = 0;
+                var found = false;
+                for(var i=0;i<96&&found==false;i++){
+                    rowRevObject = markRev[i];
+                    for(var j=0;j<constituentNames.length;j++){
+                        //TODO DC change or ramp change marking should also be accommodated in the marking algorithm
+                        if((markRev[i])[""+j] == curRev || (markRev[i])["RSD"+j] == 1000+curRev || (markRev[i])["URS"+j] == 2000+curRev) {
+                            implementedRow = i;
+                            found = true;
+                        }
+                    }
+                }
+                console.log("Implemented Schedule change in this revision fromm the block "+(implementedRow+1));
+                //Copy dataimp to data2 array till the implementedRow-1 rows
+                //Now find the feasible cell values from the data1 array values and store in data2 array
+                var data2 = [];
+                for (var i = 0; i < data1.length; i++) {
+                    data2[i] = {};
+                    (data2[i])["onBar"] = (data1[i])["onBar"];
+                    (data2[i])["DC"] = (data1[i])["DC"];
+                    (data2[i])["rampNum"] = (data1[i])["rampNum"];
+                }
+                for (var i = 0; i < constituentNames.length; i++) {
+                    (data2[0])[i] = (data1[0])[i];
+                    //URS Version
+                    (data2[0])["RSD" + i] = (data1[0])["RSD" + i];
+                    (data2[0])["URS" + i] = 0; //ToDo Temporary setting for 1st URS row
+                    //URS Version
+                }
+                (data2[0])["SNo"] = 1;
+                //Copy dataimp to data2 till the implementedRow-1
+                for(var i=0;i<implementedRow;i++){
+                    data2[i] = {};
+                    (data2[i])["SNo"] = i + 1;
+                    (data2[i])["onBar"] = (dataimp[i])["onBar"];
+                    (data2[i])["DC"] = (dataimp[i])["DC"];
+                    (data2[i])["rampNum"] = (dataimp[i])["rampNum"];
+                    for(var j = 0;j<constituentNames.length;j++){
+                        (data2[i])[j] = (dataimp[0])[j];
+                        //URS Version
+                        (data2[i])["RSD" + j] = (dataimp[i])["RSD" + j];
+                        (data2[i])["URS" + j] = (dataimp[i])["URS" + j]; //ToDo Temporary setting for 1st URS row
+                        //URS Version
+                    }
+                }
+                for (var i = 0; i < constituentNames.length; i++) {
+                    (data2[0])[i] = (data1[0])[i];
+                    //URS Version
+                    (data2[0])["RSD" + i] = (data1[0])["RSD" + i];
+                    (data2[0])["URS" + i] = 0; //ToDo Temporary setting for 1st URS row
+                    //URS Version
+                }
+                //(data2[0])["SNo"] = 1;
+                var maxCellVals = new Array(3 * constituentNames.length);
+                //initialize the array maxcellvals array with 0
+                for (var j = 0; j < maxCellVals.length; j++) {
+                    maxCellVals[j] = 0;
+                }
+                var rowRevVals;
+                var rowPrevRevVals;
+                var rowRevs;
+                var percentages;
+                for (var i = implementedRow; i < data1.length; i++) { //data1.length = 96
+                    if(i == 0){
+                        continue;//TODO test this continue ststement
+                    }
+                    rowRevVals = [];
+                    rowPrevRevVals = [];
+                    rowRevs = [];
+                    percentages = [];
+                    var obj = percentageData[i];
+                    var consReqPercentages = Object.keys(obj).map(function(k){return obj[k];});
+                    for (var j = 0; j < consReqPercentages.length; j++) {
+                        maxCellVals[j] = consReqPercentages[j] * 0.01 * (data1[i])["onBar"];
+                        rowRevVals.push((data1[i])[j]);
+                        rowPrevRevVals.push((data2[i - 1])[j]);
+                        rowRevs.push((markRev[i])[j]);
+                        percentages.push(consReqPercentages[j]*0.01);
+                    }
+                    //URS Version
+                    //Adding the RSD+URS requirements to the solving array
+                    for (var j = 0; j < consReqPercentages.length; j++) {
+                        maxCellVals[j + consReqPercentages.length] = consReqPercentages[j] * 0.01 * ((data1[i])["DC"] - (data1[i])["onBar"]);
+                        rowRevVals.push((data1[i])["RSD" + j]);
+                        rowPrevRevVals.push((data2[i - 1])["RSD" + j]);
+                        rowRevs.push((markRev[i])["RSD" + j]);
+                        //percentages.push(consReqPercentages[j]*0.01);
+                    }
+                    //Now enter desired URS
+                    for (var j = 0; j < consReqPercentages.length; j++) {
+                        maxCellVals[j + 2 * consReqPercentages.length] = (data1[i])["onBar"];
+                        var maxrsdshare = consReqPercentages[j] * 0.01 * ((data1[i])["DC"] - (data1[i])["onBar"]);
+                        if ((data1[i])["RSD" + j] > maxrsdshare && (data1[i])["URS" + j] == "Yes") //if RSD+URS>RSD Share and URS asked == Yes then allocate desired URS
+                        {
+                            rowRevVals.push((data1[i])["RSD" + j] - maxrsdshare);
+                        } else {
+                            rowRevVals.push(0);
+                        }
+                        rowPrevRevVals.push((data2[i - 1])["URS" + j]);
+                        rowRevs.push((markRev[i])["URS" + j]);
+                        //percentages.push(consReqPercentages[j]*0.01);
+                    }
+                    var result = solveRamping(percentages, rowRevs, rowRevVals, rowPrevRevVals, maxCellVals, (data1[i])["rampNum"], (data1[i])["onBar"]);
+                    for (var j = 0; j < consReqPercentages.length; j++) {
+                        (data2[i])[j] = result[j];
+                        (data2[i])["RSD" + j] = result[consReqPercentages.length + j];
+                        (data2[i])["URS" + j] = result[2 * consReqPercentages.length + j];
+                    }
+                    //URS Version
+                    //data2[i] = solveRamping(consReqPercentages, rowRevs, rowRevVals, rowPrevRevVals, maxCellVals, (data1[i])["rampNum"], (data1[i])["onBar"]);
+                    (data2[i])["SNo"] = i + 1;
+                }
+                //Now Feasible requisitions are available here
+                var sectionsArrayFeasible = createSectionsFeasible(data2);
+                saveToDBFeasible(sectionsArrayFeasible);
+                grid2 = new Slick.Grid("#myGridFeasible", data2, columns, options);
+                grid2.setSelectionModel(new Slick.CellSelectionModel());
+                grid2.onCellChanged;
+                //enabling the excel style functionality by the plugin
+                grid2.registerPlugin(new Slick.CellExternalCopyManager(pluginOptions));
+                grid2.onHeaderClick.subscribe(headerClick);
+                calculateFormulaColumnsSolution(grid2, data2);
             }
         });
 
-        //Now find the feasible cell values from the data1 array values and store in data2 array
+        /*//Now find the feasible cell values from the data1 array values and store in data2 array
         var data2 = [];
         for (var i = 0; i < data1.length; i++) {
             data2[i] = {};
@@ -2694,7 +2817,7 @@ function performAlgoDBImplemented() {
         //enabling the excel style functionality by the plugin
         grid2.registerPlugin(new Slick.CellExternalCopyManager(pluginOptions));
         grid2.onHeaderClick.subscribe(headerClick);
-        calculateFormulaColumnsSolution(grid2, data2);
+        calculateFormulaColumnsSolution(grid2, data2);*/
     };
     afterLoad();
 }
