@@ -139,4 +139,3 @@ function cancelUpdate(){
         }
     }
 }
-//TODOS remove underlines on href of footer

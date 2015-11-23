@@ -1615,7 +1615,7 @@ function markCellsWithRevs() {
 //by the revision and mark the next remaining blocks of the column as the same rev number.
 //Continue this till current revision.
 function markCellsWithRevsDB() {
-
+    //TODO come to the same revision after performing implemented schedule of the next revisions
     //First mark all cells with 0 rev.
     for (var i = 0; i < 96; i++) {
         var m = (markRev[i]);
