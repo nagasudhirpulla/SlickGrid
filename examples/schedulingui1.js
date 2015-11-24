@@ -2727,6 +2727,26 @@ function performAlgoDBImplemented() {
                 //Now Feasible requisitions are available here
                 var sectionsArrayFeasible = createSectionsFeasible(data2);
                 saveToDBFeasible(sectionsArrayFeasible);
+                //TODO if the  revision is not latest then load next revision and then solve for feasible revision
+                //TODO load the feasible revision at the revision load itself if present
+                //Get the next logical revision of db for this generator date combination to compute the implemented schedule
+                //"http://"+localhost+"/api/generatorRevisionNumbers/"+date+"/"+genID+"/"+"/next",
+                var nextRevLogical = null;
+                $.ajax({
+                    type: 'GET',
+                    url: "http://"+localhost+"/api/generatorRevisionNumbers/"+date+"/"+genID+"/"+curRev+"/latest",
+                    dataType: "json", // data type of response
+                    success: function(dataFetched) {
+                        //TODO check for data.error == false
+                        if(dataFetched.error == true){
+                            alert("Error loading the next revision number of "+curRev+"... \nSeeConsole for message");
+                            console.log("Error loading the next revision of "+curRev+"...",dataFetched.message);
+                            return false;
+                        }
+                        console.log("Loading the next revision %s of revision %s",dataFetched.revisionNumber,curRev);
+                        nextRevLogical = dataFetched.revisionNumber;
+                    }
+                });
                 grid2 = new Slick.Grid("#myGridFeasible", data2, columns, options);
                 grid2.setSelectionModel(new Slick.CellSelectionModel());
                 grid2.onCellChanged;
@@ -2738,87 +2758,87 @@ function performAlgoDBImplemented() {
         });
 
         /*//Now find the feasible cell values from the data1 array values and store in data2 array
-        var data2 = [];
-        for (var i = 0; i < data1.length; i++) {
-            data2[i] = {};
-            (data2[i])["onBar"] = (data1[i])["onBar"];
-            (data2[i])["DC"] = (data1[i])["DC"];
-            (data2[i])["rampNum"] = (data1[i])["rampNum"];
-        }
-        for (var i = 0; i < constituentNames.length; i++) {
-            (data2[0])[i] = (data1[0])[i];
-            //URS Version
-            (data2[0])["RSD" + i] = (data1[0])["RSD" + i];
-            (data2[0])["URS" + i] = 0; //ToDo Temporary setting for 1st URS row
-            //URS Version
-        }
-        (data2[0])["SNo"] = 1;
-        var maxCellVals = new Array(3 * constituentNames.length);
-        //initialize the array maxcellvals array with 0
-        for (var j = 0; j < maxCellVals.length; j++) {
-            maxCellVals[j] = 0;
-        }
-        var rowRevVals;
-        var rowPrevRevVals;
-        var rowRevs;
-        var percentages;
-        for (var i = 1; i < data1.length; i++) { //data1.length = 96
-            rowRevVals = [];
-            rowPrevRevVals = [];
-            rowRevs = [];
-            percentages = [];
-            var obj = percentageData[i];
-            var consReqPercentages = Object.keys(obj).map(function(k){return obj[k];});
-            for (var j = 0; j < consReqPercentages.length; j++) {
-                maxCellVals[j] = consReqPercentages[j] * 0.01 * (data1[i])["onBar"];
-                rowRevVals.push((data1[i])[j]);
-                rowPrevRevVals.push((data2[i - 1])[j]);
-                rowRevs.push((markRev[i])[j]);
-                percentages.push(consReqPercentages[j]*0.01);
-            }
-            //URS Version
-            //Adding the RSD+URS requirements to the solving array
-            for (var j = 0; j < consReqPercentages.length; j++) {
-                maxCellVals[j + consReqPercentages.length] = consReqPercentages[j] * 0.01 * ((data1[i])["DC"] - (data1[i])["onBar"]);
-                rowRevVals.push((data1[i])["RSD" + j]);
-                rowPrevRevVals.push((data2[i - 1])["RSD" + j]);
-                rowRevs.push((markRev[i])["RSD" + j]);
-                //percentages.push(consReqPercentages[j]*0.01);
-            }
-            //Now enter desired URS
-            for (var j = 0; j < consReqPercentages.length; j++) {
-                maxCellVals[j + 2 * consReqPercentages.length] = (data1[i])["onBar"];
-                var maxrsdshare = consReqPercentages[j] * 0.01 * ((data1[i])["DC"] - (data1[i])["onBar"]);
-                if ((data1[i])["RSD" + j] > maxrsdshare && (data1[i])["URS" + j] == "Yes") //if RSD+URS>RSD Share and URS asked == Yes then allocate desired URS
-                {
-                    rowRevVals.push((data1[i])["RSD" + j] - maxrsdshare);
-                } else {
-                    rowRevVals.push(0);
-                }
-                rowPrevRevVals.push((data2[i - 1])["URS" + j]);
-                rowRevs.push((markRev[i])["URS" + j]);
-                //percentages.push(consReqPercentages[j]*0.01);
-            }
-            var result = solveRamping(percentages, rowRevs, rowRevVals, rowPrevRevVals, maxCellVals, (data1[i])["rampNum"], (data1[i])["onBar"]);
-            for (var j = 0; j < consReqPercentages.length; j++) {
-                (data2[i])[j] = result[j];
-                (data2[i])["RSD" + j] = result[consReqPercentages.length + j];
-                (data2[i])["URS" + j] = result[2 * consReqPercentages.length + j];
-            }
-            //URS Version
-            //data2[i] = solveRamping(consReqPercentages, rowRevs, rowRevVals, rowPrevRevVals, maxCellVals, (data1[i])["rampNum"], (data1[i])["onBar"]);
-            (data2[i])["SNo"] = i + 1;
-        }
-        //Now Feasible requisitions are available here
-        var sectionsArrayFeasible = createSectionsFeasible(data2);
-        saveToDBFeasible(sectionsArrayFeasible);
-        grid2 = new Slick.Grid("#myGridFeasible", data2, columns, options);
-        grid2.setSelectionModel(new Slick.CellSelectionModel());
-        grid2.onCellChanged;
-        //enabling the excel style functionality by the plugin
-        grid2.registerPlugin(new Slick.CellExternalCopyManager(pluginOptions));
-        grid2.onHeaderClick.subscribe(headerClick);
-        calculateFormulaColumnsSolution(grid2, data2);*/
+         var data2 = [];
+         for (var i = 0; i < data1.length; i++) {
+         data2[i] = {};
+         (data2[i])["onBar"] = (data1[i])["onBar"];
+         (data2[i])["DC"] = (data1[i])["DC"];
+         (data2[i])["rampNum"] = (data1[i])["rampNum"];
+         }
+         for (var i = 0; i < constituentNames.length; i++) {
+         (data2[0])[i] = (data1[0])[i];
+         //URS Version
+         (data2[0])["RSD" + i] = (data1[0])["RSD" + i];
+         (data2[0])["URS" + i] = 0; //ToDo Temporary setting for 1st URS row
+         //URS Version
+         }
+         (data2[0])["SNo"] = 1;
+         var maxCellVals = new Array(3 * constituentNames.length);
+         //initialize the array maxcellvals array with 0
+         for (var j = 0; j < maxCellVals.length; j++) {
+         maxCellVals[j] = 0;
+         }
+         var rowRevVals;
+         var rowPrevRevVals;
+         var rowRevs;
+         var percentages;
+         for (var i = 1; i < data1.length; i++) { //data1.length = 96
+         rowRevVals = [];
+         rowPrevRevVals = [];
+         rowRevs = [];
+         percentages = [];
+         var obj = percentageData[i];
+         var consReqPercentages = Object.keys(obj).map(function(k){return obj[k];});
+         for (var j = 0; j < consReqPercentages.length; j++) {
+         maxCellVals[j] = consReqPercentages[j] * 0.01 * (data1[i])["onBar"];
+         rowRevVals.push((data1[i])[j]);
+         rowPrevRevVals.push((data2[i - 1])[j]);
+         rowRevs.push((markRev[i])[j]);
+         percentages.push(consReqPercentages[j]*0.01);
+         }
+         //URS Version
+         //Adding the RSD+URS requirements to the solving array
+         for (var j = 0; j < consReqPercentages.length; j++) {
+         maxCellVals[j + consReqPercentages.length] = consReqPercentages[j] * 0.01 * ((data1[i])["DC"] - (data1[i])["onBar"]);
+         rowRevVals.push((data1[i])["RSD" + j]);
+         rowPrevRevVals.push((data2[i - 1])["RSD" + j]);
+         rowRevs.push((markRev[i])["RSD" + j]);
+         //percentages.push(consReqPercentages[j]*0.01);
+         }
+         //Now enter desired URS
+         for (var j = 0; j < consReqPercentages.length; j++) {
+         maxCellVals[j + 2 * consReqPercentages.length] = (data1[i])["onBar"];
+         var maxrsdshare = consReqPercentages[j] * 0.01 * ((data1[i])["DC"] - (data1[i])["onBar"]);
+         if ((data1[i])["RSD" + j] > maxrsdshare && (data1[i])["URS" + j] == "Yes") //if RSD+URS>RSD Share and URS asked == Yes then allocate desired URS
+         {
+         rowRevVals.push((data1[i])["RSD" + j] - maxrsdshare);
+         } else {
+         rowRevVals.push(0);
+         }
+         rowPrevRevVals.push((data2[i - 1])["URS" + j]);
+         rowRevs.push((markRev[i])["URS" + j]);
+         //percentages.push(consReqPercentages[j]*0.01);
+         }
+         var result = solveRamping(percentages, rowRevs, rowRevVals, rowPrevRevVals, maxCellVals, (data1[i])["rampNum"], (data1[i])["onBar"]);
+         for (var j = 0; j < consReqPercentages.length; j++) {
+         (data2[i])[j] = result[j];
+         (data2[i])["RSD" + j] = result[consReqPercentages.length + j];
+         (data2[i])["URS" + j] = result[2 * consReqPercentages.length + j];
+         }
+         //URS Version
+         //data2[i] = solveRamping(consReqPercentages, rowRevs, rowRevVals, rowPrevRevVals, maxCellVals, (data1[i])["rampNum"], (data1[i])["onBar"]);
+         (data2[i])["SNo"] = i + 1;
+         }
+         //Now Feasible requisitions are available here
+         var sectionsArrayFeasible = createSectionsFeasible(data2);
+         saveToDBFeasible(sectionsArrayFeasible);
+         grid2 = new Slick.Grid("#myGridFeasible", data2, columns, options);
+         grid2.setSelectionModel(new Slick.CellSelectionModel());
+         grid2.onCellChanged;
+         //enabling the excel style functionality by the plugin
+         grid2.registerPlugin(new Slick.CellExternalCopyManager(pluginOptions));
+         grid2.onHeaderClick.subscribe(headerClick);
+         calculateFormulaColumnsSolution(grid2, data2);*/
     };
     afterLoad();
 }
