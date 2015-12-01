@@ -16,11 +16,11 @@ $(function() {
     genOnBar = 1400;
     constituentNames = ["A", "B", "C", "D"];
     columns = setReqTableColumns(columns, true, true);
-    gridAndData = initialiseReqGrid("myGrid", grid, data, genRamp, genDecCap, genOnBar, constituentNames, columns, options, pluginOptions, headerClick, true, 0, true, 'Yes');
+    gridAndData = initialiseReqGrid("myGrid", grid, data, genRamp, genDecCap, genOnBar, constituentNames, columns, options, pluginOptions, headerClick, "FULL", true, 0, true, 'Yes');
     grid = gridAndData.grid;
     data = gridAndData.data;
 });
-function initialiseReqGrid(tableID, grid, data, genRamp, genDecCap, genOnBar, constituentNames, columns, options, pluginOptions, headerClick,  isRSDPresent, defRSDValue, isURSPresent, defURSVal){
+function initialiseReqGrid(tableID, grid, data, genRamp, genDecCap, genOnBar, constituentNames, columns, options, pluginOptions, headerClick, defValue, isRSDPresent, defRSDValue, isURSPresent, defURSVal){
     console.log("Initialising the grid");
     //Set the whole grid to default values, rsd urs not included
     for (var i = 0; i < 96; i++) {
@@ -35,7 +35,7 @@ function initialiseReqGrid(tableID, grid, data, genRamp, genDecCap, genOnBar, co
         for (var j = 0; j < constituentNames.length; j++) {
             //j is iterator the column j ...
             //Setting the data value for the cell i,j(row,column) or block i+1,j
-            d[j] = 'FULL';
+            d[j] = defValue;
             if(isRSDPresent) {
                 d['RSD' + j] = defRSDValue;
             }
