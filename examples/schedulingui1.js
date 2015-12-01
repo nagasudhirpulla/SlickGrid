@@ -2745,6 +2745,7 @@ function performAlgoDBImplemented() {
                         }
                         console.log("Loading the next revision %s of revision %s",dataFetched.revisionNumber,curRev);
                         nextRevLogical = dataFetched.revisionNumber;
+
                     }
                 });
                 grid2 = new Slick.Grid("#myGridFeasible", data2, columns, options);
