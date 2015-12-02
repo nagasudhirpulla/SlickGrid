@@ -151,8 +151,56 @@ function setReqTableColumns(columns, isRSDPresent, isURSPresent) {
     return columns;
 }
 
-function resetGrid(gridID, grid, data, constituentNames, defVal, defDecCap, defOnBar, defMaxRamp, isRSDPresent, defRSDValue, isURSPresent, defURSValue){
-
+function resetGrid(gridID, grid, data, constituentNames, defVal, isDecCapPresent, defDecCap, isOnBarPresent, defOnBar, isMaxRampPresent, defMaxRamp, isRSDPresent, defRSDValue, isURSPresent, defURSValue){
+    for (var i = 0; i < 96; i++) {
+        var d = (data[i]);
+        for (var j = 0; j < constituentNames.length; j++) {
+            //Resetting the data values of the cell i,j(row,column) to val
+            d[j] = defVal;
+        }
+    }
+    if(isRSDPresent) {
+        for (var i = 0; i < 96; i++) {
+            //i is iterator for the row i ...
+            d = (data[i]);
+            for (var j = 0; j < constituentNames.length; j++) {
+                //Resetting the data values of the cell i,j(row,column) to val
+                d['RSD' + j] = defRSDValue;
+            }
+        }
+    }
+    if(isURSPresent) {
+        for (var i = 0; i < 96; i++) {
+            //i is iterator for the row i ...
+            d = (data[i]);
+            for (var j = 0; j < constituentNames.length; j++) {
+                //Resetting the data values of the cell i,j(row,column) to val
+                d['URS' + j] = defURSValue;
+            }
+        }
+    }
+    if(isDecCapPresent) {
+        for (var i = 0; i < 96; i++) {
+            //i is iterator for the row i ...
+            (data[i])['DC'] = defDecCap;
+        }
+    }
+    if(isOnBarPresent) {
+        for (var i = 0; i < 96; i++) {
+            (data[i])['onBar'] = defOnBar;
+        }
+    }
+    if(isMaxRampPresent) {
+        for (var i = 0; i < 96; i++) {
+            (data[i])['rampNum'] = defMaxRamp;
+        }
+    }
+    grid.invalidateAllRows();
+    grid.render();
+    return{
+        grid: grid,
+        data : data
+    };
 }
 //Extra Grid features
 function headerClick(e, args) {
