@@ -16,13 +16,12 @@ $(function() {
     genOnBar = 1400;
     constituentNames = ["A", "B", "C", "D"];
     columns = setReqTableColumns(columns, true, true);
-    gridAndData = initialiseReqGrid("myGrid", grid, data, genRamp, genDecCap, genOnBar, constituentNames, columns, options, pluginOptions, headerClick, "FULL", true, 0, true, 'Yes');
-    grid = gridAndData.grid;
-    data = gridAndData.data;
+    grid = initialiseReqGrid("myGrid", grid, genRamp, genDecCap, genOnBar, constituentNames, columns, options, pluginOptions, headerClick, "FULL", true, 0, true, 'Yes');
 });
-function initialiseReqGrid(tableID, grid, data, genRamp, genDecCap, genOnBar, constituentNames, columns, options, pluginOptions, headerClick, defValue, isRSDPresent, defRSDValue, isURSPresent, defURSValue){
+function initialiseReqGrid(tableID, grid, genRamp, genDecCap, genOnBar, constituentNames, columns, options, pluginOptions, headerClick, defValue, isRSDPresent, defRSDValue, isURSPresent, defURSValue){
     console.log("Initialising the grid");
     //Set the whole grid to default values, rsd urs not included
+    var data = [];
     for (var i = 0; i < 96; i++) {
         //Setting the data values of the grid here...
         //i is iterator for the row i or block i+1...
@@ -59,10 +58,7 @@ function initialiseReqGrid(tableID, grid, data, genRamp, genDecCap, genOnBar, co
     grid.registerPlugin(new Slick.CellExternalCopyManager(pluginOptions));
     grid.onHeaderClick.subscribe(headerClick);
     //return multiple values from function --> http://stackoverflow.com/questions/2917175/return-multiple-values-in-javascript
-    var result = {};
-    result.grid = grid;
-    result.data = data;
-    return result;
+    return grid;
 }
 
 function setReqTableColumns(columns, isRSDPresent, isURSPresent) {
@@ -151,7 +147,9 @@ function setReqTableColumns(columns, isRSDPresent, isURSPresent) {
     return columns;
 }
 
-function resetGrid(gridID, grid, data, constituentNames, defVal, isDecCapPresent, defDecCap, isOnBarPresent, defOnBar, isMaxRampPresent, defMaxRamp, isRSDPresent, defRSDValue, isURSPresent, defURSValue){
+//Grid Utility Functions
+function resetGrid(grid, constituentNames, defVal, isDecCapPresent, defDecCap, isOnBarPresent, defOnBar, isMaxRampPresent, defMaxRamp, isRSDPresent, defRSDValue, isURSPresent, defURSValue){
+    var data = grid.getData();
     for (var i = 0; i < 96; i++) {
         var d = (data[i]);
         for (var j = 0; j < constituentNames.length; j++) {
@@ -197,10 +195,17 @@ function resetGrid(gridID, grid, data, constituentNames, defVal, isDecCapPresent
     }
     grid.invalidateAllRows();
     grid.render();
-    return{
-        grid: grid,
-        data : data
-    };
+    return grid;
+}
+
+//Grid Utility Functions
+function feedSectionsToGrid(grid, sectionsArray){
+    //first reset the grid;
+
+    for(var i=0;i<sectionsArray.length;i++){
+        //i is the iterator for sectionsArray index
+
+    }
 }
 //Extra Grid features
 function headerClick(e, args) {
@@ -263,3 +268,8 @@ $(document).keydown(function(e) {
         }
     }
 });
+
+//UI Layer Layer Testing Functions
+function onResetClick(){
+    grid = resetGrid(grid,constituentNames,"fu",true,"dec",true,'onb',true,'max',true,'rsd',true,'ur');
+}
