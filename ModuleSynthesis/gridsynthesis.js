@@ -20,7 +20,7 @@ $(function() {
     grid = gridAndData.grid;
     data = gridAndData.data;
 });
-function initialiseReqGrid(tableID, grid, data, genRamp, genDecCap, genOnBar, constituentNames, columns, options, pluginOptions, headerClick, defValue, isRSDPresent, defRSDValue, isURSPresent, defURSVal){
+function initialiseReqGrid(tableID, grid, data, genRamp, genDecCap, genOnBar, constituentNames, columns, options, pluginOptions, headerClick, defValue, isRSDPresent, defRSDValue, isURSPresent, defURSValue){
     console.log("Initialising the grid");
     //Set the whole grid to default values, rsd urs not included
     for (var i = 0; i < 96; i++) {
@@ -40,7 +40,7 @@ function initialiseReqGrid(tableID, grid, data, genRamp, genDecCap, genOnBar, co
                 d['RSD' + j] = defRSDValue;
             }
             if(isURSPresent) {
-                d['URS' + j] = defURSVal;
+                d['URS' + j] = defURSValue;
             }
         }
         d["avail"] = 0;
@@ -151,7 +151,9 @@ function setReqTableColumns(columns, isRSDPresent, isURSPresent) {
     return columns;
 }
 
+function resetGrid(gridID, grid, data, constituentNames, defVal, defDecCap, defOnBar, defMaxRamp, isRSDPresent, defRSDValue, isURSPresent, defURSValue){
 
+}
 //Extra Grid features
 function headerClick(e, args) {
     var colInd = args.grid.getColumnIndex(args.column.id);
