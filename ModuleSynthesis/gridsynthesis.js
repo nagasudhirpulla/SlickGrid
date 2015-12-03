@@ -1,6 +1,8 @@
 //On page load...
-var grid;
-var data = [];
+var grid = {};
+var sectionsArray;
+var genName = "CGPL";
+var comment = "userComment";
 var genRamp;
 var genDecCap;
 var genOnBar;
@@ -10,15 +12,14 @@ var options;
 var pluginOptions;
 
 $(function() {
-    var gridAndData;
     genRamp = 70;
     genDecCap = 1450;
     genOnBar = 1400;
     constituentNames = ["A", "B", "C", "D"];
     columns = setReqTableColumns(columns, true, true);
-    grid = initialiseReqGrid("myGrid", grid, genRamp, genDecCap, genOnBar, constituentNames, columns, options, pluginOptions, headerClick, "FULL", true, 0, true, 'Yes');
+    grid = initialiseReqGrid("myGrid", genRamp, genDecCap, genOnBar, constituentNames, columns, options, pluginOptions, headerClick, "FULL", true, 0, true, 'Yes');
 });
-function initialiseReqGrid(tableID, grid, genRamp, genDecCap, genOnBar, constituentNames, columns, options, pluginOptions, headerClick, defValue, isRSDPresent, defRSDValue, isURSPresent, defURSValue){
+function initialiseReqGrid(tableID, genRamp, genDecCap, genOnBar, constituentNames, columns, options, pluginOptions, headerClick, defValue, isRSDPresent, defRSDValue, isURSPresent, defURSValue){
     console.log("Initialising the grid");
     //Set the whole grid to default values, rsd urs not included
     var data = [];
@@ -195,18 +196,271 @@ function resetGrid(grid, constituentNames, defVal, isDecCapPresent, defDecCap, i
     }
     grid.invalidateAllRows();
     grid.render();
-    return grid;
+}
+
+//Grid Utility Functions
+function setGridCell(grid, rowNumber, columnID, value){
+    //Note: Data not rendered from here, so render grid from outside
+    //Note: rowNumber starts from 0 to 95, not 1 to 96.
+    var data = grid.getData();
+    (data[rowNumber])[columnID] = value;
 }
 
 //Grid Utility Functions
 function feedSectionsToGrid(grid, sectionsArray){
     //first reset the grid;
-
-    for(var i=0;i<sectionsArray.length;i++){
+    resetGrid(grid,constituentNames,"fu",true,"dec",true,'onb',true,'max',true,'rsd',true,'ur');
+    //Feeding the normal shares
+    var sectionsArrayKeys = getKeys(sectionsArray);
+    for(var i=0;i<sectionsArrayKeys.length;i++){
         //i is the iterator for sectionsArray index
-
+        var column = sectionsArrayKeys[i];
+        var sections = sectionsArray[column];
+        for(j=0;j<sections.length;j++){
+            var sectionObject = sections[j];
+            for(var k=sectionObject.secStart;k<=sectionObject.secEnd;k++){
+                setGridCell(grid,k,column,sectionObject.val);
+            }
+        }
     }
+    //Now invalidate and render the the grid
+    grid.invalidateAllRows();
+    grid.render();
 }
+
+//Grid Utility Functions
+function getSectionsFromGrid(grid){
+//Find the sections of the columns
+    var data = grid.getData();
+    var sectionsArray = [];
+    var constCol;
+    for (var constCol1 = 0; constCol1 < constituentNames.length + 3; constCol1++) {
+        //Last three for onBarDC and MaxRamp and DC respectively
+        switch (constCol1) {
+            case constituentNames.length:
+                constCol = "onBar";
+                break;
+            case constituentNames.length + 1:
+                constCol = "rampNum";
+                break;
+            case constituentNames.length + 2:
+                constCol = "DC";
+                break;
+            default:
+                constCol = constCol1;
+                break;
+        }
+        var sections = [];
+        var sectionStart = 0;
+        for (var blkNum = 1; blkNum <= 95; blkNum++) {
+            if ((data[blkNum])[constCol] != (data[blkNum - 1])[constCol]) {
+                sections.push({
+                    'secStart': sectionStart,
+                    'secEnd': blkNum - 1,
+                    'val': (data[blkNum - 1])[constCol]
+                });
+                sectionStart = blkNum;
+            }
+        }
+        sections.push({
+            'secStart': sectionStart,
+            'secEnd': 95,
+            'val': (data[95])[constCol]
+        });
+        sectionsArray[constCol] = sections;
+    }
+    //URS Version
+    for (constCol = 0; constCol < constituentNames.length; constCol++) {
+        sections = [];
+        sectionStart = 0;
+        for (var blkNum = 1; blkNum <= 95; blkNum++) {
+            //TODO decouple the dependence of URS and RSD sections
+            if ((data[blkNum])['RSD' + constCol] != (data[blkNum - 1])['RSD' + constCol] || (data[blkNum])['URS' + constCol] != (data[blkNum - 1])['URS' + constCol]) {
+                sections.push({
+                    'secStart': sectionStart,
+                    'secEnd': blkNum - 1,
+                    'val': (data[blkNum - 1])['RSD' + constCol]
+                });
+                sectionStart = blkNum;
+            }
+        }
+        sections.push({
+            'secStart': sectionStart,
+            'secEnd': 95,
+            'val': (data[95])['RSD' + constCol]
+        });
+        sectionsArray['RSD' + constCol] = sections;
+    }
+    //For URS option
+    for (constCol = 0; constCol < constituentNames.length; constCol++) {
+        sections = [];
+        sectionStart = 0;
+        for (var blkNum = 1; blkNum < 96; blkNum++) {
+            //TODO decouple the dependence of URS and RSD sections
+            if ((data[blkNum])['URS' + constCol] != (data[blkNum - 1])['URS' + constCol] || (data[blkNum])['RSD' + constCol] != (data[blkNum - 1])['RSD' + constCol]) {
+                sections.push({
+                    'secStart': sectionStart,
+                    'secEnd': blkNum - 1,
+                    'val': (data[blkNum - 1])['URS' + constCol]
+                });
+                sectionStart = blkNum;
+            }
+        }
+        sections.push({
+            'secStart': sectionStart,
+            'secEnd': 95,
+            'val': (data[95])['URS' + constCol]
+        });
+        //sectionsArray.push(sections);
+        sectionsArray['URS' + constCol] = sections;
+    }
+    //URS Version
+    //TODO eliminate saving these in the sectionsArray
+    //sectionsArray['genName'] = genName;
+    //sectionsArray['comment'] = document.getElementById('commentInput').value;
+    //sections of the columns found
+    return sectionsArray;
+}
+
+//Grid Utility Functions
+function getKeys(obj){
+    var keys = [];
+    for(var key in obj){
+        keys.push(key);
+    }
+    return keys;
+}
+
+//Grid Utility Functions
+function validateGrid(grid) {
+    var data = grid.getData();
+    var alertComment = {};
+    alertComment.str = "";
+    //ToDo validate grid dynamically using on cellchange listener
+    for (var i = 0; i < 96; i++) {
+        //Validating the data values of the grid here...
+        //i is iterator for the row i ...
+        var d = (data[i]);
+        var cellVal;
+        var alertStr;
+        var isValid;
+        for (var j = 0; j < constituentNames.length; j++) {
+            //Validating the data value for the cell i,j(row,column)
+            cellVal = d[j];
+            //check if it is a number
+            if (typeof cellVal == "number") {
+                //No Validation required
+            } else {
+                isValid = cellVal.match(/^\d+(\.\d+)?\p$/i) || cellVal.match(/^\FULL$/i) || cellVal.match(/^[+]?\d+(\.\d+)?$/i);
+                if (!isValid) {
+                    alertAdd(alertComment, 'Invalid values at Block ' + (i + 1) + ' of the Constituent ' + constituentNames[j] + '.');
+                    $(grid.getCellNode(i,grid.getColumnIndex(j))).addClass("redError");
+                    //return false;
+                } else {
+                    //If valid then capitalize all letters.Design decision
+                    d[j] = cellVal.toUpperCase();
+                }
+            }
+            //URS Version
+            cellVal = d["RSD" + j];
+            if (typeof cellVal == "number") {
+
+            } else {
+                isValid = cellVal.match(/^\d+(\.\d+)?\p$/i) || cellVal.match(/^\FULL$/i) || cellVal.match(/^[+]?\d+(\.\d+)?$/i) || cellVal.match(/^\YES$/i);
+                if (!isValid) {
+                    alertAdd(alertComment, 'Invalid values at Block ' + (i + 1) + ' of the RSD of Constituent ' + constituentNames[j] + '.');
+                    $(grid.getCellNode(i,grid.getColumnIndex("RSD" + j))).addClass("redError");
+                    //return false;
+                } else {
+                    //if valid then capitalize all letters.Design decision
+                    d["RSD" + j] = cellVal.toUpperCase();
+                }
+            }
+            cellVal = d["URS" + j];
+            if (typeof cellVal == "number") {
+                /*
+                if (cellVal == 0) {
+                    d["URS" + j] = "No";
+                } else{
+                    d["URS" + j] = "Yes";
+                }
+                */
+            } else {
+                isValid = cellVal.match(/^\LEFTOVER$/i) || cellVal.match(/^[+]?\d+(\.\d+)?$/i) || cellVal.match(/^\YES$/i);
+                if (!isValid) {
+                    alertAdd(alertComment, 'Invalid values at Block ' + (i + 1) + ' of the URS of Constituent ' + constituentNames[j] + '.');
+                    $(grid.getCellNode(i,grid.getColumnIndex("URS" + j))).addClass("redError");
+                    //return false;
+                } else {
+                    //if valid then capitalize all letters.Design decision
+                    d["URS" + j] = cellVal.toUpperCase();
+                }
+            }
+            //URS Version
+        }
+        //Validating MaxRamps and onBarDC
+        for (var j = 0; j < 3; j++) {
+            //Validating the data value for the cell i,j(row,column)
+            var colStr;
+            switch (j) {
+                case 0:
+                    colStr = 'onBar';
+                    alertStr = 'Invalid values at Block ' + (i + 1) + ' of OnBarDC grid column';
+                    break;
+                case 1:
+                    colStr = 'rampNum';
+                    alertStr = 'Invalid values at Block ' + (i + 1) + ' of MaxRamp grid column';
+                    break;
+                case 2:
+                    colStr = 'DC';
+                    alertStr = 'Invalid values at Block ' + (i + 1) + ' of DC grid column';
+                    break;
+            }
+            cellVal = d[colStr];
+            //check if it is a number
+            if (typeof cellVal == "number") {
+                //No Validation required
+            } else {
+                isValid = cellVal.match(/^[+]?\d+(\.\d+)?$/i);
+                if (!isValid) {
+                    alertAdd(alertComment, alertStr);
+                    $(grid.getCellNode(i,grid.getColumnIndex(colStr))).addClass("redError");
+                    //return false;
+                } else {
+                    d[colStr] = cellVal;
+                }
+            }
+        }
+    }
+    if(alertComment.str.length != 0){
+        grid.render();
+        alert(alertComment.str+'Invalid values are not allowed');
+        return false;
+    }
+    return true;
+}
+
+//Grid Utility Functions
+function alertAdd(alertComment, alertStr){
+    alertComment.str += alertStr;
+    alertComment.str += '\n\n';
+}
+
+//Grid Utility Functions
+function isSlickGridObject(grid){
+    if(grid == null){
+        console.log("Unable to validate grid because grid is null");
+        return false;
+    }else if(typeof(grid) != "object"){
+        console.log("Unexpected grid data type");
+        return false;
+    } else if(grid.hasOwnProperty("getData")){
+        console.log("Not a Slick grid Object");
+        return false;
+    }
+    return true;
+}
+
 //Extra Grid features
 function headerClick(e, args) {
     var colInd = args.grid.getColumnIndex(args.column.id);
@@ -271,5 +525,27 @@ $(document).keydown(function(e) {
 
 //UI Layer Layer Testing Functions
 function onResetClick(){
-    grid = resetGrid(grid,constituentNames,"fu",true,"dec",true,'onb',true,'max',true,'rsd',true,'ur');
+    resetGrid(grid,constituentNames,"fu",true,"dec",true,'onb',true,'max',true,'rsd',true,'ur');
+}
+
+//UI Layer Layer Testing Functions
+function onSetGridSectionsClick(){
+    feedSectionsToGrid(grid,sectionsArray);
+}
+
+//UI Layer Layer Testing Functions
+function onGetGridSectionsClick(){
+    if(validateGrid(grid)) {
+        sectionsArray = getSectionsFromGrid(grid);
+    }
+}
+
+//UI Layer Layer Testing Functions
+function onValidateGridClick(){
+    var isGridValid = validateGrid(grid);
+}
+
+//UI Layer Layer Testing Functions
+function onCreateSummaryFromSectionsClick(){
+    createSectionSummaryTable("summTab", sectionsArray);
 }

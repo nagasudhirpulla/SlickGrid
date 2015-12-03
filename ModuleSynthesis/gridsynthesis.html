@@ -12,6 +12,7 @@
     <!--Custom Styling-->
     <link rel="stylesheet" href="../examples/examples.css" type="text/css"/>
     <link rel="stylesheet" href="../examples/MainSheetUI.css" type="text/css"/>
+    <link rel="stylesheet" href="gridsynthesis.css" type="text/css"/>
     <!--Bootstrap Styling-->
     <link rel="stylesheet" href="../bootstrap/css/bootstrap.min.css" type="text/css"/>
     <!--Bootstrap Libraries-->
@@ -31,9 +32,41 @@
         <button onclick="onResetClick()">ResetGrid</button>
     </div>
 </div>
-
+<div class="row" style="margin-top: 5px">
+    <div class="col-md-12" >
+        <button onclick="onSetGridSectionsClick()">FeedSectionsToGrid</button>
+    </div>
+</div>
+<div class="row" style="margin-top: 5px">
+    <div class="col-md-12" >
+        <button onclick="onGetGridSectionsClick()">GetSectionsFromGrid</button>
+    </div>
+</div>
+<div class="row" style="margin-top: 5px">
+    <div class="col-md-12" >
+        <button onclick="onValidateGridClick()">ValidateGrid</button>
+    </div>
+</div>
+<div class="row" style="margin-top: 5px">
+    <div class="col-md-12" >
+        <button onclick="onCreateSummaryFromSectionsClick()">CreateSummaryFromSections</button>
+    </div>
+</div>
+<div class="row" style="margin-top: 5px">
+    <div class="col-md-12 text-center">
+        <div id="summTabDiv">
+            <div class="hidingClass table-responsive">
+                <table class="table table-bordered table-hover text-left">
+                    <thead style="background-color: #337ab7;color: whitesmoke"><tr><td>Name</td><td>From</td><td>To</td><td>Value</td></tr></thead>
+                    <tbody id="summTab"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
 <!--Custom Script></script-->
 <script src="gridsynthesis.js"></script>
+<script src="sectionsModule.js"></script>
 <script src="../examples/infix.js"></script>
 <!--Grid Libraries-->
 <script src="../lib/firebugx.js"></script>
