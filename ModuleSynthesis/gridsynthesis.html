@@ -64,9 +64,34 @@
         </div>
     </div>
 </div>
+<div class="row">
+    <div class="col-md-6" style="margin-top: 5px">
+        <!--Copy this div to have a modular requisition table div and don't forget to include tablewidget.js-->
+        <!--Column for table-->
+        <button onclick="showhide(this)" class="btn btn-block btn-xs">Requisition Shares Input Table</button>
+        <div id="reqInputDiv" class="hidingClass table-responsive"><!--keyClass--hidingClass-->
+            <table style="margin-bottom: 5px" id="reqInputTable" class="table table-bordered table-hover tableInputClass"><!--keyClass--tableInputClass-->
+                <tbody>
+                <tr>
+                    <td>Constituent Name</td>
+                    <td>From Block</td>
+                    <td>To Block</td>
+                    <td>Value</td>
+                    <td><input type="checkbox" name="chk" onclick="SelectAll(this)"></td>
+                </tr>
+                </tbody>
+            </table>
+
+            <select id="selectReqConst" class="selectAbsorb"><option>BPDB-ER</option><option>CSEB-NVVN</option><option>DD</option><option>DNH</option><option>GUVNL</option><option>GOA</option><option>HVDC-BHD</option><option>HVDC-VIN</option><option>JNK-NR</option><option>MPSEB</option><option>MSEB</option><option>MS-NVVN</option><option>RAJ-SOLAR</option></select><!--keyClass--SelectAbsorb-->
+            <button id="reqAddRowButton" onclick="addRow(this)" class="btn btn-success btn-xs">AddRow</button>
+            <button id="reqDeleteRowButton" onclick="deleteRow(this)" class="btn btn-danger btn-xs">DeleteRows</button>
+        </div>
+    </div>
+</div>
 <!--Custom Script></script-->
 <script src="gridsynthesis.js"></script>
 <script src="sectionsModule.js"></script>
+<script src="tablesModule.js"></script>
 <script src="../examples/infix.js"></script>
 <!--Grid Libraries-->
 <script src="../lib/firebugx.js"></script>
