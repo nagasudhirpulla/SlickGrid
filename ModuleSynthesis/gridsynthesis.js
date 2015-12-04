@@ -18,6 +18,9 @@ $(function() {
     constituentNames = ["A", "B", "C", "D"];
     columns = setReqTableColumns(columns, true, true);
     grid = initialiseReqGrid("myGrid", genRamp, genDecCap, genOnBar, constituentNames, columns, options, pluginOptions, headerClick, "FULL", true, 0, true, 'Yes');
+    //Populate the Constituent Options
+    var selList = document.getElementById("selectReqConst");
+    decorateSelectList(selList,constituentNames);
 });
 function initialiseReqGrid(tableID, genRamp, genDecCap, genOnBar, constituentNames, columns, options, pluginOptions, headerClick, defValue, isRSDPresent, defRSDValue, isURSPresent, defURSValue){
     console.log("Initialising the grid");
@@ -322,7 +325,7 @@ function getSectionsFromGrid(grid){
     return sectionsArray;
 }
 
-//Grid Utility Functions
+//Common Utility Functions
 function getKeys(obj){
     var keys = [];
     for(var key in obj){

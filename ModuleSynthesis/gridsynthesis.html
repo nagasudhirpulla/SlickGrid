@@ -66,14 +66,15 @@
 </div>
 <div class="row">
     <div class="col-md-6" style="margin-top: 5px">
-        <!--Copy this div to have a modular requisition table div and don't forget to include tablewidget.js-->
+        <!--Copy this div to have a modular requisition table div and don't forget to include tablesModule.js-->
         <!--Column for table-->
-        <button onclick="showhide(this)" class="btn btn-block btn-xs">Requisition Shares Input Table</button>
+        <button onclick="showHide(this)" class="btn btn-block btn-xs">Requisition Input Table</button>
         <div id="reqInputDiv" class="hidingClass table-responsive"><!--keyClass--hidingClass-->
             <table style="margin-bottom: 5px" id="reqInputTable" class="table table-bordered table-hover tableInputClass"><!--keyClass--tableInputClass-->
                 <tbody>
                 <tr>
                     <td>Constituent Name</td>
+                    <td>Category</td>
                     <td>From Block</td>
                     <td>To Block</td>
                     <td>Value</td>
@@ -82,7 +83,8 @@
                 </tbody>
             </table>
 
-            <select id="selectReqConst" class="selectAbsorb"><option>BPDB-ER</option><option>CSEB-NVVN</option><option>DD</option><option>DNH</option><option>GUVNL</option><option>GOA</option><option>HVDC-BHD</option><option>HVDC-VIN</option><option>JNK-NR</option><option>MPSEB</option><option>MSEB</option><option>MS-NVVN</option><option>RAJ-SOLAR</option></select><!--keyClass--SelectAbsorb-->
+            <select id="selectReqConst" class="selectAbsorb"><option>BPDB-ER</option><option>CSEB-NVVN</option><option>DD</option><option>DNH</option><option>GUVNL</option><option>GOA</option><option>HVDC-BHD</option><option>HVDC-VIN</option><option>JNK-NR</option><option>MPSEB</option><option>MSEB</option><option>MS-NVVN</option><option>RAJ-SOLAR</option></select><!--keyClass--selectAbsorb-->
+            <select id="catReqConst" class="catAbsorb"><option value="0">Normal</option><option value="1">RSD</option><option value="2">URS</option><option value="3">DC</option><option value="4">onBarDC</option><option value="5">MaxRamp</option></select><!--keyClass--catAbsorb-->
             <button id="reqAddRowButton" onclick="addRow(this)" class="btn btn-success btn-xs">AddRow</button>
             <button id="reqDeleteRowButton" onclick="deleteRow(this)" class="btn btn-danger btn-xs">DeleteRows</button>
         </div>

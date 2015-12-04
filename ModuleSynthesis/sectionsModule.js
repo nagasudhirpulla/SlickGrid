@@ -62,7 +62,7 @@ function createSectionSummaryTableRow(j, sectionsArray, constituentNames, summar
     }
 }
 
-//Sections Utility Function
+//Common Utility Function
 function isValidColumnNumber(str){
     return /^(\d*)$/.test(str);
 }
