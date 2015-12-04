@@ -1,4 +1,4 @@
-The structure of sectionsArray Object
+The structure of sectionsArray Object is as follows
 0: Array[1]
 1: Array[1]
 2: Array[1]
@@ -16,3 +16,10 @@ length: 4
 onBar: Array[1]
 rampNum: Array[1]
 __proto__: Array[0]
+
+-->The keys of sectionsArray object are the indices of the constituents in the "constituentNames" array.
+-->So the sections array is directly dependant on the "constituentNames" array.
+-->The keys for URS and RSD columns are constituents indices appended at the end of the strings "URS" and "RSD" respectively.
+-->The keys for OnBarDc, MaxRamp and DC are onBar, rampNum and DC respectively.
+
+The Select menu options of the category of requisition are "Normal", "RSD", "URS", "DC", "OnBarDC" and "MaxRamp".These can be found at the Requisition Table Input.
