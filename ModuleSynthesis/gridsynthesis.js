@@ -552,3 +552,8 @@ function onValidateGridClick(){
 function onCreateSummaryFromSectionsClick(){
     createSectionSummaryTable("summTab", sectionsArray);
 }
+
+//UI Layer Layer Testing Functions
+function onGetRowsFromSectionsClick(){
+    getRowsFromSections(sectionsArray, constituentNames, "reqInputTable")
+}

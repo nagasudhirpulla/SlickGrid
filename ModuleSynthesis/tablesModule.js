@@ -127,18 +127,24 @@ function decorateSelectList(select,array) {
 }
 
 //Table Utility Functions
-function getRowsFromSections(sectionsArray, tableID){
+function getRowsFromSections(sectionsArray, constituentNames, tableID){
     var table = document.getElementById(tableID);
     var sectionsArrayKeys = getKeys(sectionsArray);
-    table.innerHTML = "<tbody><tr><td>Constituent Name</td><td>From Block</td><td>To Block</td><td>Value</td><td><input type=\"checkbox\" name=\"chk\" onclick=\"SelectAll(this)\"/></td></tr></tbody>";
+    table.innerHTML = "<tbody><tr><td>Constituent Name</td><td>Category</td><td>From Block</td><td>To Block</td><td>Value</td><td><input type=\"checkbox\" name=\"chk\" onclick=\"SelectAll(this)\"/></td></tr></tbody>";
     for (var j = 0; j < sectionsArrayKeys.length; j++) {
         var sectionKey = sectionsArrayKeys[j];
         var sections = sectionsArray[sectionKey];
         var decoupled = decoupleKey(sectionKey);
         var reqStr = decoupled.str;
         var cat = decoupled.cat;
-        for (var k = 0; k < sections.length; k++) {
-            addRowOfReqInput("reqInputTable", reqStr, cat, sections[k].secStart + 1, sections[k].secEnd + 1, sections[k].val);
+        if((cat=="Normal"&&isValidColumnNumber(reqStr))){
+            for (var k = 0; k < sections.length; k++) {
+                addRowOfReqInput(tableID, constituentNames[reqStr], cat, sections[k].secStart + 1, sections[k].secEnd + 1, sections[k].val);
+            }
+        }else if(cat=="URS"||cat=="RSD"||cat=="OnBarDC"||cat=="DC"||cat=="MaxRamp"){
+            for (var k = 0; k < sections.length; k++) {
+                addRowOfReqInput(tableID, reqStr, cat, sections[k].secStart + 1, sections[k].secEnd + 1, sections[k].val);
+            }
         }
     }
 }
@@ -154,20 +160,21 @@ function addRowOfReqInput(tableID, reqStr, cat, fromBlock, toBlock, val) {
     var s = document.createElement("span");
     s.appendChild(t);
     newCell.appendChild(s);
-    newCell = row.insertCell(0);
+    newCell = row.insertCell(1);
     t = document.createTextNode(cat);
     s = document.createElement("span");
     s.appendChild(t);
+    newCell.appendChild(s);
     for (var i = 2; i < colCount-1; i++) {
         newCell = row.insertCell(i);
         var inp = document.createElement("input");
-        if (i == 1) {
+        if (i == 2) {
             inp.min = '1';
             inp.max = '100';
             inp.type = 'number';
             inp.onkeypress = isNumberKey;
             inp.value = fromBlock;
-        } else if (i == 2) {
+        } else if (i == 3) {
             inp.min = '1';
             inp.max = '100';
             inp.type = 'number';
@@ -195,10 +202,10 @@ function decoupleKey(sectionKey){
             textStr = constituentNames[Number(sectionKey.substring(3, sectionKey.length))];
             category = sectionKey.substring(0,3);
         }else{
-            if(sectionKey == "MaxRamp") {
+            if(sectionKey == "rampNum") {
                 textStr = "MaxRamp";
                 category = "MaxRamp"
-            }else if(sectionKey == "onBarDC") {
+            }else if(sectionKey == "onBar") {
                 textStr = "OnBarDC";
                 category = "OnBarDC"
             }else if(sectionKey == "DC") {
@@ -210,7 +217,7 @@ function decoupleKey(sectionKey){
             }
         }
     } else{
-        textStr = constituentNames[sectionKey];
+        textStr = sectionKey;
         category = "Normal";
     }
     return{

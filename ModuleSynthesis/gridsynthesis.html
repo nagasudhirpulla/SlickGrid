@@ -27,32 +27,16 @@
         <div id="myGrid" style="height:400px;"></div>
     </div>
 </div>
-<div class="row" style="margin-top: 5px">
-    <div class="col-md-12" >
+<div class="row" style="margin-top: 20px">
+    <div class="col-md-12">
         <button onclick="onResetClick()">ResetGrid</button>
-    </div>
-</div>
-<div class="row" style="margin-top: 5px">
-    <div class="col-md-12" >
         <button onclick="onSetGridSectionsClick()">FeedSectionsToGrid</button>
-    </div>
-</div>
-<div class="row" style="margin-top: 5px">
-    <div class="col-md-12" >
         <button onclick="onGetGridSectionsClick()">GetSectionsFromGrid</button>
-    </div>
-</div>
-<div class="row" style="margin-top: 5px">
-    <div class="col-md-12" >
         <button onclick="onValidateGridClick()">ValidateGrid</button>
-    </div>
-</div>
-<div class="row" style="margin-top: 5px">
-    <div class="col-md-12" >
         <button onclick="onCreateSummaryFromSectionsClick()">CreateSummaryFromSections</button>
     </div>
 </div>
-<div class="row" style="margin-top: 5px">
+<div class="row" style="margin-top: 20px">
     <div class="col-md-12 text-center">
         <div id="summTabDiv">
             <div class="hidingClass table-responsive">
@@ -82,12 +66,16 @@
                 </tr>
                 </tbody>
             </table>
-
             <select id="selectReqConst" class="selectAbsorb"><option>BPDB-ER</option><option>CSEB-NVVN</option><option>DD</option><option>DNH</option><option>GUVNL</option><option>GOA</option><option>HVDC-BHD</option><option>HVDC-VIN</option><option>JNK-NR</option><option>MPSEB</option><option>MSEB</option><option>MS-NVVN</option><option>RAJ-SOLAR</option></select><!--keyClass--selectAbsorb-->
-            <select id="catReqConst" class="catAbsorb"><option value="0">Normal</option><option value="1">RSD</option><option value="2">URS</option><option value="3">DC</option><option value="4">onBarDC</option><option value="5">MaxRamp</option></select><!--keyClass--catAbsorb-->
+            <select id="catReqConst" class="catAbsorb"><option value="0">Normal</option><option value="1">RSD</option><option value="2">URS</option><option value="3">DC</option><option value="4">OnBarDC</option><option value="5">MaxRamp</option></select><!--keyClass--catAbsorb-->
             <button id="reqAddRowButton" onclick="addRow(this)" class="btn btn-success btn-xs">AddRow</button>
             <button id="reqDeleteRowButton" onclick="deleteRow(this)" class="btn btn-danger btn-xs">DeleteRows</button>
         </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12" style="margin-top: 5px">
+        <button onclick="onGetRowsFromSectionsClick()">GetRowsFromSections</button>
     </div>
 </div>
 <!--Custom Script></script-->
