@@ -118,7 +118,7 @@ function deleteRow(el) {
     }
 }
 
-//Table Utility Functions
+//Common Utility Functions
 function decorateSelectList(select,array) {
     select.options.length = 0;
     for(var i = 0; i < array.length; i++) {
@@ -224,4 +224,36 @@ function decoupleKey(sectionKey){
         str: textStr,
         cat: category
     }
+}
+
+//Table Utility Functions
+function getSectionsFromRows(constituentNames, tableID){
+    var sectionsArray = [];
+    //TODO algorithm to create sections from table
+    var table = document.getElementById(tableID);
+    for(var i = 1; j < table.rows.length - 1; i++){
+        var row = table.rows[i];
+        //get the constituent index in constituentNames array
+        var cell = row.cells[0];
+        var consName = cell.childNodes[0].childNodes[0];
+        //get the category of the row
+        cell = row.cells[1];
+        var cat = cell.childNodes[0].childNodes[0];
+        if(cat=="Normal"){
+            
+        } else if(cat=="Normal"){
+            
+        } else if(cat=="RSD"||"URS"){
+            
+        } else if(cat=="DC"){
+            
+        } else if(cat=="OnBarDC"){
+            
+        } else if(cat=="MaxRamp"){
+            
+        }
+    }
+    
+}
+
 }
