@@ -63,7 +63,6 @@ function addRow(el) {
         s = document.createElement("span");
         s.appendChild(t);
         cell.appendChild(s);
-
     }
     for (var i = 2; i < colCount - 1; i++) {
         newCell = row.insertCell(i);
