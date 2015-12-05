@@ -525,7 +525,7 @@ function addRowNoSelect(el) {
 }
 
 function createSumm(overridePermissionRequired) { //by pressing modify revision by input tables button
-    //tieing all the tables to one button
+    //Tieing all the tables to one button
     var x1 = modifyReq(overridePermissionRequired);
     var x2 = modifyDC(!x1 && overridePermissionRequired);
     var x3 = modifyDec(!(x1 || x2) && overridePermissionRequired);

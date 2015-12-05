@@ -277,8 +277,7 @@ function getSectionsFromGrid(grid){
         sections = [];
         sectionStart = 0;
         for (var blkNum = 1; blkNum <= 95; blkNum++) {
-            //TODO decouple the dependence of URS and RSD sections
-            if ((data[blkNum])['RSD' + constCol] != (data[blkNum - 1])['RSD' + constCol] || (data[blkNum])['URS' + constCol] != (data[blkNum - 1])['URS' + constCol]) {
+            if ((data[blkNum])['RSD' + constCol] != (data[blkNum - 1])['RSD' + constCol]) {
                 sections.push({
                     'secStart': sectionStart,
                     'secEnd': blkNum - 1,
@@ -299,8 +298,7 @@ function getSectionsFromGrid(grid){
         sections = [];
         sectionStart = 0;
         for (var blkNum = 1; blkNum < 96; blkNum++) {
-            //TODO decouple the dependence of URS and RSD sections
-            if ((data[blkNum])['URS' + constCol] != (data[blkNum - 1])['URS' + constCol] || (data[blkNum])['RSD' + constCol] != (data[blkNum - 1])['RSD' + constCol]) {
+            if ((data[blkNum])['URS' + constCol] != (data[blkNum - 1])['URS' + constCol]) {
                 sections.push({
                     'secStart': sectionStart,
                     'secEnd': blkNum - 1,
@@ -443,7 +441,7 @@ function validateGrid(grid) {
     return true;
 }
 
-//Grid Utility Functions
+//Common Utility Functions
 function alertAdd(alertComment, alertStr){
     alertComment.str += alertStr;
     alertComment.str += '\n\n';
@@ -555,5 +553,18 @@ function onCreateSummaryFromSectionsClick(){
 
 //UI Layer Layer Testing Functions
 function onGetRowsFromSectionsClick(){
-    getRowsFromSections(sectionsArray, constituentNames, "reqInputTable")
+    getRowsFromSections(sectionsArray, constituentNames, "reqInputTable");
+}
+
+//UI Layer Layer Testing Functions
+function onGetSectionsFromRowsClick(){
+    var isReqTableValid = validateReqTable("reqInputTable");
+    if(isReqTableValid) {
+        var tableSectionsArray = getSectionsFromRows(constituentNames, "reqInputTable", "FULL", 0, genDecCap, genOnBar, genRamp, 0);
+    }
+}
+
+//UI Layer Layer Testing Functions
+function onValidateReqTableClick(){
+    var isReqTableValid = validateReqTable("reqInputTable");
 }

@@ -226,33 +226,199 @@ function decoupleKey(sectionKey){
 }
 
 //Table Utility Functions
-function getSectionsFromRows(constituentNames, tableID){
+function getSectionsFromRows(constituentNames, tableID, defVal, defRSDURSVal, defDecCap, defOnBarDC, defMaxRamp, defUnCatVal){
     var sectionsArray = [];
-    //TODO algorithm to create sections from table
+    var virtualGrid = [];
     var table = document.getElementById(tableID);
-    for(var i = 1; j < table.rows.length - 1; i++){
+    //Leave the tableHeader from iteration
+    for(var i = 1; i < table.rows.length; i++){
         var row = table.rows[i];
-        //get the constituent index in constituentNames array
         var cell = row.cells[0];
-        var consName = cell.childNodes[0].childNodes[0];
+        var consName = cell.childNodes[0].childNodes[0].textContent;
+        var index = consName;
         //get the category of the row
         cell = row.cells[1];
-        var cat = cell.childNodes[0].childNodes[0];
-        if(cat=="Normal"){
-            
+        var cat = cell.childNodes[0].childNodes[0].textContent;
+        //Create the virtual grid columns if not present
+        if(cat=="Normal" && (constituentNames.indexOf(consName)!= -1)){
+            //Get the constituent index in constituentNames array
+            index = constituentNames.indexOf(consName);
+            if(virtualGrid[index] == undefined) {
+                virtualGrid[index] = [];
+                for(var j=0;j<96;j++){
+                    virtualGrid[index].push(defVal);
+                }
+            }
         } else if(cat=="Normal"){
-            
-        } else if(cat=="RSD"||"URS"){
-            
+            //Not needed
+            index = consName;
+            if(virtualGrid[index] == undefined) {
+                virtualGrid[index] = [];
+                for(var j=0;j<96;j++){
+                    virtualGrid[index].push(defUnCatVal);
+                }
+            }
+        } else if(cat=="RSD"||cat=="URS"){
+            index = cat+constituentNames.indexOf(consName);
+            if(virtualGrid[index] == undefined) {
+                virtualGrid[index] = [];
+                for(var j=0;j<96;j++){
+                    virtualGrid[index].push(defRSDURSVal);
+                }
+            }
         } else if(cat=="DC"){
-            
+            index = cat;
+            if(virtualGrid[index] == undefined) {
+                virtualGrid[index] = [];
+                for(var j=0;j<96;j++){
+                    virtualGrid[index].push(defDecCap);
+                }
+            }
         } else if(cat=="OnBarDC"){
-            
+            index = "onBar";
+            if(virtualGrid[index] == undefined) {
+                virtualGrid[index] = [];
+                for(var j=0;j<96;j++){
+                    virtualGrid[index].push(defOnBarDC);
+                }
+            }
         } else if(cat=="MaxRamp"){
-            
+            index = "rampNum";
+            if(virtualGrid[index] == undefined) {
+                virtualGrid[index] = [];
+                for(var j=0;j<96;j++){
+                    virtualGrid[index].push(defMaxRamp);
+                }
+            }
+        } else{
+            //Unexpected column category return false
+            continue;
+        }
+        //Now fill the values into the virtual grid
+        cell = row.cells[2];
+        var fromBlock = cell.childNodes[0].value - 1;
+        cell = row.cells[3];
+        var toBlock = cell.childNodes[0].value - 1;
+        cell = row.cells[4];
+        var reqVal = cell.childNodes[0].value;
+        for(var k = fromBlock;k<=toBlock;k++){
+            var column = virtualGrid[index];
+            column[k] = reqVal;
         }
     }
-    
+    //Now create and return the sectionsArray from the virtualGrid
+    var virtualGridKeys = getKeys(virtualGrid);
+    for(var i=0;i<virtualGridKeys.length;i++){
+        var columnKey = virtualGridKeys[i];
+        var sections = [];
+        var sectionStart = 0;
+        for (var blkNum = 1; blkNum < 96; blkNum++) {
+            if (virtualGrid[columnKey][blkNum] != virtualGrid[columnKey][blkNum - 1]) {
+                sections.push({
+                    'secStart': sectionStart,
+                    'secEnd': blkNum - 1,
+                    'val': virtualGrid[columnKey][blkNum - 1]
+                });
+                sectionStart = blkNum;
+            }
+        }
+        sections.push({
+            'secStart': sectionStart,
+            'secEnd': 95,
+            'val': virtualGrid[columnKey][95]
+        });
+        //sectionsArray.push(sections);
+        sectionsArray[columnKey] = sections;
+    }
+    return sectionsArray;
 }
 
+//Table Utility Functions
+function validateReqTable(tableID){
+    var table = document.getElementById(tableID);
+    var alertComment = {};
+    alertComment.str = "";
+    var isValid;
+    resetTableRowsColor(table);
+    for(var i = 1; i < table.rows.length; i++) {
+        var row = table.rows[i];
+        var cell = row.cells[0];
+        var consName = cell.childNodes[0].childNodes[0].textContent;
+        //Get the category of the row
+        cell = row.cells[1];
+        var cat = cell.childNodes[0].childNodes[0].textContent;
+        //For unknown category value
+        if(!(cat=="Normal"||cat=="RSD"||cat=="URS"||cat=="OnBarDC"||cat=="DC"||cat=="MaxRamp")){
+            alertAdd(alertComment,'Unknown category value at row ' + i + ' of RequisitionInput Table.');
+            colorTableRow(table, i);
+        }
+        cell = row.cells[2];
+        var fromBlock = cell.childNodes[0].value;
+        //For non numeric fromBlock validation
+        if(isNaN(fromBlock)){
+            alertAdd(alertComment,'Non Numeric From block value at row ' + i + ' of RequisitionInput Table.');
+            colorTableRow(table, i);
+        }
+        cell = row.cells[3];
+        var toBlock = cell.childNodes[0].value;
+        //For non numeric toBlock validation
+        if(isNaN(toBlock)){
+            alertAdd(alertComment,'Non Numeric To block value at row ' + i + ' of RequisitionInput Table.');
+            colorTableRow(table, i);
+        }
+        cell = row.cells[4];
+        var reqVal = cell.childNodes[0].value;
+        //For null cell value validation
+        if (!reqVal) {
+            alertAdd(alertComment,'Null Requisition values at row ' + i + ' of RequisitionInput Table.');
+            colorTableRow(table, i);
+            //return false;
+        }
+        //For cell value validation
+        if(cat=="Normal"){
+            isValid = reqVal.match(/^\d+(\.\d+)?\p$/i) || reqVal.match(/^\FULL$/i) || reqVal.match(/^[+]?\d+(\.\d+)?$/i);
+        } else if(cat=="URS"||cat=="RSD"){
+            isValid = reqVal.match(/^\d+(\.\d+)?\p$/i) || reqVal.match(/^\YES$/i) || reqVal.match(/^[+]?\d+(\.\d+)?$/i);
+        } else if(cat=="DC"||cat=="OnBarDC"||cat=="MaxRamp"){
+            isValid = reqVal.match(/^\d+(\.\d+)?\p$/i) || reqVal.match(/^[+]?\d+(\.\d+)?$/i);
+        }
+        if(isNaN(reqVal)){
+            //Setting the input to uppercase
+            row.cells[4].childNodes[0].value = reqVal.toUpperCase();
+        }
+        if (!isValid) {
+            alertAdd(alertComment,'Invalid values at row ' + i + ' of RequisitionInput Table.');
+            colorTableRow(table, i);
+            //return false;
+        }
+        //from block <  to block
+        if (Number(fromBlock) > Number(toBlock)) {
+            alertAdd(alertComment,'From value > TO value at row ' + i + ' of RequisitionInput Table.');
+            colorTableRow(table, i);
+            //return false;
+        }
+        //from block &  to block belong to [1,96]
+        if ((Number(fromBlock) < 1) || (Number(fromBlock) > 96) || (Number(toBlock) < 1) || (Number(toBlock) > 96)) {
+            alertAdd(alertComment,'From value or To value not in limits at row ' + i + ' of RequisitionInput Table');
+            colorTableRow(table, i);
+            //return false;
+        }
+    }
+    if(alertComment.str.length != 0){
+        alert(alertComment.str+'Invalid values are not allowed');
+        return false;
+    }
+    return true;
+}
+
+//Table Utility Functions
+function colorTableRow(table, i){
+    $(table.rows[i]).addClass("redError");
+}
+
+//Table Utility Functions
+function resetTableRowsColor(table){
+    for(var i=1;i<table.rows.length;i++){
+        $(table.rows[i]).removeClass("redError");
+    }
 }
