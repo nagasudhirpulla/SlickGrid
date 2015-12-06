@@ -1,24 +1,5 @@
 @import url('../slick-default-theme.css');
 
-h2 {
-    border-bottom: 1px dotted gray;
-}
-
-ul {
-    margin-left: 0;
-    padding: 0;
-    cursor: default;
-}
-
-/*
-li {
-  background: url("../images/arrow_right_spearmint.png") no-repeat center left;
-  padding: 0 0 0 14px;
-
-  list-style: none;
-  margin: 0;
-}
-*/
 .grid-header {
     border: 1px solid gray;
     border-bottom: 0;
@@ -51,19 +32,6 @@ li {
     -moz-border-radius: 2px;
     -webkit-border-radius: 2px;
     border: 1px solid silver;
-}
-
-.options-panel {
-    -moz-border-radius: 6px;
-    -webkit-border-radius: 6px;
-    border: 1px solid silver;
-    background: #f0f0f0;
-    padding: 4px;
-    margin-bottom: 20px;
-    width: 320px;
-    position: absolute;
-    top: 0px;
-    left: 650px;
 }
 
 /* Individual cell styles */
@@ -110,6 +78,7 @@ li {
 }
 
 /* Slick.Editors.Text, Slick.Editors.Date */
+/*
 input.editor-text {
     width: 100%;
     height: 100%;
@@ -120,6 +89,7 @@ input.editor-text {
     padding: 0;
 
 }
+*/
 
 .ui-datepicker-trigger {
     margin-top: 2px;
@@ -222,6 +192,7 @@ input.editor-checkbox {
     font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Roboto, Arial, sans-serif;
 }
 
+/*
 .slick-header-column {
     background: #045ab0;
     border-right: 1px solid silver;
@@ -231,7 +202,9 @@ input.editor-checkbox {
     background: #045ab0;
     border-bottom: 1px solid silver;
 }
+*/
 
+/*
 .ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default {
     color: white;
     font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Roboto, Arial, sans-serif;
@@ -245,6 +218,7 @@ input.editor-checkbox {
 .slick-header-column:hover, .slick-header-column-active {
     background: white;
 }
+*/
 
 .slick-header-column.ui-state-default{
     padding-top: 4px;
@@ -255,4 +229,12 @@ input.editor-checkbox {
 
 .ui-datepicker td .ui-state-default{
     color: blue;
+}
+
+.slick-cell.selected {
+    background-color: #d7f4e4;
+}
+
+.slick-column-name{
+    font-weight: bold;
 }
