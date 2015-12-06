@@ -348,6 +348,8 @@ function validateGrid(grid) {
         for (var j = 0; j < constituentNames.length; j++) {
             //Validating the data value for the cell i,j(row,column)
             cellVal = d[j];
+            //Reset cell Color
+            $(grid.getCellNode(i,grid.getColumnIndex(j))).removeClass("redError");
             //check if it is a number
             if (typeof cellVal == "number") {
                 //No Validation required
@@ -364,6 +366,8 @@ function validateGrid(grid) {
             }
             //URS Version
             cellVal = d["RSD" + j];
+            //Reset cell Color
+            $(grid.getCellNode(i,grid.getColumnIndex("RSD" + j))).removeClass("redError");
             if (typeof cellVal == "number") {
 
             } else {
@@ -378,6 +382,8 @@ function validateGrid(grid) {
                 }
             }
             cellVal = d["URS" + j];
+            //Reset cell Color
+            $(grid.getCellNode(i,grid.getColumnIndex("URS" + j))).addClass("redError");
             if (typeof cellVal == "number") {
                 /*
                 if (cellVal == 0) {
@@ -418,6 +424,8 @@ function validateGrid(grid) {
                     break;
             }
             cellVal = d[colStr];
+            //Reset Cell Color
+            $(grid.getCellNode(i,grid.getColumnIndex(colStr))).addClass("redError");
             //check if it is a number
             if (typeof cellVal == "number") {
                 //No Validation required
