@@ -383,7 +383,7 @@ function validateGrid(grid) {
             }
             cellVal = d["URS" + j];
             //Reset cell Color
-            $(grid.getCellNode(i,grid.getColumnIndex("URS" + j))).addClass("redError");
+            $(grid.getCellNode(i,grid.getColumnIndex("URS" + j))).removeClass("redError");
             if (typeof cellVal == "number") {
                 /*
                 if (cellVal == 0) {
@@ -425,7 +425,7 @@ function validateGrid(grid) {
             }
             cellVal = d[colStr];
             //Reset Cell Color
-            $(grid.getCellNode(i,grid.getColumnIndex(colStr))).addClass("redError");
+            $(grid.getCellNode(i,grid.getColumnIndex(colStr))).removeClass("redError");
             //check if it is a number
             if (typeof cellVal == "number") {
                 //No Validation required
