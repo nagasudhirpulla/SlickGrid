@@ -1,4 +1,6 @@
-//On page load...
+//TODO add a headerdouble click to quickfill feature
+//TODO add a prompting platform like boothead
+//TODO add a growl like card notifications platform like pnotify or 
 var grid = {};
 var sectionsArray;
 var genName = "CGPL";
@@ -11,6 +13,7 @@ var columns = {};
 var options;
 var pluginOptions;
 
+//On page load...
 $(function() {
     genRamp = 70;
     genDecCap = 1450;
