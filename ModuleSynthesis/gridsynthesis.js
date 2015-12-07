@@ -1,6 +1,7 @@
 //TODO add a headerdouble click to quickfill feature
 //TODO add a prompting platform like boothead
-//TODO add a growl like card notifications platform like pnotify or 
+//TODO add a growl like card notifications platform like pnotify or gritter
+//TODo add slider of slider buttons for grid on mobile devices
 var grid = {};
 var sectionsArray;
 var genName = "CGPL";
