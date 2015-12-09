@@ -11,24 +11,40 @@ function createSectionSummaryTable(summaryTableID, sectionsArray) {
 }
 
 //Sections Utility Function
-function createSectionSummaryTableRow(j, sectionsArray, constituentNames, summaryTable) {
-    var sections = sectionsArray[j];
+function createSectionSummaryTableRow(sectionsArrayIndex, sectionsArray, constituentNames, summaryTable) {
+    var columnData = sectionsArray[sectionsArrayIndex];
+    var columnCategory = columnData.columnCategory;
+    var memberID = columnData.columnKey;
+    var sections = columnData.columnSections;
     var textStr;
-    if(isNaN(j)){
-        if(j.length>=4 && (j.substring(0,3)=="RSD"||j.substring(0,3)=="URS") && isValidColumnNumber(j.substring(3, j.length))){
-            textStr = constituentNames[Number(j.substring(3, j.length))] + j.substring(0,3);
+    if(columnCategory == "Normal"){
+        textStr = constituentNames[constituentIDs.indexOf(memberID)];
+    } else if(columnCategory == "RSD" || columnCategory == "URS"){
+        textStr = constituentNames[constituentIDs.indexOf(memberID)]+"_"+columnCategory;
+    } else if(columnCategory == "MaxRamp"){
+        textStr = columnCategory;
+    } else if(columnCategory == "OnBarDC"){
+        textStr = columnCategory;
+    } else if(columnCategory == "DC"){
+        textStr = columnCategory;
+    }
+    /*
+    if(isNaN(sectionsArrayIndex)){
+        if(sectionsArrayIndex.length>=4 && (sectionsArrayIndex.substring(0,3)=="RSD"||sectionsArrayIndex.substring(0,3)=="URS") && isValidColumnNumber(sectionsArrayIndex.substring(3, sectionsArrayIndex.length))){
+            textStr = constituentNames[Number(sectionsArrayIndex.substring(3, sectionsArrayIndex.length))] + sectionsArrayIndex.substring(0,3);
         }else{
-            if(j == "rampNum") {
+            if(sectionsArrayIndex == "rampNum") {
                 textStr = "MaxRamp";
-            }else if(j == "onBar") {
+            }else if(sectionsArrayIndex == "onBar") {
                 textStr = "OnBarDC";
             }else {
-                textStr = j;
+                textStr = sectionsArrayIndex;
             }
         }
     } else{
-        textStr = constituentNames[j];
+        textStr = constituentNames[sectionsArrayIndex];
     }
+    */
     for (var i = 0; i < sections.length; i++) {
         var texts = [textStr, (sections[i])['secStart'] + 1, (sections[i])['secEnd'] + 1, (sections[i])['val']];
         var tr = document.createElement('tr');

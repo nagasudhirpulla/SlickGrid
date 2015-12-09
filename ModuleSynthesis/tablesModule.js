@@ -125,30 +125,30 @@ function decorateSelectList(select,array) {
     }
 }
 
-//Table Utility Functions
+//Table Utility Functions - Used new Column Format
 function getRowsFromSections(sectionsArray, constituentNames, tableID){
     var table = document.getElementById(tableID);
     var sectionsArrayKeys = getKeys(sectionsArray);
     table.innerHTML = "<tbody><tr><td>Constituent Name</td><td>Category</td><td>From Block</td><td>To Block</td><td>Value</td><td><input type=\"checkbox\" name=\"chk\" onclick=\"SelectAll(this)\"/></td></tr></tbody>";
     for (var j = 0; j < sectionsArrayKeys.length; j++) {
-        var sectionKey = sectionsArrayKeys[j];
-        var sections = sectionsArray[sectionKey];
-        var decoupled = decoupleKey(sectionKey);
-        var reqStr = decoupled.str;
-        var cat = decoupled.cat;
-        if((cat=="Normal"&&isValidColumnNumber(reqStr))){
+        var sectionsArrayIndex = sectionsArrayKeys[j];
+        var columnData = sectionsArray[sectionsArrayIndex];
+        var columnCategory = columnData.columnCategory;
+        var memberID = columnData.columnKey;
+        var sections = columnData.columnSections;
+        if(columnCategory=="Normal"||columnCategory=="URS"||columnCategory=="RSD"){
             for (var k = 0; k < sections.length; k++) {
-                addRowOfReqInput(tableID, constituentNames[reqStr], cat, sections[k].secStart + 1, sections[k].secEnd + 1, sections[k].val);
+                addRowOfReqInput(tableID, constituentNames[constituentIDs.indexOf(memberID)], columnCategory, sections[k].secStart + 1, sections[k].secEnd + 1, sections[k].val);
             }
-        }else if(cat=="URS"||cat=="RSD"||cat=="OnBarDC"||cat=="DC"||cat=="MaxRamp"){
+        }else if(columnCategory=="OnBarDC"||columnCategory=="DC"||columnCategory=="MaxRamp"){
             for (var k = 0; k < sections.length; k++) {
-                addRowOfReqInput(tableID, reqStr, cat, sections[k].secStart + 1, sections[k].secEnd + 1, sections[k].val);
+                addRowOfReqInput(tableID, columnCategory, columnCategory, sections[k].secStart + 1, sections[k].secEnd + 1, sections[k].val);
             }
         }
     }
 }
 
-//Table Utility Functions
+//Table Utility Functions - new Column Format not needed
 function addRowOfReqInput(tableID, reqStr, cat, fromBlock, toBlock, val) {
     var table = document.getElementById(tableID);
     var rowCount = table.rows.length;
@@ -192,7 +192,7 @@ function addRowOfReqInput(tableID, reqStr, cat, fromBlock, toBlock, val) {
     newCell.appendChild(cb);
 }
 
-//Table Utility Functions
+//Table Utility Functions- new Column Format not needed
 function decoupleKey(sectionKey){
     var textStr;
     var category;
@@ -225,7 +225,7 @@ function decoupleKey(sectionKey){
     }
 }
 
-//Table Utility Functions
+//Table Utility Functions - Used new Column Format
 function getSectionsFromRows(constituentNames, tableID, defVal, defRSDURSVal, defDecCap, defOnBarDC, defMaxRamp, defUnCatVal){
     var sectionsArray = [];
     var virtualGrid = [];
@@ -233,58 +233,76 @@ function getSectionsFromRows(constituentNames, tableID, defVal, defRSDURSVal, de
     //Leave the tableHeader from iteration
     for(var i = 1; i < table.rows.length; i++){
         var row = table.rows[i];
-        var cell = row.cells[0];
-        var consName = cell.childNodes[0].childNodes[0].textContent;
+        var tableCell = row.cells[0];
+        var consName = tableCell.childNodes[0].childNodes[0].textContent;
         var index = consName;
         //get the category of the row
-        cell = row.cells[1];
-        var cat = cell.childNodes[0].childNodes[0].textContent;
+        tableCell = row.cells[1];
+        var columnCategory = tableCell.childNodes[0].childNodes[0].textContent;
         //Create the virtual grid columns if not present
-        if(cat=="Normal" && (constituentNames.indexOf(consName)!= -1)){
+        if(columnCategory=="Normal" && (constituentNames.indexOf(consName)!= -1)){
             //Get the constituent index in constituentNames array
-            index = constituentNames.indexOf(consName);
+            index = constituentIDs[constituentNames.indexOf(consName)]+"_"+"Normal";
             if(virtualGrid[index] == undefined) {
+                sectionsArray[index] = [];
+                sectionsArray[index]["columnCategory"] = "Normal";
+                sectionsArray[index]["columnKey"] = constituentIDs[constituentNames.indexOf(consName)];
                 virtualGrid[index] = [];
                 for(var j=0;j<96;j++){
                     virtualGrid[index].push(defVal);
                 }
             }
-        } else if(cat=="Normal"){
+        } else if(columnCategory=="Normal"){
             //Not needed
             index = consName;
             if(virtualGrid[index] == undefined) {
+                sectionsArray[index] = [];
+                sectionsArray[index]["columnCategory"] = "Normal";
+                sectionsArray[index]["columnKey"] = null;
                 virtualGrid[index] = [];
                 for(var j=0;j<96;j++){
                     virtualGrid[index].push(defUnCatVal);
                 }
             }
-        } else if(cat=="RSD"||cat=="URS"){
-            index = cat+constituentNames.indexOf(consName);
+        } else if(columnCategory=="RSD"||columnCategory=="URS"){
+            index = constituentIDs[constituentNames.indexOf(consName)]+"_"+columnCategory;
             if(virtualGrid[index] == undefined) {
+                sectionsArray[index] = [];
+                sectionsArray[index]["columnCategory"] = columnCategory;
+                sectionsArray[index]["columnKey"] = constituentIDs[constituentNames.indexOf(consName)];
                 virtualGrid[index] = [];
                 for(var j=0;j<96;j++){
                     virtualGrid[index].push(defRSDURSVal);
                 }
             }
-        } else if(cat=="DC"){
-            index = cat;
+        } else if(columnCategory=="DC"){
+            index = columnCategory;
             if(virtualGrid[index] == undefined) {
+                sectionsArray[index] = [];
+                sectionsArray[index]["columnCategory"] = columnCategory;
+                sectionsArray[index]["columnKey"] = columnCategory;
                 virtualGrid[index] = [];
                 for(var j=0;j<96;j++){
                     virtualGrid[index].push(defDecCap);
                 }
             }
-        } else if(cat=="OnBarDC"){
+        } else if(columnCategory=="OnBarDC"){
             index = "onBar";
             if(virtualGrid[index] == undefined) {
+                sectionsArray[index] = [];
+                sectionsArray[index]["columnCategory"] = columnCategory;
+                sectionsArray[index]["columnKey"] = columnCategory;
                 virtualGrid[index] = [];
                 for(var j=0;j<96;j++){
                     virtualGrid[index].push(defOnBarDC);
                 }
             }
-        } else if(cat=="MaxRamp"){
-            index = "rampNum";
+        } else if(columnCategory=="MaxRamp"){
+            index = "maxRamp";
             if(virtualGrid[index] == undefined) {
+                sectionsArray[index] = [];
+                sectionsArray[index]["columnCategory"] = columnCategory;
+                sectionsArray[index]["columnKey"] = columnCategory;
                 virtualGrid[index] = [];
                 for(var j=0;j<96;j++){
                     virtualGrid[index].push(defMaxRamp);
@@ -295,12 +313,12 @@ function getSectionsFromRows(constituentNames, tableID, defVal, defRSDURSVal, de
             continue;
         }
         //Now fill the values into the virtual grid
-        cell = row.cells[2];
-        var fromBlock = cell.childNodes[0].value - 1;
-        cell = row.cells[3];
-        var toBlock = cell.childNodes[0].value - 1;
-        cell = row.cells[4];
-        var reqVal = cell.childNodes[0].value;
+        tableCell = row.cells[2];
+        var fromBlock = tableCell.childNodes[0].value - 1;
+        tableCell = row.cells[3];
+        var toBlock = tableCell.childNodes[0].value - 1;
+        tableCell = row.cells[4];
+        var reqVal = tableCell.childNodes[0].value;
         for(var k = fromBlock;k<=toBlock;k++){
             var column = virtualGrid[index];
             column[k] = reqVal;
@@ -327,8 +345,7 @@ function getSectionsFromRows(constituentNames, tableID, defVal, defRSDURSVal, de
             'secEnd': 95,
             'val': virtualGrid[columnKey][95]
         });
-        //sectionsArray.push(sections);
-        sectionsArray[columnKey] = sections;
+        sectionsArray[columnKey]["columnSections"] = sections;
     }
     return sectionsArray;
 }

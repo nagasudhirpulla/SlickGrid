@@ -274,7 +274,7 @@ function setGridCell(grid, rowNumber, gridColumnKey, value){
     (data[rowNumber])[gridColumnKey] = value;
 }
 
-//Grid Utility Functions - todo next
+//Grid Utility Functions - Used new Column Format
 function feedSectionsToGrid(grid, sectionsArray){
     //first reset the grid;
     resetGrid(grid,constituentNames,"FULL",true,genDecCap,true,genOnBar,true,genRamp,true,0,true,0);
@@ -290,6 +290,7 @@ function feedSectionsToGrid(grid, sectionsArray){
         for(j=0;j<sections.length;j++){
             var sectionObject = sections[j];
             for(var k=sectionObject.secStart;k<=sectionObject.secEnd;k++){
+                //Not complete but works for now
                 setGridCell(grid,k,columnIndex,sectionObject.val);
             }
         }
@@ -299,7 +300,7 @@ function feedSectionsToGrid(grid, sectionsArray){
     grid.render();
 }
 
-//Grid Utility Functions- Used new Column Format
+//Grid Utility Functions - Used new Column Format
 function getSectionsFromGrid(grid){
 //Find the sections of the columns
     var data = grid.getData();
@@ -311,7 +312,7 @@ function getSectionsFromGrid(grid){
         switch (constCol1) {
             case 0:
                 constCol = "onBar";
-                cat = "OnBarDc";
+                cat = "OnBarDC";
                 break;
             case 1:
                 constCol = "maxRamp";
@@ -675,7 +676,7 @@ function onGetRowsFromSectionsClick(){
 function onGetSectionsFromRowsClick(){
     var isReqTableValid = validateReqTable("reqInputTable");
     if(isReqTableValid) {
-        var tableSectionsArray = getSectionsFromRows(constituentNames, "reqInputTable", "FULL", 0, genDecCap, genOnBar, genRamp, 0);
+        sectionsArray = getSectionsFromRows(constituentNames, "reqInputTable", "FULL", 0, genDecCap, genOnBar, genRamp, 0);
     }
 }
 
