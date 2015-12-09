@@ -342,7 +342,7 @@ function getSectionsFromGrid(grid){
         var colData = {};
         colData.columnCategory = cat;
         colData.columnKey = constCol;
-        colData.sections = sections;
+        colData.columnSections = sections;
         sectionsArray[constCol] = colData;
     }
     for (constCol = 0; constCol < constituentNames.length; constCol++) {
@@ -366,7 +366,7 @@ function getSectionsFromGrid(grid){
         colData = {};
         colData.columnCategory = "Normal";
         colData.columnKey = constituentIDs[constCol];
-        colData.sections = sections;
+        colData.columnSections = sections;
         sectionsArray[constituentIDs[constCol]+"_"+"Normal"] = colData;
     }
     //URS Version
@@ -391,7 +391,7 @@ function getSectionsFromGrid(grid){
         colData = {};
         colData.columnCategory = "RSD";
         colData.columnKey = constituentIDs[constCol];
-        colData.sections = sections;
+        colData.columnSections = sections;
         sectionsArray[constituentIDs[constCol]+"_"+"RSD"] = colData;
     }
     //For URS option
@@ -416,7 +416,7 @@ function getSectionsFromGrid(grid){
         colData = {};
         colData.columnCategory = "URS";
         colData.columnKey = constituentIDs[constCol];
-        colData.sections = sections;
+        colData.columnSections = sections;
         sectionsArray[constituentIDs[constCol]+"_"+"URS"] = colData;
     }
     //URS Version
