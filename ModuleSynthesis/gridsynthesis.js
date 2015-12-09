@@ -24,7 +24,7 @@ $(function() {
     constituentNames = ["A", "B", "C", "D"];
     constituentIDs = [1, 2, 3, 4];
     columns = setReqTableColumns(columns, true, true);
-    grid = initialiseReqGrid("myGrid", genRamp, genDecCap, genOnBar, constituentNames, columns, options, pluginOptions, headerClick, "FULL", true, 0, true, 'Yes');
+    grid = initialiseReqGrid("myGrid", genRamp, genDecCap, genOnBar, constituentNames, columns, options, pluginOptions, headerClick, "FULL", true, 0, true, 'YES');
     //Populate the Constituent Options
     var selList = document.getElementById("selectReqConst");
     decorateSelectList(selList,constituentNames);
@@ -202,7 +202,7 @@ function setReqTableColumns(columns, isRSDPresent, isURSPresent) {
             columns.push({
                 id: constituentIDs[i]+"_"+"URS",
                 //name field is just for display
-                name: constituentNames[i] + 'URS',
+                name: constituentNames[i] + '_URS',
                 //"field" is the field used by the program a particular cell in row
                 field: constituentIDs[i]+"_"+"URS",
                 category: 'URS',
@@ -274,7 +274,7 @@ function setGridCell(grid, rowNumber, columnField, value){
     (data[rowNumber])[columnField] = value;
 }
 
-//Grid Utility Functions
+//Grid Utility Functions - todo next
 function feedSectionsToGrid(grid, sectionsArray){
     //first reset the grid;
     resetGrid(grid,constituentNames,"FULL",true,"dec",true,'onb',true,'max',true,'rsd',true,'ur');
@@ -296,26 +296,26 @@ function feedSectionsToGrid(grid, sectionsArray){
     grid.render();
 }
 
-//Grid Utility Functions
+//Grid Utility Functions- Used new Column Format
 function getSectionsFromGrid(grid){
 //Find the sections of the columns
     var data = grid.getData();
     var sectionsArray = [];
     var constCol;
-    for (var constCol1 = 0; constCol1 < constituentNames.length + 3; constCol1++) {
-        //Last three for onBarDC and MaxRamp and DC respectively
+    for (var constCol1 = 0; constCol1 < 3; constCol1++) {
+        //Three for OnBarDC and MaxRamp and DC respectively
         switch (constCol1) {
-            case constituentNames.length:
+            case 0:
                 constCol = "onBar";
                 break;
-            case constituentNames.length + 1:
-                constCol = "rampNum";
+            case 1:
+                constCol = "maxRamp";
                 break;
-            case constituentNames.length + 2:
-                constCol = "DC";
+            case 2:
+                constCol = "dc";
                 break;
             default:
-                constCol = constCol1;
+
                 break;
         }
         var sections = [];
@@ -337,16 +337,15 @@ function getSectionsFromGrid(grid){
         });
         sectionsArray[constCol] = sections;
     }
-    //URS Version
     for (constCol = 0; constCol < constituentNames.length; constCol++) {
         sections = [];
         sectionStart = 0;
         for (var blkNum = 1; blkNum <= 95; blkNum++) {
-            if ((data[blkNum])['RSD' + constCol] != (data[blkNum - 1])['RSD' + constCol]) {
+            if ((data[blkNum])[constituentIDs[constCol]+"_"+"Normal"] != (data[blkNum - 1])[constituentIDs[constCol]+"_"+"Normal"]) {
                 sections.push({
                     'secStart': sectionStart,
                     'secEnd': blkNum - 1,
-                    'val': (data[blkNum - 1])['RSD' + constCol]
+                    'val': (data[blkNum - 1])[constituentIDs[constCol]+"_"+"Normal"]
                 });
                 sectionStart = blkNum;
             }
@@ -354,20 +353,41 @@ function getSectionsFromGrid(grid){
         sections.push({
             'secStart': sectionStart,
             'secEnd': 95,
-            'val': (data[95])['RSD' + constCol]
+            'val': (data[95])[constituentIDs[constCol]+"_"+"Normal"]
         });
-        sectionsArray['RSD' + constCol] = sections;
+        sectionsArray[constituentIDs[constCol]+"_"+"Normal"] = sections;
+    }
+    //URS Version
+    for (constCol = 0; constCol < constituentNames.length; constCol++) {
+        sections = [];
+        sectionStart = 0;
+        for (var blkNum = 1; blkNum <= 95; blkNum++) {
+            if ((data[blkNum])[constituentIDs[constCol]+"_"+"RSD"] != (data[blkNum - 1])[constituentIDs[constCol]+"_"+"RSD"]) {
+                sections.push({
+                    'secStart': sectionStart,
+                    'secEnd': blkNum - 1,
+                    'val': (data[blkNum - 1])[constituentIDs[constCol]+"_"+"RSD"]
+                });
+                sectionStart = blkNum;
+            }
+        }
+        sections.push({
+            'secStart': sectionStart,
+            'secEnd': 95,
+            'val': (data[95])[constituentIDs[constCol]+"_"+"RSD"]
+        });
+        sectionsArray[constituentIDs[constCol]+"_"+"RSD"] = sections;
     }
     //For URS option
     for (constCol = 0; constCol < constituentNames.length; constCol++) {
         sections = [];
         sectionStart = 0;
         for (var blkNum = 1; blkNum < 96; blkNum++) {
-            if ((data[blkNum])['URS' + constCol] != (data[blkNum - 1])['URS' + constCol]) {
+            if ((data[blkNum])[constituentIDs[constCol]+"_"+"URS"] != (data[blkNum - 1])[constituentIDs[constCol]+"_"+"URS"]) {
                 sections.push({
                     'secStart': sectionStart,
                     'secEnd': blkNum - 1,
-                    'val': (data[blkNum - 1])['URS' + constCol]
+                    'val': (data[blkNum - 1])[constituentIDs[constCol]+"_"+"URS"]
                 });
                 sectionStart = blkNum;
             }
@@ -375,10 +395,10 @@ function getSectionsFromGrid(grid){
         sections.push({
             'secStart': sectionStart,
             'secEnd': 95,
-            'val': (data[95])['URS' + constCol]
+            'val': (data[95])[constituentIDs[constCol]+"_"+"URS"]
         });
         //sectionsArray.push(sections);
-        sectionsArray['URS' + constCol] = sections;
+        sectionsArray[constituentIDs[constCol]+"_"+"URS"] = sections;
     }
     //URS Version
     //TODO eliminate saving these in the sectionsArray
