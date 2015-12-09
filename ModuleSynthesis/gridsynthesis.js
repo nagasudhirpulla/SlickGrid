@@ -2,6 +2,7 @@
 //TODO add a prompting platform like boothead
 //TODO add a growl like card notifications platform like pnotify or gritter
 //TODo add slider of slider buttons for grid on mobile devices
+//TODO follow the guidelines in the ppt to modify the format of grid columns and sectionsArray
 var grid = {};
 var sectionsArray;
 var genName = "CGPL";
@@ -10,6 +11,7 @@ var genRamp;
 var genDecCap;
 var genOnBar;
 var constituentNames = [];
+var constituentIDs = [];
 var columns = {};
 var options;
 var pluginOptions;
@@ -20,12 +22,15 @@ $(function() {
     genDecCap = 1450;
     genOnBar = 1400;
     constituentNames = ["A", "B", "C", "D"];
+    constituentIDs = [1, 2, 3, 4];
     columns = setReqTableColumns(columns, true, true);
     grid = initialiseReqGrid("myGrid", genRamp, genDecCap, genOnBar, constituentNames, columns, options, pluginOptions, headerClick, "FULL", true, 0, true, 'Yes');
     //Populate the Constituent Options
     var selList = document.getElementById("selectReqConst");
     decorateSelectList(selList,constituentNames);
 });
+
+//Grid Utility Functions - Used new Column Format
 function initialiseReqGrid(tableID, genRamp, genDecCap, genOnBar, constituentNames, columns, options, pluginOptions, headerClick, defValue, isRSDPresent, defRSDValue, isURSPresent, defURSValue){
     console.log("Initialising the grid");
     //Set the whole grid to default values, rsd urs not included
@@ -36,20 +41,20 @@ function initialiseReqGrid(tableID, genRamp, genDecCap, genOnBar, constituentNam
         var d = (data[i] = {});
         //id property for external overlay plugin
         d["id"] = i;
-        d["SNo"] = i + 1;
-        d["rampNum"] = genRamp;
-        d["DC"] = genDecCap;
+        d["block"] = i + 1;
+        d["maxRamp"] = genRamp;
+        d["dc"] = genDecCap;
         d["onBar"] = genOnBar;
         d["offBar"] = genDecCap - genOnBar;
         for (var j = 0; j < constituentNames.length; j++) {
             //j is iterator the column j ...
             //Setting the data value for the cell i,j(row,column) or block i+1,j
-            d[j] = defValue;
+            d[constituentIDs[j]+"_"+"Normal"] = defValue;
             if(isRSDPresent) {
-                d['RSD' + j] = defRSDValue;
+                d[constituentIDs[j]+"_"+"RSD"] = defRSDValue;
             }
             if(isURSPresent) {
-                d['URS' + j] = defURSValue;
+                d[constituentIDs[j]+"_"+"URS"] = defURSValue;
             }
         }
         d["avail"] = 0;
@@ -104,56 +109,73 @@ function initialiseReqGrid(tableID, genRamp, genDecCap, genOnBar, constituentNam
     return grid;
 }
 
+//Grid Utility Functions - Used new Column Format
 function setReqTableColumns(columns, isRSDPresent, isURSPresent) {
     columns = [];
     columns.push({
         id: 'maxRamp',
         name: 'MaxRamp',
-        field: 'rampNum',
+        field: 'maxRamp',
+        category: 'MaxRamp',
+        columnKey: null,
         width: 30,
         toolTip: "Maximum Ramp",
         editor: Slick.Editors.Text}, {
-        id: 'DC',
+        id: 'dc',
         name: 'DC',
-        field: 'DC',
+        field: 'dc',
+        category: 'DC',
+        columnKey: null,
         width: 40,
         toolTip: "Declared Capacity",
         editor: Slick.Editors.Text}, {
-        id: "offBarDC",
+        id: "offBar",
         name: "OffBarDC",
         field: "offBar",
-        toolTip: "Offbar DC",
-        width: 40}, {
-        id: 'onBarDC',
+        category: 'OffBarDC',
+        columnKey: null,
+        width: 40,
+        toolTip: "OffBar DC"}, {
+        id: 'onBar',
         name: 'OnBarDC',
         field: 'onBar',
+        category: 'OnBarDC',
+        columnKey: null,
         width: 40,
-        toolTip: "On Bar DC",
+        toolTip: "OnBar DC",
         editor: Slick.Editors.Text}, {
         id: "selector",
         name: "Block",
-        field: "SNo",
+        field: "block",
+        category: 'Block',
+        columnKey: null,
         width: 50,
         toolTip: "Block Number"}, {
-        id: "ramp",
+        id: "rampedVal",
         name: "Ramp",
         field: "rampedVal",
+        category: 'Ramp',
+        columnKey: null,
         width: 40,
         toolTip: "Ramp"}, {
-        id: "availGen",
+        id: "avail",
         name: "AvailableGeneration",
         field: "avail",
+        category: 'AvailableGeneration',
+        columnKey: null,
         width: 40,
         toolTip: "Available Generation"
     });
     //Adding Constituent Requisition columns iteratively
     for (var i = 0; i < constituentNames.length; i++) {
         columns.push({
-            id: i,
+            id: constituentIDs[i]+"_"+"Normal",
             //name field is just for display
             name: constituentNames[i],
             //"field" is the field used by the program a particular cell in row
-            field: i,
+            field: constituentIDs[i]+"_"+"Normal",
+            category: 'Normal',
+            columnKey: constituentIDs[i],
             width: 50,
             toolTip: constituentNames[i],
             editor: Slick.Editors.Text
@@ -162,11 +184,13 @@ function setReqTableColumns(columns, isRSDPresent, isURSPresent) {
     if(isRSDPresent) {
         for (var i = 0; i < constituentNames.length; i++) {
             columns.push({
-                id: 'RSD' + i,
+                id: constituentIDs[i]+"_"+"RSD",
                 //name field is just for display
-                name: constituentNames[i] + 'RSD',
+                name: constituentNames[i] + '_RSD',
                 //"field" is the field used by the program a particular cell in row
-                field: 'RSD' + i,
+                field: constituentIDs[i]+"_"+"RSD",
+                category: 'RSD',
+                columnKey: constituentIDs[i],
                 width: 65,
                 toolTip: constituentNames[i] + 'RSD',
                 editor: Slick.Editors.Text
@@ -176,11 +200,13 @@ function setReqTableColumns(columns, isRSDPresent, isURSPresent) {
     if(isURSPresent) {
         for (var i = 0; i < constituentNames.length; i++) {
             columns.push({
-                id: 'URS' + i,
+                id: constituentIDs[i]+"_"+"URS",
                 //name field is just for display
                 name: constituentNames[i] + 'URS',
                 //"field" is the field used by the program a particular cell in row
-                field: 'URS' + i,
+                field: constituentIDs[i]+"_"+"URS",
+                category: 'URS',
+                columnKey: constituentIDs[i],
                 width: 65,
                 toolTip: constituentNames[i] + 'URS',
                 editor: Slick.Editors.Text
@@ -190,14 +216,14 @@ function setReqTableColumns(columns, isRSDPresent, isURSPresent) {
     return columns;
 }
 
-//Grid Utility Functions
+//Grid Utility Functions - Used new Column Format
 function resetGrid(grid, constituentNames, defVal, isDecCapPresent, defDecCap, isOnBarPresent, defOnBar, isMaxRampPresent, defMaxRamp, isRSDPresent, defRSDValue, isURSPresent, defURSValue){
     var data = grid.getData();
     for (var i = 0; i < 96; i++) {
         var d = (data[i]);
         for (var j = 0; j < constituentNames.length; j++) {
             //Resetting the data values of the cell i,j(row,column) to val
-            d[j] = defVal;
+            d[constituentIDs[j]+"_"+"Normal"] = defVal;
         }
     }
     if(isRSDPresent) {
@@ -206,7 +232,7 @@ function resetGrid(grid, constituentNames, defVal, isDecCapPresent, defDecCap, i
             d = (data[i]);
             for (var j = 0; j < constituentNames.length; j++) {
                 //Resetting the data values of the cell i,j(row,column) to val
-                d['RSD' + j] = defRSDValue;
+                d[constituentIDs[j]+"_"+"RSD"] = defRSDValue;
             }
         }
     }
@@ -216,14 +242,14 @@ function resetGrid(grid, constituentNames, defVal, isDecCapPresent, defDecCap, i
             d = (data[i]);
             for (var j = 0; j < constituentNames.length; j++) {
                 //Resetting the data values of the cell i,j(row,column) to val
-                d['URS' + j] = defURSValue;
+                d[constituentIDs[j]+"_"+"URS"] = defURSValue;
             }
         }
     }
     if(isDecCapPresent) {
         for (var i = 0; i < 96; i++) {
             //i is iterator for the row i ...
-            (data[i])['DC'] = defDecCap;
+            (data[i])['dc'] = defDecCap;
         }
     }
     if(isOnBarPresent) {
@@ -233,25 +259,25 @@ function resetGrid(grid, constituentNames, defVal, isDecCapPresent, defDecCap, i
     }
     if(isMaxRampPresent) {
         for (var i = 0; i < 96; i++) {
-            (data[i])['rampNum'] = defMaxRamp;
+            (data[i])['maxRamp'] = defMaxRamp;
         }
     }
     grid.invalidateAllRows();
     grid.render();
 }
 
-//Grid Utility Functions
-function setGridCell(grid, rowNumber, columnID, value){
+//Grid Utility Functions - new Column Format not needed
+function setGridCell(grid, rowNumber, columnField, value){
     //Note: Data not rendered from here, so render grid from outside
     //Note: rowNumber starts from 0 to 95, not 1 to 96.
     var data = grid.getData();
-    (data[rowNumber])[columnID] = value;
+    (data[rowNumber])[columnField] = value;
 }
 
 //Grid Utility Functions
 function feedSectionsToGrid(grid, sectionsArray){
     //first reset the grid;
-    resetGrid(grid,constituentNames,"fu",true,"dec",true,'onb',true,'max',true,'rsd',true,'ur');
+    resetGrid(grid,constituentNames,"FULL",true,"dec",true,'onb',true,'max',true,'rsd',true,'ur');
     //Feeding the normal shares
     var sectionsArrayKeys = getKeys(sectionsArray);
     for(var i=0;i<sectionsArrayKeys.length;i++){
@@ -362,7 +388,7 @@ function getSectionsFromGrid(grid){
     return sectionsArray;
 }
 
-//Common Utility Functions
+//Common Utility Functions - new Column Format not needed
 function getKeys(obj){
     var keys = [];
     for(var key in obj){
@@ -371,7 +397,7 @@ function getKeys(obj){
     return keys;
 }
 
-//Grid Utility Functions
+//Grid Utility Functions - Used new Column Format
 function validateGrid(grid) {
     var data = grid.getData();
     var alertComment = {};
@@ -386,9 +412,9 @@ function validateGrid(grid) {
         var isValid;
         for (var j = 0; j < constituentNames.length; j++) {
             //Validating the data value for the cell i,j(row,column)
-            cellVal = d[j];
+            cellVal = d[constituentIDs[j]+"_"+"Normal"];
             //Reset cell Color
-            $(grid.getCellNode(i,grid.getColumnIndex(j))).removeClass("redError");
+            $(grid.getCellNode(i,grid.getColumnIndex(constituentIDs[j]+"_"+"Normal"))).removeClass("redError");
             //check if it is a number
             if (typeof cellVal == "number") {
                 //No Validation required
@@ -396,33 +422,33 @@ function validateGrid(grid) {
                 isValid = cellVal.match(/^\d+(\.\d+)?\p$/i) || cellVal.match(/^\FULL$/i) || cellVal.match(/^[+]?\d+(\.\d+)?$/i);
                 if (!isValid) {
                     alertAdd(alertComment, 'Invalid values at Block ' + (i + 1) + ' of the Constituent ' + constituentNames[j] + '.');
-                    $(grid.getCellNode(i,grid.getColumnIndex(j))).addClass("redError");
+                    $(grid.getCellNode(i,grid.getColumnIndex(constituentIDs[j]+"_"+"Normal"))).addClass("redError");
                     //return false;
                 } else {
                     //If valid then capitalize all letters.Design decision
-                    d[j] = cellVal.toUpperCase();
+                    d[constituentIDs[j]+"_"+"Normal"] = cellVal.toUpperCase();
                 }
             }
             //URS Version
-            cellVal = d["RSD" + j];
+            cellVal = d[constituentIDs[j]+"_"+"RSD"];
             //Reset cell Color
-            $(grid.getCellNode(i,grid.getColumnIndex("RSD" + j))).removeClass("redError");
+            $(grid.getCellNode(i,grid.getColumnIndex(constituentIDs[j]+"_"+"RSD"))).removeClass("redError");
             if (typeof cellVal == "number") {
 
             } else {
                 isValid = cellVal.match(/^\d+(\.\d+)?\p$/i) || cellVal.match(/^\FULL$/i) || cellVal.match(/^[+]?\d+(\.\d+)?$/i) || cellVal.match(/^\YES$/i);
                 if (!isValid) {
                     alertAdd(alertComment, 'Invalid values at Block ' + (i + 1) + ' of the RSD of Constituent ' + constituentNames[j] + '.');
-                    $(grid.getCellNode(i,grid.getColumnIndex("RSD" + j))).addClass("redError");
+                    $(grid.getCellNode(i,grid.getColumnIndex(constituentIDs[j]+"_"+"RSD"))).addClass("redError");
                     //return false;
                 } else {
                     //if valid then capitalize all letters.Design decision
-                    d["RSD" + j] = cellVal.toUpperCase();
+                    d[constituentIDs[j]+"_"+"RSD"] = cellVal.toUpperCase();
                 }
             }
-            cellVal = d["URS" + j];
+            cellVal = d[constituentIDs[j]+"_"+"URS"];
             //Reset cell Color
-            $(grid.getCellNode(i,grid.getColumnIndex("URS" + j))).removeClass("redError");
+            $(grid.getCellNode(i,grid.getColumnIndex(constituentIDs[j]+"_"+"URS"))).removeClass("redError");
             if (typeof cellVal == "number") {
                 /*
                 if (cellVal == 0) {
@@ -435,11 +461,11 @@ function validateGrid(grid) {
                 isValid = cellVal.match(/^\LEFTOVER$/i) || cellVal.match(/^[+]?\d+(\.\d+)?$/i) || cellVal.match(/^\YES$/i);
                 if (!isValid) {
                     alertAdd(alertComment, 'Invalid values at Block ' + (i + 1) + ' of the URS of Constituent ' + constituentNames[j] + '.');
-                    $(grid.getCellNode(i,grid.getColumnIndex("URS" + j))).addClass("redError");
+                    $(grid.getCellNode(i,grid.getColumnIndex(constituentIDs[j]+"_"+"URS"))).addClass("redError");
                     //return false;
                 } else {
                     //if valid then capitalize all letters.Design decision
-                    d["URS" + j] = cellVal.toUpperCase();
+                    d[constituentIDs[j]+"_"+"URS"] = cellVal.toUpperCase();
                 }
             }
             //URS Version
@@ -454,11 +480,11 @@ function validateGrid(grid) {
                     alertStr = 'Invalid values at Block ' + (i + 1) + ' of OnBarDC grid column';
                     break;
                 case 1:
-                    colStr = 'rampNum';
+                    colStr = 'maxRamp';
                     alertStr = 'Invalid values at Block ' + (i + 1) + ' of MaxRamp grid column';
                     break;
                 case 2:
-                    colStr = 'DC';
+                    colStr = 'dc';
                     alertStr = 'Invalid values at Block ' + (i + 1) + ' of DC grid column';
                     break;
             }
@@ -488,13 +514,13 @@ function validateGrid(grid) {
     return true;
 }
 
-//Common Utility Functions
+//Common Utility Functions - new Column Format not needed
 function alertAdd(alertComment, alertStr){
     alertComment.str += alertStr;
     alertComment.str += '\n\n';
 }
 
-//Grid Utility Functions
+//Grid Utility Functions - new Column Format not needed
 function isSlickGridObject(grid){
     if(grid == null){
         console.log("Unable to validate grid because grid is null");
@@ -509,20 +535,20 @@ function isSlickGridObject(grid){
     return true;
 }
 
-//Extra Grid features
+//Extra Grid features - new Column Format not needed
 function headerClick(e, args) {
     var colInd = args.grid.getColumnIndex(args.column.id);
     args.grid.getSelectionModel().setSelectedRanges([new Slick.Range(0,colInd,95,colInd)]);
     //console.log(columnID);
 }
-//Extra Grid features
+//Extra Grid features - new Column Format not needed
 pluginOptions = {
     clipboardCommandHandler: function(editCommand) {
         undoRedoBuffer.queueAndExecuteCommand.call(undoRedoBuffer, editCommand);
     },
     includeHeaderWhenCopying: false
 };
-//Extra Grid features
+//Extra Grid features - new Column Format not needed
 options = {
     editable: true,
     enableAddRow: false,
@@ -530,7 +556,7 @@ options = {
     asyncEditorLoading: false,
     autoEdit: false
 };
-//Extra Grid features
+//Extra Grid features - new Column Format not needed
 var undoRedoBuffer = {
     commandQueue: [],
     commandCtr: 0,
@@ -560,7 +586,7 @@ var undoRedoBuffer = {
         }
     }
 };
-//Extra Grid features undo shortcut
+//Extra Grid features undo shortcut - new Column Format not needed
 $(document).keydown(function(e) {
     if (e.which == 90 && (e.ctrlKey || e.metaKey)) { // CTRL + (shift) + Z
         if (e.shiftKey) {
@@ -571,29 +597,29 @@ $(document).keydown(function(e) {
     }
 });
 
-//UI Layer Layer Testing Functions
+//UI Layer Layer Testing Functions - new Column Format not needed
 function onResetClick(){
     resetGrid(grid,constituentNames,"fu",true,"dec",true,'onb',true,'max',true,'rsd',true,'ur');
 }
 
-//UI Layer Layer Testing Functions
+//UI Layer Layer Testing Functions - new Column Format not needed
 function onSetGridSectionsClick(){
     feedSectionsToGrid(grid,sectionsArray);
 }
 
-//UI Layer Layer Testing Functions
+//UI Layer Layer Testing Functions - new Column Format not needed
 function onGetGridSectionsClick(){
     if(validateGrid(grid)) {
         sectionsArray = getSectionsFromGrid(grid);
     }
 }
 
-//UI Layer Layer Testing Functions
+//UI Layer Layer Testing Functions - new Column Format not needed
 function onValidateGridClick(){
     var isGridValid = validateGrid(grid);
 }
 
-//UI Layer Layer Testing Functions
+//UI Layer Layer Testing Functions - new Column Format not needed
 function onCreateSummaryFromSectionsClick(){
     createSectionSummaryTable("summTab", sectionsArray);
 }
