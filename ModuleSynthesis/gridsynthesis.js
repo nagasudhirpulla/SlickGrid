@@ -282,12 +282,15 @@ function feedSectionsToGrid(grid, sectionsArray){
     var sectionsArrayKeys = getKeys(sectionsArray);
     for(var i=0;i<sectionsArrayKeys.length;i++){
         //i is the iterator for sectionsArray index
-        var column = sectionsArrayKeys[i];
-        var sections = sectionsArray[column];
+        var columnIndex = sectionsArrayKeys[i];
+        var columnData = sectionsArray[columnIndex];
+        var cat = columnData.columnCategory;
+        var columnKey = columnData.columnKey;
+        var sections = columnData.columnSections;
         for(j=0;j<sections.length;j++){
             var sectionObject = sections[j];
             for(var k=sectionObject.secStart;k<=sectionObject.secEnd;k++){
-                setGridCell(grid,k,column,sectionObject.val);
+                setGridCell(grid,k,columnIndex,sectionObject.val);
             }
         }
     }
