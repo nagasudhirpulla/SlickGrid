@@ -267,11 +267,11 @@ function resetGrid(grid, constituentNames, defVal, isDecCapPresent, defDecCap, i
 }
 
 //Grid Utility Functions - new Column Format not needed
-function setGridCell(grid, rowNumber, columnField, value){
+function setGridCell(grid, rowNumber, gridColumnKey, value){
     //Note: Data not rendered from here, so render grid from outside
     //Note: rowNumber starts from 0 to 95, not 1 to 96.
     var data = grid.getData();
-    (data[rowNumber])[columnField] = value;
+    (data[rowNumber])[gridColumnKey] = value;
 }
 
 //Grid Utility Functions - todo next
@@ -302,17 +302,21 @@ function getSectionsFromGrid(grid){
     var data = grid.getData();
     var sectionsArray = [];
     var constCol;
+    var cat = "";
     for (var constCol1 = 0; constCol1 < 3; constCol1++) {
         //Three for OnBarDC and MaxRamp and DC respectively
         switch (constCol1) {
             case 0:
                 constCol = "onBar";
+                cat = "OnBarDc";
                 break;
             case 1:
                 constCol = "maxRamp";
+                cat = "MaxRamp";
                 break;
             case 2:
                 constCol = "dc";
+                cat = "DC";
                 break;
             default:
 
@@ -335,7 +339,11 @@ function getSectionsFromGrid(grid){
             'secEnd': 95,
             'val': (data[95])[constCol]
         });
-        sectionsArray[constCol] = sections;
+        var colData = {};
+        colData.columnCategory = cat;
+        colData.columnKey = constCol;
+        colData.sections = sections;
+        sectionsArray[constCol] = colData;
     }
     for (constCol = 0; constCol < constituentNames.length; constCol++) {
         sections = [];
@@ -355,7 +363,11 @@ function getSectionsFromGrid(grid){
             'secEnd': 95,
             'val': (data[95])[constituentIDs[constCol]+"_"+"Normal"]
         });
-        sectionsArray[constituentIDs[constCol]+"_"+"Normal"] = sections;
+        colData = {};
+        colData.columnCategory = "Normal";
+        colData.columnKey = constituentIDs[constCol];
+        colData.sections = sections;
+        sectionsArray[constituentIDs[constCol]+"_"+"Normal"] = colData;
     }
     //URS Version
     for (constCol = 0; constCol < constituentNames.length; constCol++) {
@@ -376,7 +388,11 @@ function getSectionsFromGrid(grid){
             'secEnd': 95,
             'val': (data[95])[constituentIDs[constCol]+"_"+"RSD"]
         });
-        sectionsArray[constituentIDs[constCol]+"_"+"RSD"] = sections;
+        colData = {};
+        colData.columnCategory = "RSD";
+        colData.columnKey = constituentIDs[constCol];
+        colData.sections = sections;
+        sectionsArray[constituentIDs[constCol]+"_"+"RSD"] = colData;
     }
     //For URS option
     for (constCol = 0; constCol < constituentNames.length; constCol++) {
@@ -397,8 +413,11 @@ function getSectionsFromGrid(grid){
             'secEnd': 95,
             'val': (data[95])[constituentIDs[constCol]+"_"+"URS"]
         });
-        //sectionsArray.push(sections);
-        sectionsArray[constituentIDs[constCol]+"_"+"URS"] = sections;
+        colData = {};
+        colData.columnCategory = "URS";
+        colData.columnKey = constituentIDs[constCol];
+        colData.sections = sections;
+        sectionsArray[constituentIDs[constCol]+"_"+"URS"] = colData;
     }
     //URS Version
     //TODO eliminate saving these in the sectionsArray
