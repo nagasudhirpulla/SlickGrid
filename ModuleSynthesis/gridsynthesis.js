@@ -277,7 +277,7 @@ function setGridCell(grid, rowNumber, gridColumnKey, value){
 //Grid Utility Functions - todo next
 function feedSectionsToGrid(grid, sectionsArray){
     //first reset the grid;
-    resetGrid(grid,constituentNames,"FULL",true,"dec",true,'onb',true,'max',true,'rsd',true,'ur');
+    resetGrid(grid,constituentNames,"FULL",true,genDecCap,true,genOnBar,true,genRamp,true,0,true,0);
     //Feeding the normal shares
     var sectionsArrayKeys = getKeys(sectionsArray);
     for(var i=0;i<sectionsArrayKeys.length;i++){
