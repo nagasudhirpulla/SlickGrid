@@ -46,7 +46,7 @@ function convertRevDataToSectionsArray(fetchedRevData){
                 sectionsArrayFetched[sectionsArrayIndex]["columnKey"] = memberID;
                 sectionsArrayFetched[sectionsArrayIndex]["columnCategory"] = columnCategory;
             }
-            sectionsArrayFetched[memberID]['columnSections'].push({
+            sectionsArrayFetched[sectionsArrayIndex][memberID]['columnSections'].push({
                 'secStart': sectionObject.from_b - 1,
                 'secEnd': sectionObject.to_b - 1,
                 'val': sectionObject.val
@@ -136,10 +136,9 @@ function convertSectionsArrayToSeverJSON(genID, sectionsArray, constituentIDs){
             }
         }
     }
-    //TODO Complete this
     //Saving the comment of the revision
     cats.push('comm');
-    conIDs.push(constituentIDs[0]);
+    conIDs.push(genID);
     fromBlocks.push(1);
     toBlocks.push(96);
     vals.push(document.getElementById("commentInput").value);

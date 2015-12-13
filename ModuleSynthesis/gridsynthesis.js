@@ -4,6 +4,8 @@
 //TODo add slider of slider buttons for grid on mobile devices
 //TODO follow the guidelines in the ppt to modify the format of grid columns and sectionsArray
 var grid = {};
+var implementedGrid = {};
+var desiredGrid = {};
 var sectionsArray;
 var genName = "CGPL";
 var comment = "userComment";
@@ -24,15 +26,43 @@ $(function() {
     constituentNames = ["A", "B", "C", "D"];
     constituentIDs = [1, 2, 3, 4];
     columns = setReqTableColumns(columns, true, true);
-    grid = initialiseReqGrid("myGrid", genRamp, genDecCap, genOnBar, constituentNames, columns, options, pluginOptions, headerClick, "FULL", true, 0, true, 'YES');
+    grid = initialiseReqGrid("myGrid", genRamp, genDecCap, genOnBar, constituentNames, constituentIDs, columns, options, pluginOptions, headerClick, "FULL", true, 0, true, 'YES');
     //Populate the Constituent Options
     var selList = document.getElementById("selectReqConst");
     decorateSelectList(selList,constituentNames);
+    //make the columns un editable
+    var unEditableColumns  = makeColumnsUneditable(columns);
+    //initialise the desired numeric schedule grid
+    desiredGrid = initialiseReqGrid("desiredGrid", genRamp, genDecCap, genOnBar, constituentNames, constituentIDs, unEditableColumns, options, pluginOptions, headerClick, "FULL", true, 0, true, 'YES');
+    //initialise the implemented schedule grid
+    implementedGrid = initialiseReqGrid("implementedGrid", genRamp, genDecCap, genOnBar, constituentNames, constituentIDs, columns, options, pluginOptions, headerClick, "FULL", true, 0, true, 'YES');
 });
 
+//Grid Utility Functions - new Column Format not needed
+function makeColumnsUneditable(columns) {
+    //Cloning the object Array
+    var tempArray = JSON.parse(JSON.stringify(columns));
+    for(var i=0;i<tempArray.length;i++){
+        delete tempArray[i]['editor'];
+    }
+    return tempArray;
+}
+
 //Grid Utility Functions - Used new Column Format
-function initialiseReqGrid(tableID, genRamp, genDecCap, genOnBar, constituentNames, columns, options, pluginOptions, headerClick, defValue, isRSDPresent, defRSDValue, isURSPresent, defURSValue){
-    console.log("Initialising the grid");
+function initialiseReqGrid(tableID, genRamp, genDecCap, genOnBar, constituentNames, constituentIDs, columns, options, pluginOptions, headerClick, defValue, isRSDPresent, defRSDValue, isURSPresent, defURSValue){
+    var gridStr = "grid";
+    switch(tableID){
+        case "myGrid":
+            gridStr = "Requisition grid";
+            break;
+        case "desiredGrid":
+            gridStr = "Desired Numeric Requisition grid";
+            break;
+        case "implementedGrid":
+            gridStr = "Implemented revision grid";
+            break;
+    }
+    console.log("Initialising the " + gridStr);
     //Set the whole grid to default values, rsd urs not included
     var data = [];
     for (var i = 0; i < 96; i++) {
@@ -66,7 +96,7 @@ function initialiseReqGrid(tableID, genRamp, genDecCap, genOnBar, constituentNam
         }
     }
     //Building the grid and configuring the grid
-    grid = new Slick.Grid("#"+tableID, data, columns, options);
+    var grid = new Slick.Grid("#"+tableID, data, columns, options);
     grid.setSelectionModel(new Slick.CellSelectionModel());
     grid.registerPlugin(new Slick.AutoTooltips());
     //enabling the excel style functionality by the plugin
