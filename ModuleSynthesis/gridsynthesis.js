@@ -25,17 +25,17 @@ $(function() {
     genOnBar = 1400;
     constituentNames = ["A", "B", "C", "D"];
     constituentIDs = [1, 2, 3, 4];
-    columns = setReqTableColumns(columns, true, true);
-    grid = initialiseReqGrid("myGrid", genRamp, genDecCap, genOnBar, constituentNames, constituentIDs, columns, options, pluginOptions, headerClick, "FULL", true, 0, true, 'YES');
+    columns = setReqTableColumns(columns, true, true, true);
+    grid = initialiseReqGrid("myGrid", genRamp, genDecCap, genOnBar, constituentNames, constituentIDs, columns, options, pluginOptions, headerClick, "FULL", true, 0, true, 'YES', true, 0);
     //Populate the Constituent Options
     var selList = document.getElementById("selectReqConst");
     decorateSelectList(selList,constituentNames);
     //make the columns un editable
     var unEditableColumns  = makeColumnsUneditable(columns);
     //initialise the desired numeric schedule grid
-    desiredGrid = initialiseReqGrid("desiredGrid", genRamp, genDecCap, genOnBar, constituentNames, constituentIDs, unEditableColumns, options, pluginOptions, headerClick, "FULL", true, 0, true, 'YES');
+    desiredGrid = initialiseReqGrid("desiredGrid", genRamp, genDecCap, genOnBar, constituentNames, constituentIDs, unEditableColumns, options, pluginOptions, headerClick, "FULL", true, 0, true, 'YES', true, 0);
     //initialise the implemented schedule grid
-    implementedGrid = initialiseReqGrid("implementedGrid", genRamp, genDecCap, genOnBar, constituentNames, constituentIDs, columns, options, pluginOptions, headerClick, "FULL", true, 0, true, 'YES');
+    implementedGrid = initialiseReqGrid("implementedGrid", genRamp, genDecCap, genOnBar, constituentNames, constituentIDs, columns, options, pluginOptions, headerClick, "FULL", true, 0, true, 'YES', true, 0);
 });
 
 //Grid Utility Functions - new Column Format not needed
@@ -49,7 +49,7 @@ function makeColumnsUneditable(columns) {
 }
 
 //Grid Utility Functions - Used new Column Format
-function initialiseReqGrid(tableID, genRamp, genDecCap, genOnBar, constituentNames, constituentIDs, columns, options, pluginOptions, headerClick, defValue, isRSDPresent, defRSDValue, isURSPresent, defURSValue){
+function initialiseReqGrid(tableID, genRamp, genDecCap, genOnBar, constituentNames, constituentIDs, columns, options, pluginOptions, headerClick, defValue, isRSDPresent, defRSDValue, isURSPresent, defURSValue, isMTOAPresent, defMTOAVal){
     var gridStr = "grid";
     switch(tableID){
         case "myGrid":
@@ -76,6 +76,9 @@ function initialiseReqGrid(tableID, genRamp, genDecCap, genOnBar, constituentNam
         d["dc"] = genDecCap;
         d["onBar"] = genOnBar;
         d["offBar"] = genDecCap - genOnBar;
+        if(isMTOAPresent){
+            d["mtoa"] = defMTOAVal;
+        }
         for (var j = 0; j < constituentNames.length; j++) {
             //j is iterator the column j ...
             //Setting the data value for the cell i,j(row,column) or block i+1,j
@@ -140,7 +143,7 @@ function initialiseReqGrid(tableID, genRamp, genDecCap, genOnBar, constituentNam
 }
 
 //Grid Utility Functions - Used new Column Format
-function setReqTableColumns(columns, isRSDPresent, isURSPresent) {
+function setReqTableColumns(columns, isRSDPresent, isURSPresent, isMTOAPresent) {
     columns = [];
     columns.push({
         id: 'maxRamp',
@@ -242,6 +245,18 @@ function setReqTableColumns(columns, isRSDPresent, isURSPresent) {
                 editor: Slick.Editors.Text
             });
         }
+    }
+    if(isMTOAPresent){
+        columns.push({
+                id: "mtoa",
+                name: "MTOA/STOA",
+                field: "mtoa",
+                category: 'MTOA/STOA',
+                columnKey: null,
+                width: 40,
+                toolTip: "MTOA/STOA"
+            }
+        );
     }
     return columns;
 }
@@ -524,12 +539,12 @@ function validateGrid(grid) {
             $(grid.getCellNode(i,grid.getColumnIndex(constituentIDs[j]+"_"+"URS"))).removeClass("redError");
             if (typeof cellVal == "number") {
                 /*
-                if (cellVal == 0) {
-                    d["URS" + j] = "No";
-                } else{
-                    d["URS" + j] = "Yes";
-                }
-                */
+                 if (cellVal == 0) {
+                 d["URS" + j] = "No";
+                 } else{
+                 d["URS" + j] = "Yes";
+                 }
+                 */
             } else {
                 isValid = cellVal.match(/^\LEFTOVER$/i) || cellVal.match(/^[+]?\d+(\.\d+)?$/i) || cellVal.match(/^\YES$/i);
                 if (!isValid) {
