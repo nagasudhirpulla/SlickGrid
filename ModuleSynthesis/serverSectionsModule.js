@@ -142,4 +142,11 @@ function convertSectionsArrayToSeverJSON(genID, sectionsArray, constituentIDs){
     fromBlocks.push(1);
     toBlocks.push(96);
     vals.push(document.getElementById("commentInput").value);
+    return {
+        cats: cats,
+        conIDs: conIDs,
+        fromBlocks: fromBlocks,
+        toBlocks: toBlocks,
+        vals: vals
+    }
 }
