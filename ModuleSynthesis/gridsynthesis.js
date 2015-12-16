@@ -729,3 +729,93 @@ function onGetSectionsFromRowsClick(){
 function onValidateReqTableClick(){
     var isReqTableValid = validateReqTable("reqInputTable");
 }
+
+//UX Utility function
+function loadRevisionFromDB(genID, date, requested, constituentNames){
+    console.log('Loading Revision '+requested);
+    $.ajax({
+        type: 'GET',
+        url: "http://"+localhost+"/api/revisions/"+date+"/"+genID+"/"+requested,
+        dataType: "json", // data type of response
+        success: function(dataFetched) {
+            if(dataFetched.error == false){
+                console.log('Error in loading the revision ' + requested);
+                return false;
+            }
+            // serializes an empty list as null, and a 'collection of one' as an object (not an 'array of one')
+            var fetchedRevData = dataFetched == null ? [] : (dataFetched.revData instanceof Array ? dataFetched.revData : [dataFetched.revData]);
+            console.log('fetched revision data of revision '+requested+': '+JSON.stringify(fetchedRevData));
+            //convert revision data into sections
+            var sectionsArrayFetched = convertRevDataToSectionsArray(fetchedRevData);
+            console.log('fetched sectionsArray of revision '+ requested, sectionsArrayFetched);
+            //Now the revision can be loaded...
+            //Set the comment
+            var revParams = getCommentAndTimeOfOriginFromDataFetched(dataFetched);
+            setCommentAndTO('commentInput', 'TO', revParams);
+            //So if wanted change the table data accordingly and update the curRev variable
+            setCurrRevDisplay(requested);
+            feedSectionsToGrid(grid, sectionsArrayFetched);
+            getRowsFromSections(sectionsArrayFetched, constituentNames, "reqInputTable");
+            createSectionSummaryTable("summTab", sectionsArrayFetched);
+            //TODO modify the global variables for sectionsArray
+            sectionsArray = sectionsArrayFetched;
+        }
+    });
+    //TODO Load the implemented revision also
+}
+
+//UX Utility function
+function saveRevisionToDB(genID, sectionsArray, constituentIDs){
+    var date = getDateInput();
+    var curRev = getCurrentRevisionLoaded();
+    //Sending the ajax request to the server for saving the revision
+    console.log('saving revision to the server');
+    var formattedJSON = convertSectionsArrayToSeverJSON(genID, sectionsArray, constituentIDs);
+    $.ajax({
+        type: 'PUT',
+        url: "http://"+localhost+"/api/revisions/"+date+"/"+curRev,
+        dataType: "json", // data type of response
+        data: JSON.stringify({
+            'TO':timeOfOrigin,
+            'comm':document.getElementById("commentInput").value,
+            'genID':genID,
+            'cats':formattedJSON.cats,
+            'conIDs': formattedJSON.conIDs,
+            'frombs': formattedJSON.frombs,
+            'tobs': formattedJSON.tobs,
+            'vals': formattedJSON.vals
+        }),
+        success: function (data, textStatus, jqXHR) {
+            alert("Updated the revision successfully...");
+            console.log(data);
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            alert('updateRevision Error: ' + textStatus);
+            console.log("updateRevision errorThrown: " + errorThrown);
+            console.log("updateRevision jqXHR: " + JSON.stringify(jqXHR));
+        }
+    });
+}
+
+//UX utility functions
+function setCommentAndTO(commentID, timeOfOriginID, revParams){
+    document.getElementById(commentID).value = revParams.comment;
+    document.getElementById(timeOfOriginID).value = revParams.TO;
+}
+
+//UX utility functions
+function setCurrRevDisplay(requested){
+
+}
+
+//UX utility functions
+function getDateInput(){
+    var picker = $( "#datePicker" );
+    var date = picker.datepicker("getDate").getFullYear()+"-"+(picker.datepicker("getDate").getMonth()+1)+"-"+picker.datepicker("getDate").getDate();
+    return date;
+
+}
+
+function getCurrentRevisionLoaded(){
+    return curRev;
+}
