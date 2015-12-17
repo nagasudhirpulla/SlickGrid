@@ -7,7 +7,9 @@ var grid = {};
 var implementedGrid = {};
 var desiredGrid = {};
 var sectionsArray;
+var sectionsArrayImplemented;
 var genName = "CGPL";
+var genID = 23;
 var comment = "userComment";
 var genRamp;
 var genDecCap;
@@ -18,7 +20,7 @@ var columns = {};
 var options;
 var pluginOptions;
 
-//On page load...
+//On page load
 $(function() {
     genRamp = 70;
     genDecCap = 1450;
@@ -761,7 +763,30 @@ function loadRevisionFromDB(genID, date, requested, constituentNames){
             sectionsArray = sectionsArrayFetched;
         }
     });
-    //TODO Load the implemented revision also
+    //Loading the implemented revision also
+    console.log('Loading Implemented Revision number '+requested);
+    $.ajax({
+        type: 'GET',
+        url: "http://"+localhost+"/api/revisionsimplemented/"+date+"/"+genID+"/"+requested,
+        dataType: "json", // data type of response
+        success: function(dataFetched) {
+            if(dataFetched.error == false){
+                console.log('Error in loading the implemented number revision ' + requested);
+                return false;
+            }
+            // serializes an empty list as null, and a 'collection of one' as an object (not an 'array of one')
+            var fetchedRevData = dataFetched == null ? [] : (dataFetched.revData instanceof Array ? dataFetched.revData : [dataFetched.revData]);
+            console.log('fetched revision data of revision '+requested+': '+JSON.stringify(fetchedRevData));
+            //convert revision data into sections
+            var sectionsArrayFetched = convertRevDataToSectionsArray(fetchedRevData);
+            console.log('fetched sectionsArray of revision '+ requested, sectionsArrayFetched);
+            setCurrRevDisplay(requested);
+            feedSectionsToGrid(implementedGrid, sectionsArrayFetched);
+            //TODO modify the global variables for sectionsArrayImplemented
+            sectionsArrayImplemented = sectionsArrayFetched;
+        }
+    });
+
 }
 
 //UX Utility function
@@ -771,13 +796,14 @@ function saveRevisionToDB(genID, sectionsArray, constituentIDs){
     //Sending the ajax request to the server for saving the revision
     console.log('saving revision to the server');
     var formattedJSON = convertSectionsArrayToSeverJSON(genID, sectionsArray, constituentIDs);
+    var revParams = getCommentAndTO('commentInput', 'TO');
     $.ajax({
         type: 'PUT',
         url: "http://"+localhost+"/api/revisions/"+date+"/"+curRev,
         dataType: "json", // data type of response
         data: JSON.stringify({
-            'TO':timeOfOrigin,
-            'comm':document.getElementById("commentInput").value,
+            'TO':revParams.TO,
+            'comm':revParams.comment,
             'genID':genID,
             'cats':formattedJSON.cats,
             'conIDs': formattedJSON.conIDs,
@@ -786,7 +812,7 @@ function saveRevisionToDB(genID, sectionsArray, constituentIDs){
             'vals': formattedJSON.vals
         }),
         success: function (data, textStatus, jqXHR) {
-            alert("Updated the revision successfully...");
+            alert("Updated the revision " + curRev + "successfully...");
             console.log(data);
         },
         error: function (jqXHR, textStatus, errorThrown) {
@@ -795,12 +821,119 @@ function saveRevisionToDB(genID, sectionsArray, constituentIDs){
             console.log("updateRevision jqXHR: " + JSON.stringify(jqXHR));
         }
     });
+    //Save the implemented revision also
+    console.log('saving revision to the server');
+    var formattedJSON1 = convertSectionsArrayToSeverJSON(genID, sectionsArray, constituentIDs);
+    $.ajax({
+        type: 'PUT',
+        url: "http://"+localhost+"/api/revisionsimplemented/"+date+"/"+curRev,
+        dataType: "json", // data type of response
+        data: JSON.stringify({
+            'TO':revParams.TO,
+            'comm':revParams.comment,
+            'genID':genID,
+            'cats':formattedJSON1.cats,
+            'conIDs': formattedJSON1.conIDs,
+            'frombs': formattedJSON1.frombs,
+            'tobs': formattedJSON1.tobs,
+            'vals': formattedJSON1.vals
+        }),
+        success: function (data, textStatus, jqXHR) {
+            alert("Updated the implemented revision " + curRev + "successfully...");
+            console.log(data);
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            alert('update Implemented Revision Error: ' + textStatus);
+            console.log("update Implemented Revision errorThrown: " + errorThrown);
+            console.log("update Implemented Revision jqXHR: " + JSON.stringify(jqXHR));
+        }
+    });
+}
+
+//UX utility functions
+function createRevDB(genID, constituentNames){
+    console.log('Creating a new revision');
+    var date = getDateInput();
+    var revParams = getCommentAndTO('commentInput', 'TO');
+    $.ajax({
+        type: 'POST',
+        url: "http://"+localhost+"/api/revisions/"+date+"/"+genID,
+        dataType: "json", // data type of response
+        data: JSON.stringify({'TO':revParams.TO,'comm':revParams.comment}),
+        success: function (data, textStatus, jqXHR) {
+            console.log("New Revision number created ",data.new_rev);
+            loadRevisionFromDB(genID, date, data.new_rev, constituentNames);
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            alert('createRevision error: ' + textStatus);
+            console.log("createNewRevision errorThrown: " + errorThrown);
+            console.log("createNewRevision jqXHR: " + JSON.stringify(jqXHR));
+        }
+    });
+}
+
+//UX utility functions
+function deleteRevisionFromDB(genID, constituentNames){
+    var date = getDateInput();
+    var curRev = getCurrentRevisionLoaded();
+    console.log("Requesting the Database to delete the Revision " + curRev);
+    $.ajax({
+        type: 'DELETE',
+        url: "http://"+localhost+"/api/revisions/"+date+"/"+curRev,
+        success: function(data, textStatus, jqXHR){
+            if(data.error == false) {
+                console.log("Deleted the revision " + curRev + " successfully!");
+                alert("Deleted the revision " + curRev + " successfully!");
+                //Load the latest revision
+                console.log("Requesting to load the latest revision after deletion...");
+                deleteImplementedRevisionFromDB();
+                //TODO this function
+                loadRevisionFromDB(genID, date, "latest", constituentNames);
+            }
+            else{
+                console.log("deleteRevision "+curRev+" error:",data.num_rows);
+                alert("Failed to Delete Revision "+curRev+".\nSee Console for message...");
+            }
+        },
+        error: function(jqXHR, textStatus, errorThrown){
+            alert('deleteRevision error: '+textStatus);
+            console.log("deleteRevision "+curRev+" jqXHR:",jqXHR);
+            console.log("deleteRevision "+curRev+" errorThrown:", errorThrown);
+        }
+    });
+    function deleteImplementedRevisionFromDB(){
+        console.log("Requesting the Database to delete the Implemented Revision");
+        $.ajax({
+            type: 'DELETE',
+            url: "http://"+localhost+"/api/revisionsimplemented/"+date+"/"+curRev,
+            success: function(data, textStatus, jqXHR){
+                if(data.error == false) {
+                    console.log("Deleted the implemented revision " + curRev + " successfully!");
+                }
+                else{
+                    console.log("deleteImplementedRevision "+curRev+" error:",data.num_rows);
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown){
+                console.log("deleteImplementedRevision "+curRev+" jqXHR:",jqXHR);
+                console.log("deleteImplementedRevision "+curRev+" errorThrown:", errorThrown);
+            }
+        });
+    }
 }
 
 //UX utility functions
 function setCommentAndTO(commentID, timeOfOriginID, revParams){
     document.getElementById(commentID).value = revParams.comment;
     document.getElementById(timeOfOriginID).value = revParams.TO;
+}
+
+//UX utility functions
+function getCommentAndTO(commentID, timeOfOriginID){
+    var revParams = {};
+    revParams.comment = document.getElementById(commentID).value;
+    revParams.TO = document.getElementById(timeOfOriginID).value;
+    return revParams;
 }
 
 //UX utility functions
