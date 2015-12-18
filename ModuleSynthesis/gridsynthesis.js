@@ -8,12 +8,15 @@ var implementedGrid = {};
 var desiredGrid = {};
 var sectionsArray;
 var sectionsArrayImplemented;
+var genNames = [];
+var genIDs = [];
 var genName = "CGPL";
 var genID = 23;
 var comment = "userComment";
 var genRamp;
 var genDecCap;
 var genOnBar;
+var percentageData = [];
 var constituentNames = [];
 var constituentIDs = [];
 var columns = {};
@@ -27,7 +30,7 @@ $(function() {
     genOnBar = 1400;
     constituentNames = ["A", "B", "C", "D"];
     constituentIDs = [1, 2, 3, 4];
-    columns = setReqTableColumns(columns, true, true, true);
+    columns = setReqTableColumns(true, true, true);
     grid = initialiseReqGrid("myGrid", genRamp, genDecCap, genOnBar, constituentNames, constituentIDs, columns, options, pluginOptions, headerClick, "FULL", true, 0, true, 'YES', true, 0);
     //Populate the Constituent Options
     var selList = document.getElementById("selectReqConst");
@@ -38,7 +41,7 @@ $(function() {
     desiredGrid = initialiseReqGrid("desiredGrid", genRamp, genDecCap, genOnBar, constituentNames, constituentIDs, unEditableColumns, options, pluginOptions, headerClick, "FULL", true, 0, true, 'YES', true, 0);
     //initialise the implemented schedule grid
     implementedGrid = initialiseReqGrid("implementedGrid", genRamp, genDecCap, genOnBar, constituentNames, constituentIDs, columns, options, pluginOptions, headerClick, "FULL", true, 0, true, 'YES', true, 0);
-    generatorNamesFetch();
+    constituentNamesFetch();
 });
 
 //Grid Utility Functions - new Column Format not needed
@@ -146,8 +149,8 @@ function initialiseReqGrid(tableID, genRamp, genDecCap, genOnBar, constituentNam
 }
 
 //Grid Utility Functions - Used new Column Format
-function setReqTableColumns(columns, isRSDPresent, isURSPresent, isMTOAPresent) {
-    columns = [];
+function setReqTableColumns(isRSDPresent, isURSPresent, isMTOAPresent) {
+    var columns = [];
     columns.push({
         id: 'maxRamp',
         name: 'MaxRamp',
@@ -203,6 +206,8 @@ function setReqTableColumns(columns, isRSDPresent, isURSPresent, isMTOAPresent) 
         toolTip: "Available Generation"
     });
     //Adding Constituent Requisition columns iteratively
+    var constituentNames = getConstituentNames();
+    var constituentIDs = getConstituentIDs();
     for (var i = 0; i < constituentNames.length; i++) {
         columns.push({
             id: constituentIDs[i]+"_"+"Normal",
@@ -734,6 +739,14 @@ function onValidateReqTableClick(){
 }
 
 //UX Utility function
+function loadLatestRevisionDB() {
+    var date = getDateInput();
+    var genID = getGenID();
+    var constituentNames = getConstituentNames();
+    loadRevisionFromDB(genID, date, "latest", constituentNames)
+}
+
+//UX Utility function
 function loadRevisionFromDB(genID, date, requested, constituentNames){
     console.log('Loading Revision '+requested);
     $.ajax({
@@ -761,7 +774,7 @@ function loadRevisionFromDB(genID, date, requested, constituentNames){
             getRowsFromSections(sectionsArrayFetched, constituentNames, "reqInputTable");
             createSectionSummaryTable("summTab", sectionsArrayFetched);
             //TODO modify the global variables for sectionsArray
-            sectionsArray = sectionsArrayFetched;
+            setSectionsArray(sectionsArrayFetched);
         }
     });
     //Loading the implemented revision also
@@ -784,7 +797,7 @@ function loadRevisionFromDB(genID, date, requested, constituentNames){
             setCurrRevDisplay(requested);
             feedSectionsToGrid(implementedGrid, sectionsArrayFetched);
             //TODO modify the global variables for sectionsArrayImplemented
-            sectionsArrayImplemented = sectionsArrayFetched;
+            setSectionsArrayImplemented(sectionsArrayFetched);
         }
     });
 
@@ -923,6 +936,7 @@ function deleteRevisionFromDB(genID, constituentNames){
     }
 }
 
+//Getters
 //UX utility functions
 function setCommentAndTO(commentID, timeOfOriginID, revParams){
     document.getElementById(commentID).value = revParams.comment;
@@ -938,18 +952,119 @@ function getCommentAndTO(commentID, timeOfOriginID){
 }
 
 //UX utility functions
-function setCurrRevDisplay(requested){
-
-}
-
-//UX utility functions
 function getDateInput(){
     var picker = $( "#datePicker" );
     var date = picker.datepicker("getDate").getFullYear()+"-"+(picker.datepicker("getDate").getMonth()+1)+"-"+picker.datepicker("getDate").getDate();
     return date;
-
 }
 
+//UX utility functions
 function getCurrentRevisionLoaded(){
     return curRev;
+}
+
+//UX utility functions
+function getGenID(){
+    return genID;
+}
+
+//UX utility functions
+function getConstituentNames(){
+    return constituentNames;
+}
+
+//UX utility functions
+function getConstituentIDs(){
+    return constituentIDs;
+}
+
+//UX utility functions
+function getGenNames(){
+    return genNames;
+}
+
+//UX utility functions
+function getGenIDs(){
+    return genIDs;
+}
+
+//UX utility functions
+function getGenRamp(){
+    return genRamp;
+}
+
+//UX utility functions
+function getGenDecCap(){
+    return genDecCap;
+}
+
+//UX utility functions
+function getGenOnBar(){
+    return genOnBar;
+}
+
+//UX utility functions
+function getSectionsArray(){
+    return sectionsArray;
+}
+
+//UX utility functions
+function getSectionsArrayImplemented(){
+    return sectionsArrayImplemented;
+}
+
+//Setters
+//UX utility functions
+function setGenNames(arr){
+    genNames = arr;
+}
+
+//UX utility functions
+function setGenIDs(arr){
+    genIDs = arr;
+}
+
+//UX utility functions
+function setGenID(id){
+    genID = id;
+}
+
+//UX utility functions
+function setConstituentNames(arr){
+    constituentNames = arr;
+}
+
+//UX utility functions
+function setConstituentIDs(arr){
+    constituentIDs = arr;
+}
+
+//UX utility functions
+function setGenRamp(ramp){
+    genRamp = ramp;
+}
+
+//UX utility functions
+function setGenDecCap(dec){
+    genDecCap = dec;
+}
+
+//UX utility functions
+function setGenOnBar(onb){
+    genOnBar = onb;
+}
+
+//UX utility functions
+function setSectionsArray(arr){
+    sectionsArray = arr;
+}
+
+//UX utility functions
+function setSectionsArrayImplemented(arr){
+    sectionsArrayImplemented = arr;
+}
+
+//UX utility functions
+function setCurrRevDisplay(requested){
+
 }
