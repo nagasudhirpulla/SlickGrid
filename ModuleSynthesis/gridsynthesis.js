@@ -38,6 +38,7 @@ $(function() {
     desiredGrid = initialiseReqGrid("desiredGrid", genRamp, genDecCap, genOnBar, constituentNames, constituentIDs, unEditableColumns, options, pluginOptions, headerClick, "FULL", true, 0, true, 'YES', true, 0);
     //initialise the implemented schedule grid
     implementedGrid = initialiseReqGrid("implementedGrid", genRamp, genDecCap, genOnBar, constituentNames, constituentIDs, columns, options, pluginOptions, headerClick, "FULL", true, 0, true, 'YES', true, 0);
+    generatorNamesFetch();
 });
 
 //Grid Utility Functions - new Column Format not needed

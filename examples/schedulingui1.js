@@ -260,6 +260,7 @@ function fetchGenNamesAjax() {
         }
     });
 }
+
 function fetchGenParamsAjax(reqGenIndex){
     console.log('Fetching the generator parameters...');
     $.ajax({
