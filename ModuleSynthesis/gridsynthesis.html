@@ -24,6 +24,50 @@
     <script src="../examples/ipaddress.js"></script>
 </head>
 <body>
+<div class="row">
+    <div class="col-md-12 text-center" style="margin-bottom: 5px" onchange="decorateGrid()"><select id="genList">
+        <option value="">CGPL</option>
+        <option value="">KSTPS</option>
+        <option value="">VSTPS</option></select></div>
+</div>
+<div class="row">
+    <div id="revInputDiv" class="col-md-3">
+        <div id="floatleftmd">
+            <div style="margin-bottom: 5px">
+                <span>Date: </span>
+                <input id="datePicker"><br>
+            </div>
+            <span>Revision Number</span>
+            <input type="number" min="0" max="500" value="0" id="revInput"><br>
+            <button style="margin-top: 5px" id="loadRevButton" onclick ="loadRevisionDB()" class="btn btn-primary btn-sm"><span class="glyphicon glyphicon-folder-open"></span>    LoadRevision</button>
+            <button style="margin-top: 5px" id="deleteRevButton" class="btn btn-danger btn-sm" onclick="deleteRevisionDB()"><span class="glyphicon glyphicon-trash"></span>   DeleteRevision</button>
+            <div class="text-center">
+                <button style="margin-top: 5px" id="createRevButton" onclick="createNewRevisionDB()" class="btn btn-success btn-sm"><span class="glyphicon glyphicon-plus-sign"></span>   CreateNewRevision</button>
+            </div>
+        </div>
+    </div>
+    <div id="revDisplayDiv" class="col-md-3">
+        <h3 style="margin-top:5px;text-align: center">CurrentRevision</h3>
+        <h3 style="margin-top:5px;text-align: center" id="revDisplay">0</h3>
+    </div>
+    <div id="commentDiv" class="col-md-6">
+        <form class="form-horizontal" role="form">
+            <div class="form-group">
+                <label class="control-label col-sm-3">Comment:</label>
+                <div class="col-sm-9">
+                    <input type="text" class="form-control" id="commentInput" placeholder="Enter Comment Here">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-3">TimeOfOrigin:</label>
+                <div class="col-sm-9">
+                    <input type="text" class="form-control" id="TO" placeholder="xx:xx:xx">
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
 <div class="row" style="margin-top: 5px">
     <div class="col-md-9 col-xs-11" >
         <div id="myGrid" style="height:400px;" class="gridBorder"></div>

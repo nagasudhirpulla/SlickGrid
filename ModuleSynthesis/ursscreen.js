@@ -78,8 +78,6 @@ function afterInitialFetch() {
     var constituentNames = getConstituentNames();
     var selList = document.getElementById("selectReqConst");
     decorateSelectList(selList, constituentNames);
-    selList = document.getElementById("selectRSDInputConst");
-    decorateSelectList(selList, constituentNames);
 }
 
 //Activity Function
@@ -131,4 +129,10 @@ function sharesOfGeneratorFetch(){
             loadLatestRevisionDB();
         }
     });
+}
+
+function decorateGrid(){
+    genName = document.getElementById("genList").options[document.getElementById("genList").selectedIndex].text;
+    setGenID(genIDs[genNames.indexOf(genName)]);
+    genParamsFetch();
 }

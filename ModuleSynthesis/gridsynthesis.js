@@ -16,7 +16,7 @@ var comment = "userComment";
 var genRamp;
 var genDecCap;
 var genOnBar;
-var percentageData = [];
+var percentageData = createArray(96,1);
 var constituentNames = [];
 var constituentIDs = [];
 var columns = {};
@@ -25,6 +25,7 @@ var pluginOptions;
 
 //On page load
 $(function() {
+    datePickerInitialise();
     genRamp = 70;
     genDecCap = 1450;
     genOnBar = 1400;
@@ -934,6 +935,35 @@ function deleteRevisionFromDB(genID, constituentNames){
             }
         });
     }
+}
+
+function datePickerInitialise(){
+    $("#datePicker").datepicker({
+        dateFormat: "dd-mm-yy",
+        onSelect:function(dateText) {
+            //On date selected from calendar
+            decorateGrid();
+        }
+    });
+    var today = new Date();
+    var dd = ("0" + (today.getDate())).slice(-2);
+    var mm = ("0" + (today.getMonth()+1)).slice(-2);
+    var yyyy = today.getFullYear();
+    today = dd + '-' + mm + '-' + yyyy ;
+    $("#datePicker").attr("value", today);
+}
+
+//Common Utility Functions
+function createArray(length) {
+    var arr = new Array(length || 0),
+        i = length;
+
+    if (arguments.length > 1) {
+        var args = Array.prototype.slice.call(arguments, 1);
+        while(i--) arr[length-1 - i] = createArray.apply(this, args);
+    }
+
+    return arr;
 }
 
 //Getters
